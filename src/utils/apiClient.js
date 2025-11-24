@@ -5,12 +5,16 @@ import { appState } from '../modules/state.js';
 
 /**
  * Get the base API URL
+ * Supports deployment at any subpath (e.g., /part-management-system/api)
  * @returns {string} Base API URL
  */
 function getBaseUrl() {
-    // Since Flask serves both frontend and API from the same origin/port,
-    // always use relative API paths
-    return '/api';
+    // Use Vite's BASE_URL which is set via VITE_BASE_PATH env var during build
+    // This respects the base path configured for subpath deployments
+    const base = import.meta.env.BASE_URL || '/';
+    // Ensure base path ends without trailing slash for API endpoint
+    const basePath = base === '/' ? '' : base.replace(/\/$/, '');
+    return basePath + '/api';
 }
 
 /**

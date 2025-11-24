@@ -147,11 +147,11 @@ export async function downloadPartFile(partId, filename) {
  * @returns {Promise<string>} Blob URL to the GLTF model
  */
 export async function getPartModelBlobUrl(partId) {
-    const baseUrl = globalThis.location.hostname === 'localhost' && globalThis.location.port === '3000'
-        ? 'http://localhost:5000/api'
-        : '/api';
+    // Use Vite's BASE_URL which respects the subpath configured during build
+    const base = import.meta.env.BASE_URL || '/';
+    const basePath = base === '/' ? '' : base.replace(/\/$/, '');
+    const url = basePath + `/api/parts/${partId}/model`;
     
-    const url = `${baseUrl}/parts/${partId}/model`;
     const { appState } = await import('../modules/state.js');
     
     const headers = {};

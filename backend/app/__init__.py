@@ -36,14 +36,22 @@ def create_app(config_name: str = "default") -> Flask:
         """Log details of each incoming request."""
         logger.info(f"{request.method} {request.url} - {request.remote_addr}")
 
-    # Register blueprints
-    app.register_blueprint(parts_bp)
+    # Get base path from environment or config for subpath deployments (e.g., /part-management-system)
+    base_path = os.getenv("BASE_PATH", "").rstrip("/")
+    
+    # Register blueprints with base path prefix if configured
+    api_url_prefix = f"{base_path}/api" if base_path else "/api"
+    app.register_blueprint(parts_bp, url_prefix=api_url_prefix + "/parts")
 
     # Health check endpoint
     @app.route("/health")
     def health_check():
         """Health check endpoint."""
         return {"status": "healthy"}
+    
+    # Register health endpoint at base path if configured
+    if base_path:
+        app.add_url_rule(f"{base_path}/health", "health_check_subpath", health_check)
 
     # Configure static file serving for frontend
     # Get the project root (parent of backend directory)
@@ -56,13 +64,21 @@ def create_app(config_name: str = "default") -> Flask:
     @app.route("/<path:path>")
     def serve_frontend(path):
         """Serve frontend files and handle SPA routing."""
+        
+        # If deployed at a subpath, strip the base path from the incoming request
+        request_path = path
+        if base_path and path.startswith(base_path.lstrip("/")):
+            # Remove the base path prefix from the request
+            request_path = path[len(base_path.lstrip("/")):]
+            if request_path.startswith("/"):
+                request_path = request_path[1:]
 
         # Try to serve the requested file
-        if path and os.path.exists(os.path.join(dist_folder, path)):
-            return send_from_directory(dist_folder, path)
+        if request_path and os.path.exists(os.path.join(dist_folder, request_path)):
+            return send_from_directory(dist_folder, request_path)
 
         # For SPA routing, serve index.html for non-API routes
-        if not path.startswith("api/"):
+        if not request_path.startswith("api/"):
             return send_from_directory(dist_folder, "index.html")
 
         # Return 404 for unknown API routes

@@ -82,12 +82,16 @@ export async function checkAuthStatus(apiKey) {
     lastAuthCheckTime = Date.now();
 
     try {
-        // Use the dedicated auth check endpoint
-        // In development, use localhost:5000; in production, use relative URL
+        // Use Vite's BASE_URL which is set via VITE_BASE_PATH env var during build
+        // This respects the base path configured for subpath deployments
+        const base = import.meta.env.BASE_URL || '/';
+        const basePath = base === '/' ? '' : base.replace(/\/$/, '');
+        
+        // In development, use localhost:5000; in production, use relative URL with base path
         const isDevelopment = globalThis.location.hostname === 'localhost' && globalThis.location.port === '3000';
         const authUrl = isDevelopment
             ? 'http://localhost:5000/api/parts/auth/check'
-            : '/api/parts/auth/check';
+            : basePath + '/api/parts/auth/check';
 
         const response = await fetch(authUrl, {
             method: 'GET',

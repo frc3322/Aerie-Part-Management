@@ -3,7 +3,12 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 import handlebars from "vite-plugin-handlebars";
 
+// Get base path from environment variable or default to '/'
+// Usage: VITE_BASE_PATH=/part-management-system npm run build
+const basePath = process.env.VITE_BASE_PATH || '/';
+
 export default defineConfig({
+    base: basePath,
     server: {
         port: 3000,
         open: false,
