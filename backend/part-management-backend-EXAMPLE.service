@@ -1,0 +1,14 @@
+[Unit]
+Description=Part Management System Backend
+After=network.target
+
+[Service]
+Type=simple
+User=dark
+WorkingDirectory=/home/dark/part-management-system/backend
+ExecStart=/home/dark/.local/bin/uv run python /home/dark/part-management-system/backend/deploy.py prod-multi --port 5000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
