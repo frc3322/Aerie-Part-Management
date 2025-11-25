@@ -219,7 +219,7 @@ def approve_part(part_id):
         part = Part.query.get_or_404(part_id)
 
         # Update status and move to appropriate category based on type
-        part.status = 'Approved'
+        part.status = 'Reviewed'
         if part.type == 'cnc':
             part.category = 'cnc'
         elif part.type == 'hand':
