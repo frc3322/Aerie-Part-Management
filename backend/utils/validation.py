@@ -131,7 +131,7 @@ def validate_status(data: Dict[str, Any], validated_data: Dict[str, Any]) -> Non
         ValidationError: If validation fails
     """
     if 'status' in data:
-        valid_statuses = ['Pending', 'Reviewed', 'Approved', 'In Progress', 'Completed', 'Cancelled']
+        valid_statuses = ['Pending', 'Reviewed', 'Approved', 'In Progress', 'Already Started', 'Completed', 'Cancelled']
         status = data['status']
         if status and status not in valid_statuses:
             raise ValidationError(f"status must be one of: {', '.join(valid_statuses)}", 'status')

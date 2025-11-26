@@ -289,7 +289,7 @@ def unclaim_part(part_id):
 
         part.assigned = None
         part.claimed_date = None
-        part.status = 'Pending'
+        part.status = 'Already Started' if part.status == STATUS_IN_PROGRESS else 'Pending'
 
         db.session.commit()
 
