@@ -1,170 +1,178 @@
 <!-- Add/Edit Modal -->
 <div
-    id="modal"
-    class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm"
+  id="modal"
+  class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm"
 >
-    <div
-        class="neumorphic-card p-8 w-full max-w-lg relative animate-fade-in max-h-[90vh] overflow-y-auto"
+  <div
+    class="neumorphic-card p-8 w-full max-w-lg relative animate-fade-in max-h-[90vh] overflow-y-auto"
+  >
+    <button
+      onclick="closeModal()"
+      class="absolute top-4 right-4 text-gray-400 hover:text-red-400"
     >
-        <button
-            onclick="closeModal()"
-            class="absolute top-4 right-4 text-gray-400 hover:text-red-400"
+      <i class="fa-solid fa-times text-xl"></i>
+    </button>
+
+    <h2 class="text-2xl font-bold text-blue-400 mb-6" id="modal-title">
+      Add New Part
+    </h2>
+
+    <form id="part-form" onsubmit="handleFormSubmit(event)">
+      <input type="hidden" id="edit-mode" value="false" />
+      <input type="hidden" id="edit-index" value="" />
+      <input type="hidden" id="edit-origin-tab" value="" />
+
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2 text-gray-400"
+          >Part Category</label
         >
-            <i class="fa-solid fa-times text-xl"></i>
+        <select
+          id="input-category"
+          onchange="handleCategoryChange(this.value)"
+          class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+        >
+          <option value="cnc">cnc/laser</option>
+          <option value="hand">Hand Fab Part</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label
+          class="block text-sm font-bold mb-2 text-gray-400"
+          id="label-name"
+          >Part Name / ID</label
+        >
+        <input
+          type="text"
+          id="input-name"
+          class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          required
+        />
+      </div>
+
+      <!-- OnShape URL Input -->
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2 text-gray-400"
+          >OnShape Document URL</label
+        >
+        <div class="relative">
+          <i class="fa-solid fa-link absolute left-3 top-3.5 text-gray-500"></i>
+          <input
+            type="url"
+            id="input-onshape"
+            placeholder="https://cad.onshape.com/..."
+            class="neumorphic-input w-full p-3 pl-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-bold mb-2 text-gray-400"
+          >Material</label
+        >
+        <input
+          type="text"
+          id="input-material"
+          class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          required
+        />
+      </div>
+
+      <!-- Dynamic Fields -->
+      <div id="dynamic-fields">
+        <!-- Subsystem & Assigned are for Hand Fab -->
+        <div class="mb-4 hidden" id="field-subsystem">
+          <label class="block text-sm font-bold mb-2 text-gray-400"
+            >Subsystem</label
+          >
+          <input
+            type="text"
+            id="input-subsystem"
+            class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
+
+        <div class="mb-4 hidden" id="field-assigned">
+          <label class="block text-sm font-bold mb-2 text-gray-400"
+            >Assigned To</label
+          >
+          <input
+            type="text"
+            id="input-assigned"
+            class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
+
+        <!-- Status is only editable if not in creation mode/needs review (unless editing existing) -->
+        <div class="mb-4" id="field-status">
+          <label class="block text-sm font-bold mb-2 text-gray-400"
+            >Status</label
+          >
+          <select
+            id="input-status"
+            class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+          >
+            <option value="Pending">Pending Review</option>
+            <option value="Reviewed">Reviewed</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-4" id="field-file">
+        <label
+          class="block text-sm font-bold mb-2 text-gray-400"
+          id="label-file"
+          >3D Model (STEP)</label
+        >
+        <div class="neumorphic-input rounded-lg p-1 flex items-center">
+          <label
+            class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
+          >
+            Choose File
+            <input
+              type="file"
+              id="input-file"
+              class="hidden"
+              accept=".step,.stp"
+              onchange="updateFileName()"
+            />
+          </label>
+          <span
+            id="file-name-display"
+            class="ml-3 text-gray-400 text-sm truncate"
+            >No file chosen</span
+          >
+        </div>
+        <p class="text-xs text-gray-500 mt-1">
+          STEP files (.step, .stp) will be converted for visualization
+        </p>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-bold mb-2 text-gray-400">Notes</label>
+        <textarea
+          id="input-notes"
+          class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 h-24"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end gap-4">
+        <button
+          type="button"
+          onclick="closeModal()"
+          class="text-gray-400 hover:text-white px-4 py-2"
+        >
+          Cancel
         </button>
-
-        <h2 class="text-2xl font-bold text-blue-400 mb-6" id="modal-title">
-            Add New Part
-        </h2>
-
-        <form id="part-form" onsubmit="handleFormSubmit(event)">
-            <input type="hidden" id="edit-mode" value="false" />
-            <input type="hidden" id="edit-index" value="" />
-            <input type="hidden" id="edit-origin-tab" value="" />
-
-            <div class="mb-4">
-                <label class="block text-sm font-bold mb-2 text-gray-400"
-                    >Part Category</label
-                >
-                <select
-                    id="input-category"
-                    onchange="handleCategoryChange(this.value)"
-                    class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                >
-                    <option value="cnc">CNC Part</option>
-                    <option value="hand">Hand Fab Part</option>
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label
-                    class="block text-sm font-bold mb-2 text-gray-400"
-                    id="label-name"
-                    >Part Name / ID</label
-                >
-                <input
-                    type="text"
-                    id="input-name"
-                    class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    required
-                />
-            </div>
-
-            <!-- OnShape URL Input -->
-            <div class="mb-4">
-                <label class="block text-sm font-bold mb-2 text-gray-400"
-                    >OnShape Document URL</label
-                >
-                <div class="relative">
-                    <i
-                        class="fa-solid fa-link absolute left-3 top-3.5 text-gray-500"
-                    ></i>
-                    <input
-                        type="url"
-                        id="input-onshape"
-                        placeholder="https://cad.onshape.com/..."
-                        class="neumorphic-input w-full p-3 pl-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                </div>
-            </div>
-
-            <!-- Dynamic Fields -->
-            <div id="dynamic-fields">
-                <!-- Subsystem & Assigned are for Hand Fab -->
-                <div class="mb-4 hidden" id="field-subsystem">
-                    <label class="block text-sm font-bold mb-2 text-gray-400"
-                        >Subsystem</label
-                    >
-                    <input
-                        type="text"
-                        id="input-subsystem"
-                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                </div>
-
-                <div class="mb-4 hidden" id="field-assigned">
-                    <label class="block text-sm font-bold mb-2 text-gray-400"
-                        >Assigned To</label
-                    >
-                    <input
-                        type="text"
-                        id="input-assigned"
-                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    />
-                </div>
-
-                <!-- Status is only editable if not in creation mode/needs review (unless editing existing) -->
-                <div class="mb-4" id="field-status">
-                    <label class="block text-sm font-bold mb-2 text-gray-400"
-                        >Status</label
-                    >
-                    <select
-                        id="input-status"
-                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    >
-                        <option value="Pending">Pending Review</option>
-                        <option value="Reviewed">Reviewed</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4" id="field-file">
-                <label
-                    class="block text-sm font-bold mb-2 text-gray-400"
-                    id="label-file"
-                    >3D Model (STEP)</label
-                >
-                <div class="neumorphic-input rounded-lg p-1 flex items-center">
-                    <label
-                        class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
-                    >
-                        Choose File
-                        <input
-                            type="file"
-                            id="input-file"
-                            class="hidden"
-                            accept=".step,.stp"
-                            onchange="updateFileName()"
-                        />
-                    </label>
-                    <span
-                        id="file-name-display"
-                        class="ml-3 text-gray-400 text-sm truncate"
-                        >No file chosen</span
-                    >
-                </div>
-                <p class="text-xs text-gray-500 mt-1">
-                    STEP files (.step, .stp) will be converted for visualization
-                </p>
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm font-bold mb-2 text-gray-400"
-                    >Notes</label
-                >
-                <textarea
-                    id="input-notes"
-                    class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 h-24"
-                ></textarea>
-            </div>
-
-            <div class="flex justify-end gap-4">
-                <button
-                    type="button"
-                    onclick="closeModal()"
-                    class="text-gray-400 hover:text-white px-4 py-2"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    class="neumorphic-btn px-8 py-2 rounded-lg text-blue-400 font-bold"
-                >
-                    Save Part
-                </button>
-            </div>
-        </form>
-    </div>
+        <button
+          type="submit"
+          class="neumorphic-btn px-8 py-2 rounded-lg text-blue-400 font-bold"
+        >
+          Save Part
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
