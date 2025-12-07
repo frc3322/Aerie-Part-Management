@@ -120,6 +120,18 @@ def create_part():
         if material is None or str(material).strip() == "":
             return jsonify({"error": "Material is required"}), 400
 
+        amount = data.get("amount")
+        if amount is None or str(amount).strip() == "":
+            data["amount"] = 1
+        else:
+            try:
+                parsed_amount = int(amount)
+                if parsed_amount <= 0:
+                    return jsonify({"error": "Amount must be greater than 0"}), 400
+                data["amount"] = parsed_amount
+            except (TypeError, ValueError):
+                return jsonify({"error": "Amount must be a number"}), 400
+
         # Create new part
         part = Part()
         part.update_from_dict(data)
@@ -175,6 +187,19 @@ def update_part(part_id):
 
         if not data:
             return jsonify({"error": "No data provided"}), 400
+
+        if "amount" in data:
+            amount = data.get("amount")
+            if amount is None or str(amount).strip() == "":
+                data["amount"] = 1
+            else:
+                try:
+                    parsed_amount = int(amount)
+                    if parsed_amount <= 0:
+                        return jsonify({"error": "Amount must be greater than 0"}), 400
+                    data["amount"] = parsed_amount
+                except (TypeError, ValueError):
+                    return jsonify({"error": "Amount must be a number"}), 400
 
         part.update_from_dict(data)
         db.session.commit()

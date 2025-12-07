@@ -40,6 +40,7 @@ class Part(db.Model):
     onshape_url = db.Column(db.String(500), nullable=True)
     claimed_date = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    amount = db.Column(db.Integer, nullable=False, default=1)
     updated_at = db.Column(
         db.DateTime,
         default=datetime.now(timezone.utc),
@@ -56,6 +57,8 @@ class Part(db.Model):
             self.status = "Pending"
         if not self.category:
             self.category = "review"
+        if not self.amount:
+            self.amount = 1
 
     def to_dict(self) -> dict:
         """Convert part to dictionary representation.
@@ -78,6 +81,7 @@ class Part(db.Model):
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
             "category": self.category,
+            "amount": self.amount,
         }
 
     def update_from_dict(self, data: dict) -> None:
@@ -98,6 +102,7 @@ class Part(db.Model):
             "onshape_url",
             "claimed_date",
             "category",
+            "amount",
         }
 
         # Map camelCase field names to snake_case for API compatibility
@@ -113,7 +118,14 @@ class Part(db.Model):
             mapped_key = field_mapping.get(key, key)
 
             if mapped_key in allowed_fields and hasattr(self, mapped_key):
-                setattr(self, mapped_key, value)
+                if mapped_key == "amount" and value is not None:
+                    try:
+                        parsed_amount = int(value)
+                        self.amount = parsed_amount if parsed_amount > 0 else 1
+                    except (TypeError, ValueError):
+                        self.amount = 1
+                else:
+                    setattr(self, mapped_key, value)
 
         self.updated_at = datetime.now(timezone.utc)
 
