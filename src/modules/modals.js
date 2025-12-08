@@ -1,6 +1,9 @@
 // Modal Management Module
 // Handles all modal dialogs and UI interactions
 
+import { appState } from "./state.js";
+import { saveTabVisibility } from "./persistence.js";
+
 /**
  * Open the settings modal
  */
@@ -27,6 +30,12 @@ export function toggleTabVisibility(tab) {
   const checkbox = document.getElementById(`check-${tab}`);
   const btn = document.getElementById(`tab-${tab}`);
   const isVisible = checkbox.checked;
+
+  // Update state
+  appState.tabVisibility[tab] = isVisible;
+
+  // Save to localStorage
+  saveTabVisibility(appState.tabVisibility);
 
   if (isVisible) {
     btn.classList.remove("hidden");

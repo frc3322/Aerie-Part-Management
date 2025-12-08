@@ -28,7 +28,7 @@ globalThis.tailwind = {
 };
 
 // Import all modules
-import { initializeState } from "./modules/state.js";
+import { initializeState, appState } from "./modules/state.js";
 import { switchTab, handleSearch, sortTable } from "./modules/tabs.js";
 import {
   openSettingsModal,
@@ -79,6 +79,28 @@ function applyTooltip(element) {
   element.classList.add("tooltip-target");
 }
 
+/**
+ * Apply persisted tab visibility settings to the UI
+ */
+function applyTabVisibilitySettings() {
+  const tabs = ["review", "cnc", "hand", "completed"];
+
+  tabs.forEach((tab) => {
+    const btn = document.getElementById(`tab-${tab}`);
+    const checkbox = document.getElementById(`check-${tab}`);
+    const isVisible = appState.tabVisibility[tab];
+
+    if (btn && checkbox) {
+      checkbox.checked = isVisible;
+      if (isVisible) {
+        btn.classList.remove("hidden");
+      } else {
+        btn.classList.add("hidden");
+      }
+    }
+  });
+}
+
 function initializeTooltips(root = document) {
   const titledElements = root.querySelectorAll("[title]");
   titledElements.forEach(applyTooltip);
@@ -107,7 +129,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (isAuthenticated) {
     // User is authenticated, initialize the app
     initializeState();
-    switchTab("review");
+    applyTabVisibilitySettings();
+    switchTab(appState.currentTab); // Use the persisted current tab
   }
   // If not authenticated, the modal will be shown and app initialization will happen after authentication
 });
@@ -115,7 +138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Listen for successful authentication to initialize the app
 globalThis.addEventListener("authenticated", () => {
   initializeState();
-  switchTab("review");
+  applyTabVisibilitySettings();
+  switchTab(appState.currentTab); // Use the persisted current tab instead of hardcoded "review"
 });
 
 // Export global functions for HTML onclick handlers

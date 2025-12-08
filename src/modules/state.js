@@ -6,6 +6,7 @@ import { renderReview } from "./review.js";
 import { renderCNC } from "./cnc.js";
 import { renderHandFab } from "./handFab.js";
 import { renderCompleted } from "./completed.js";
+import { loadCurrentTab, loadTabVisibility } from "./persistence.js";
 
 /** @typedef {{id?: number, type?: string, name?: string, subsystem?: string, assigned?: string, status: string, notes?: string, file?: string, onshapeUrl?: string, claimedDate?: string, category?: string, createdAt?: string, updatedAt?: string, amount?: number}} Part */
 
@@ -36,7 +37,31 @@ export const appState = {
   },
   // Statistics
   stats: null,
+  // Tab visibility settings
+  tabVisibility: {
+    review: true,
+    cnc: true,
+    hand: true,
+    completed: true,
+  },
 };
+
+/**
+ * Load persisted state from localStorage
+ */
+function loadPersistedState() {
+  // Load current tab
+  const savedTab = loadCurrentTab();
+  if (savedTab && ["review", "cnc", "hand", "completed"].includes(savedTab)) {
+    appState.currentTab = savedTab;
+  }
+
+  // Load tab visibility settings
+  const savedVisibility = loadTabVisibility();
+  if (savedVisibility && typeof savedVisibility === "object") {
+    appState.tabVisibility = { ...appState.tabVisibility, ...savedVisibility };
+  }
+}
 
 /**
  * Re-render the current tab's content
@@ -67,6 +92,9 @@ async function reRenderCurrentTab() {
  */
 export async function initializeState() {
   try {
+    // Load persisted state first
+    loadPersistedState();
+
     appState.isLoading = true;
 
     // Load all parts
