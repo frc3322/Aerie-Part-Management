@@ -1,10 +1,12 @@
 """Flask application factory and initialization."""
 
 import os
-from sqlalchemy import inspect, text
 import logging
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
+from sqlalchemy import inspect, text
+from sqlalchemy.exc import OperationalError
+from flask_sqlalchemy import SQLAlchemy
 from config import config  # type: ignore
 from models import db  # type: ignore
 from routes import parts_bp  # type: ignore
@@ -33,7 +35,7 @@ def create_app(config_name: str = "default") -> Flask:
     logger = logging.getLogger(__name__)
 
     @app.before_request
-    def log_request_info():
+    def log_request_info() -> None:
         """Log details of each incoming request."""
         logger.info(f"{request.method} {request.url} - {request.remote_addr}")
 
@@ -100,7 +102,7 @@ def create_app(config_name: str = "default") -> Flask:
     return app
 
 
-def _init_sample_data():
+def _init_sample_data() -> None:
     """Initialize database with sample data for development."""
     from models.part import Part  # type: ignore
     from datetime import datetime, timedelta, timezone
@@ -178,18 +180,27 @@ def _init_sample_data():
     print("Sample data initialized successfully")
 
 
-def _ensure_schema(db_instance):
+def _ensure_schema(db_instance: SQLAlchemy) -> None:
     """Create tables if missing and apply minimal migrations."""
     engine = db_instance.engine
     inspector = inspect(engine)
 
-    if not inspector.has_table("parts"):
-        db_instance.create_all()
+    table_exists = inspector.has_table("parts")
+    if not table_exists:
+        try:
+            db_instance.create_all()
+        except OperationalError as error:
+            error_text = str(error).lower()
+            if "already exists" not in error_text:
+                raise
+        inspector = inspect(engine)
+        table_exists = inspector.has_table("parts")
+
+    if not table_exists:
         return
 
-    # Lightweight migrations for existing table
-    columns = {col["name"] for col in inspector.get_columns("parts")}
+    columns = {column["name"] for column in inspector.get_columns("parts")}
     if "misc_info" not in columns:
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE parts ADD COLUMN misc_info JSON"))
-            conn.commit()
+        with engine.connect() as connection:
+            connection.execute(text("ALTER TABLE parts ADD COLUMN misc_info JSON"))
+            connection.commit()
