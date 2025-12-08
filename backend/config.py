@@ -79,10 +79,16 @@ class Config:
         get_config_value("UPLOAD_FOLDER", "uploads"),
     )
     MAX_FILE_SIZE = get_config_value("MAX_FILE_SIZE", None)
-    ALLOWED_EXTENSIONS = set(get_config_value("ALLOWED_EXTENSIONS", ["step", "stp"]))
+    ALLOWED_EXTENSIONS = set(
+        get_config_value("ALLOWED_EXTENSIONS", ["step", "stp", "pdf"])
+    )
 
     # Deployment settings
     BASE_PATH = get_config_value("BASE_PATH", "")
+
+    # Onshape settings
+    ONSHAPE_ACCESS_KEY = get_config_value("ONSHAPE_ACCESS_KEY", "")
+    ONSHAPE_SECRET_KEY = get_config_value("ONSHAPE_SECRET_KEY", "")
 
 
 class DevelopmentConfig(Config):

@@ -26,9 +26,12 @@ def create_default_config() -> Dict[str, Any]:
         # File upload settings
         "UPLOAD_FOLDER": "uploads",
         "MAX_FILE_SIZE": None,  # No limit, but validate reasonable sizes
-        "ALLOWED_EXTENSIONS": ["step", "stp"],
+        "ALLOWED_EXTENSIONS": ["step", "stp", "pdf"],
         # Deployment settings
         "BASE_PATH": "",
+        # Onshape settings
+        "ONSHAPE_ACCESS_KEY": "",
+        "ONSHAPE_SECRET_KEY": "",
     }
 
 
@@ -232,8 +235,20 @@ def main():
 
     config["ALLOWED_EXTENSIONS"] = prompt_for_list(
         "ALLOWED_EXTENSIONS",
-        config.get("ALLOWED_EXTENSIONS", ["step", "stp"]),
+        config.get("ALLOWED_EXTENSIONS", ["step", "stp", "pdf"]),
         "Comma-separated list of allowed file extensions for uploads",
+    )
+
+    config["ONSHAPE_ACCESS_KEY"] = prompt_for_value(
+        "ONSHAPE_ACCESS_KEY",
+        config.get("ONSHAPE_ACCESS_KEY", ""),
+        "Onshape access key for drawing downloads",
+    )
+
+    config["ONSHAPE_SECRET_KEY"] = prompt_for_value(
+        "ONSHAPE_SECRET_KEY",
+        config.get("ONSHAPE_SECRET_KEY", ""),
+        "Onshape secret key for drawing downloads",
     )
 
     # Write config to file

@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 from sqlalchemy import or_, desc, asc
 from models.part import Part, db  # type: ignore
 from utils.auth import require_secret_key  # type: ignore
+from utils.onshape_drawing import build_onshape_client  # type: ignore
 from utils.step_converter import convert_step_to_gltf  # type: ignore
 
 # Status constants
@@ -554,34 +555,67 @@ def allowed_file(filename: str) -> bool:
     """Check if file extension is allowed.
 
     Args:
-        filename (str): Filename to check
+        filename (str): Filename to check.
 
     Returns:
-        bool: True if file extension is allowed
+        bool: True if file extension is allowed.
     """
     if "." not in filename:
         return False
     ext = filename.rsplit(".", 1)[1].lower()
-    return ext in current_app.config.get("ALLOWED_EXTENSIONS", {"step", "stp"})
+    return ext in current_app.config.get("ALLOWED_EXTENSIONS", {"step", "stp", "pdf"})
 
 
 def get_upload_path(part_id: int) -> Path:
     """Get the upload directory path for a part.
 
     Args:
-        part_id (int): Part ID
+        part_id (int): Part ID.
 
     Returns:
-        Path: Path to the upload directory for this part
+        Path: Path to the upload directory for this part.
     """
     upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
     return Path(upload_folder) / str(part_id)
 
 
+def get_file_mimetype(filename: str) -> str:
+    """Determine MIME type based on extension.
+
+    Args:
+        filename (str): File name to evaluate.
+
+    Returns:
+        str: MIME type string.
+    """
+    ext = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+    if ext in {"step", "stp"}:
+        return "application/step"
+    if ext == "pdf":
+        return "application/pdf"
+    return "application/octet-stream"
+
+
+def get_drawing_path(part_id: int, part_identifier: str) -> Path:
+    """Resolve the drawing PDF path for a part.
+
+    Args:
+        part_id: Numeric part identifier.
+        part_identifier: Human readable part identifier.
+
+    Returns:
+        Path to the drawing PDF for the part.
+    """
+    upload_dir = get_upload_path(part_id)
+    sanitized_identifier = secure_filename(part_identifier) or str(part_id)
+    filename = f"{sanitized_identifier}_drawing.pdf"
+    return upload_dir / filename
+
+
 @parts_bp.route("/<int:part_id>/upload", methods=["POST"])
 @require_secret_key
 def upload_part_file(part_id):
-    """Upload a STEP file for a part.
+    """Upload a STEP or PDF file for a part.
 
     Args:
         part_id (int): Part ID
@@ -615,29 +649,34 @@ def upload_part_file(part_id):
         upload_dir.mkdir(parents=True, exist_ok=True)
 
         filename = secure_filename(file.filename)
-        step_path = upload_dir / filename
+        target_path = upload_dir / filename
 
-        file.save(str(step_path))
+        file.save(str(target_path))
 
         part.file = filename
         db.session.commit()
 
-        conversion_result = convert_step_to_gltf(
-            str(step_path), str(upload_dir), Path(filename).stem
-        )
+        file_ext = Path(filename).suffix.lower()
+        conversion_result = {"success": False, "gltf_path": None}
+        if file_ext in {".step", ".stp"}:
+            conversion_result = convert_step_to_gltf(
+                str(target_path), str(upload_dir), Path(filename).stem
+            )
 
-        return jsonify(
-            {
-                "message": "File uploaded successfully",
-                "filename": filename,
-                "file_path": str(step_path),
-                "conversion": {
-                    "success": conversion_result["success"],
-                    "error": conversion_result.get("error"),
-                    "gltf_path": conversion_result.get("gltf_path"),
-                },
+        response_payload = {
+            "message": "File uploaded successfully",
+            "filename": filename,
+            "file_path": str(target_path),
+        }
+
+        if file_ext in {".step", ".stp"}:
+            response_payload["conversion"] = {
+                "success": conversion_result["success"],
+                "error": conversion_result.get("error"),
+                "gltf_path": conversion_result.get("gltf_path"),
             }
-        ), 201
+
+        return jsonify(response_payload), 201
 
     except Exception as e:
         db.session.rollback()
@@ -650,7 +689,7 @@ def upload_part_file(part_id):
 @parts_bp.route("/<int:part_id>/download", methods=["GET"])
 @require_secret_key
 def download_part_file(part_id):
-    """Download the original STEP file for a part.
+    """Download the original uploaded file for a part.
 
     Args:
         part_id (int): Part ID
@@ -670,11 +709,12 @@ def download_part_file(part_id):
         if not file_path.exists():
             return jsonify({"error": "File not found on server"}), 404
 
+        mimetype = get_file_mimetype(part.file)
         return send_file(
             str(file_path),
             as_attachment=True,
             download_name=part.file,
-            mimetype="application/octet-stream",
+            mimetype=mimetype,
         )
 
     except Exception as e:
@@ -682,6 +722,91 @@ def download_part_file(part_id):
             f"Error downloading file for part {part_id}: {str(e)}", exc_info=True
         )
         return jsonify({"error": "Failed to download file"}), 500
+
+
+@parts_bp.route("/<int:part_id>/file", methods=["GET"])
+@require_secret_key
+def get_part_file(part_id):
+    """Serve the stored file inline for preview (PDF or STEP).
+
+    Args:
+        part_id (int): Part ID.
+
+    Returns:
+        File: Inline file response with appropriate MIME type.
+    """
+    try:
+        part = Part.query.get_or_404(part_id)
+
+        if not part.file:
+            return jsonify({"error": "No file associated with this part"}), 404
+
+        upload_dir = get_upload_path(part_id)
+        file_path = upload_dir / part.file
+
+        if not file_path.exists():
+            return jsonify({"error": "File not found on server"}), 404
+
+        mimetype = get_file_mimetype(part.file)
+        return send_file(str(file_path), mimetype=mimetype, as_attachment=False)
+
+    except Exception as e:
+        current_app.logger.error(
+            f"Error retrieving file for part {part_id}: {str(e)}", exc_info=True
+        )
+        return jsonify({"error": "Failed to retrieve file"}), 500
+
+
+@parts_bp.route("/<int:part_id>/drawing", methods=["GET"])
+@require_secret_key
+def download_part_drawing(part_id):
+    """Download or generate the drawing PDF for a hand fabrication part.
+
+    Args:
+        part_id: Part identifier.
+
+    Returns:
+        File response containing the drawing PDF.
+    """
+    try:
+        part = Part.query.get_or_404(part_id)
+
+        if part.type != "hand":
+            return (
+                jsonify(
+                    {"error": "Drawing downloads are only available for hand fab parts"}
+                ),
+                400,
+            )
+
+        if not part.onshape_url:
+            return (
+                jsonify({"error": "No Onshape URL is set for this part"}),
+                404,
+            )
+
+        drawing_path = get_drawing_path(
+            part_id, part.part_id or part.name or str(part.id)
+        )
+        refresh_requested = request.args.get("refresh", "false").lower() == "true"
+
+        if refresh_requested or not drawing_path.exists():
+            client = build_onshape_client()
+            drawing_path.parent.mkdir(parents=True, exist_ok=True)
+            client.download_pdf(part.onshape_url, drawing_path)
+
+        return send_file(
+            str(drawing_path),
+            as_attachment=True,
+            download_name=drawing_path.name,
+            mimetype="application/pdf",
+        )
+
+    except Exception as error:
+        current_app.logger.error(
+            f"Error retrieving drawing for part {part_id}: {error}", exc_info=True
+        )
+        return jsonify({"error": "Failed to retrieve drawing"}), 500
 
 
 @parts_bp.route("/<int:part_id>/model", methods=["GET"])
