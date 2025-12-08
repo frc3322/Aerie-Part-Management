@@ -121,16 +121,13 @@ function renderPartCard(part, index, container) {
             ${
               part.status === "In Progress" || part.status === "Already Started"
                 ? `<button onclick="globalThis.markCompleted('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-green-400 hover:text-green-300 mr-auto" title="Mark Completed"><i class="fa-solid fa-check-circle"></i> Done</button>`
+                : part.status === "Reviewed"
+                ? `<button onclick="globalThis.markInProgress('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-auto" title="Mark In Progress"><i class="fa-solid fa-play"></i> Start</button>`
                 : ""
             }
             ${
               part.file
                 ? `<button onclick="globalThis.downloadStepFile(${part.id}, '${part.file}')" class="neumorphic-btn px-2 py-1 text-purple-400 hover:text-purple-300" title="Download File"><i class="fa-solid fa-download"></i> Download</button>`
-                : ""
-            }
-            ${
-              part.status === "Reviewed"
-                ? `<button onclick="globalThis.markInProgress('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-2" title="Mark In Progress"><i class="fa-solid fa-play"></i> Start</button>`
                 : ""
             }
             <button onclick="globalThis.editPart('cnc', ${index})" class="text-gray-400 hover:text-blue-400 transition"><i class="fa-solid fa-pen"></i></button>
@@ -200,7 +197,30 @@ export function renderCNC() {
     return;
   }
 
-  const filtered = filterParts(appState.parts.cnc, appState.searchQuery);
+  let filtered = filterParts(appState.parts.cnc, appState.searchQuery);
+
+  // Sort parts: In Progress and Already Started first, then Reviewed
+  filtered = filtered.sort((a, b) => {
+    const statusA = a.status;
+    const statusB = b.status;
+
+    // Define priority order: In Progress/Already Started first, then Reviewed, then others
+    const getPriority = (status) => {
+      if (status === "In Progress" || status === "Already Started") return 1;
+      if (status === "Reviewed") return 2;
+      return 3;
+    };
+
+    const priorityA = getPriority(statusA);
+    const priorityB = getPriority(statusB);
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // If same priority, maintain original order
+    return 0;
+  });
 
   if (filtered.length === 0) {
     renderEmptyState(container);
