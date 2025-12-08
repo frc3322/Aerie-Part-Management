@@ -75,7 +75,7 @@ class Config:
 
     # File upload settings
     UPLOAD_FOLDER = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
+        os.path.dirname(__file__),
         get_config_value("UPLOAD_FOLDER", "uploads"),
     )
     MAX_FILE_SIZE = get_config_value("MAX_FILE_SIZE", None)

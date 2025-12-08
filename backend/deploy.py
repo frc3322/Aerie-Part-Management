@@ -3,6 +3,7 @@
 
 import os
 import sys
+import socket
 import subprocess
 import argparse
 import json
@@ -44,20 +45,17 @@ def get_config_value(config: dict, key: str, default: Any = None) -> Any:
         default: Default value if not found in config or env
 
     Returns:
-        str: The configuration value
+        The configuration value with empty strings treated as missing
     """
-    # Environment variables take highest precedence
     env_value = os.environ.get(key)
-    if env_value is not None:
+    if env_value not in (None, ""):
         return env_value
 
-    # Then config.json values
     config_value = config.get(key)
-    if config_value is not None:
+    if config_value not in (None, ""):
         return config_value
 
-    # Finally defaults
-    return default or ""
+    return default
 
 
 def get_cors_origins(config: dict) -> list:
@@ -81,6 +79,48 @@ def get_cors_origins(config: dict) -> list:
         return config_value
 
     return DEFAULT_CORS_ORIGINS
+
+
+def parse_int(value: Any) -> Optional[int]:
+    """Parse an integer value safely."""
+    try:
+        return int(str(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def resolve_port(mode: str, cli_port: Optional[int], config: dict) -> int:
+    """Determine port with precedence: CLI > env > config > defaults."""
+    if cli_port:
+        return cli_port
+
+    env_port = parse_int(os.environ.get("PORT"))
+    if env_port:
+        return env_port
+
+    config_port = parse_int(config.get("PORT"))
+    if config_port:
+        return config_port
+
+    return 5000 if mode == "dev" else 8000
+
+
+def is_port_available(port: int) -> bool:
+    """Check if a TCP port is available for binding.
+
+    Args:
+        port: Port number to check.
+
+    Returns:
+        True if the port is free, otherwise False.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind(("0.0.0.0", port))
+        except OSError:
+            return False
+    return True
 
 
 def get_base_path(config: dict) -> str:
@@ -366,8 +406,9 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port to bind to (default: 8000 for prod, 5000 for dev)",
+        default=None,
+        help="Port to bind to (default: 8000 for prod, 5000 for dev). "
+        "Env PORT or config PORT are used if not provided.",
     )
 
     args = parser.parse_args()
@@ -375,15 +416,21 @@ def main():
     # Load configuration from config.json
     config = load_config()
 
-    # Set default port based on mode
-    if args.mode == "dev" and args.port == 8000:
-        args.port = 5000
+    # Resolve port with precedence CLI > env > config > defaults
+    resolved_port = resolve_port(args.mode, args.port, config)
 
+    # Fail fast if the port is already in use
+    if not is_port_available(resolved_port):
+        print(
+            f"ERROR: Port {resolved_port} is already in use. "
+            "Stop the existing process or choose a different port with --port or PORT."
+        )
+        sys.exit(1)
     print("DEPLOY: Part Management System Deployment")
     print(f"   Mode: {args.mode}")
     if args.mode.startswith("prod"):
         print("   Includes: Backend + Frontend build")
-    print(f"   Port: {args.port}")
+    print(f"   Port: {resolved_port}")
     if args.mode in ["prod-multi", "prod-gevent"]:
         print(f"   Workers: {args.workers}")
     print()
@@ -412,13 +459,13 @@ def main():
     elif args.mode == "dev":
         success = run_development()
     elif args.mode == "prod-multi":
-        success = run_production_multiworker(config, args.workers, args.port)
+        success = run_production_multiworker(config, args.workers, resolved_port)
     elif args.mode == "prod-waitress":
-        success = run_production_waitress(config, args.port)
+        success = run_production_waitress(config, resolved_port)
     elif args.mode == "prod-eventlet":
-        success = run_production_eventlet(config, args.port)
+        success = run_production_eventlet(config, resolved_port)
     elif args.mode == "prod-gevent":
-        success = run_production_gevent(config, args.workers, args.port)
+        success = run_production_gevent(config, args.workers, resolved_port)
 
     if success:
         print("SUCCESS: Deployment completed successfully!")
