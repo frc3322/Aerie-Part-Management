@@ -1,6 +1,7 @@
 """Flask application factory and initialization."""
 
 import os
+from sqlalchemy import inspect, text
 import logging
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
@@ -84,9 +85,9 @@ def create_app(config_name: str = "default") -> Flask:
         # Return 404 for unknown API routes
         return {"error": "Not found"}, 404
 
-    # Create database tables
+    # Create database tables and run lightweight migrations
     with app.app_context():
-        db.create_all()
+        _ensure_schema(db)
 
         # Create uploads directory if it doesn't exist
         upload_folder = app.config.get("UPLOAD_FOLDER", "uploads")
@@ -175,3 +176,20 @@ def _init_sample_data():
 
     db.session.commit()
     print("Sample data initialized successfully")
+
+
+def _ensure_schema(db_instance):
+    """Create tables if missing and apply minimal migrations."""
+    engine = db_instance.engine
+    inspector = inspect(engine)
+
+    if not inspector.has_table("parts"):
+        db_instance.create_all()
+        return
+
+    # Lightweight migrations for existing table
+    columns = {col["name"] for col in inspector.get_columns("parts")}
+    if "misc_info" not in columns:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE parts ADD COLUMN misc_info JSON"))
+            conn.commit()

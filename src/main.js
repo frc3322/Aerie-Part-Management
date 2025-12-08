@@ -53,6 +53,7 @@ import {
   confirmUnclaim,
   closeCompleteAmountModal,
   confirmCompleteAmount,
+  viewPartInfo,
 } from "./modules/partActions.js";
 import { handleFormSubmit } from "./modules/formHandler.js";
 import {
@@ -69,6 +70,7 @@ import {
   printDrawing,
   refreshDrawing,
 } from "./modules/drawingViewer.js";
+import { showPartInfo } from "./modules/infoModals.js";
 
 function applyTooltip(element) {
   const tooltipText = element.getAttribute("title");
@@ -171,6 +173,8 @@ globalThis.viewHandDrawing = viewHandDrawing;
 globalThis.closeDrawingModal = closeDrawingModal;
 globalThis.printDrawing = printDrawing;
 globalThis.refreshDrawing = refreshDrawing;
+globalThis.viewPartInfo = viewPartInfo;
+globalThis.showPartInfo = showPartInfo;
 
 // Authentication functions
 globalThis.showAuthModal = showAuthModal;

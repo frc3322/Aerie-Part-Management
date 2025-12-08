@@ -10,6 +10,7 @@ from models.part import Part, db  # type: ignore
 from utils.auth import require_secret_key  # type: ignore
 from utils.onshape_drawing import build_onshape_client  # type: ignore
 from utils.step_converter import convert_step_to_gltf  # type: ignore
+from utils.validation import validate_misc_info, ValidationError  # type: ignore
 
 # Status constants
 STATUS_IN_PROGRESS = "In Progress"
@@ -18,6 +19,22 @@ STATUS_IN_PROGRESS = "In Progress"
 _auth_check_timestamps = {}
 
 parts_bp = Blueprint("parts", __name__, url_prefix="/api/parts")
+
+
+def _sanitize_misc_info(raw_value):
+    """Normalize misc_info payload to a string/number dict or None."""
+    validated = validate_misc_info({"misc_info": raw_value})
+    return validated.get("misc_info")
+
+
+def _merge_misc_info(existing_misc, incoming_misc):
+    """Merge misc_info dictionaries, preferring incoming values."""
+    if existing_misc is None and incoming_misc is None:
+        return None
+    base = existing_misc.copy() if isinstance(existing_misc, dict) else {}
+    if isinstance(incoming_misc, dict):
+        base.update(incoming_misc)
+    return base if base else None
 
 
 @parts_bp.route("/", methods=["GET"])
@@ -143,6 +160,15 @@ def create_part():
             except (TypeError, ValueError):
                 return jsonify({"error": "Amount must be a number"}), 400
 
+        # Normalize misc_info if provided
+        try:
+            if "misc_info" in data or "miscInfo" in data:
+                data["misc_info"] = _sanitize_misc_info(
+                    data.get("misc_info", data.get("miscInfo"))
+                )
+        except ValidationError as exc:
+            return jsonify({"error": exc.message, "field": exc.field}), 400
+
         # Create new part
         part = Part()
         part.update_from_dict(data)
@@ -223,6 +249,14 @@ def update_part(part_id):
                 except (TypeError, ValueError):
                     return jsonify({"error": "Amount must be a number"}), 400
 
+        if "misc_info" in data or "miscInfo" in data:
+            try:
+                data["misc_info"] = _sanitize_misc_info(
+                    data.get("misc_info", data.get("miscInfo"))
+                )
+            except ValidationError as exc:
+                return jsonify({"error": exc.message, "field": exc.field}), 400
+
         part.update_from_dict(data)
         db.session.commit()
 
@@ -271,6 +305,21 @@ def approve_part(part_id):
     """
     try:
         part = Part.query.get_or_404(part_id)
+        data = request.get_json(silent=True) or {}
+
+        incoming_misc = None
+        reviewer_value = data.get("reviewer")
+        try:
+            if "misc_info" in data or "miscInfo" in data:
+                incoming_misc = _sanitize_misc_info(
+                    data.get("misc_info", data.get("miscInfo"))
+                )
+        except ValidationError as exc:
+            return jsonify({"error": exc.message, "field": exc.field}), 400
+
+        if reviewer_value:
+            reviewer_entry = {"reviewer": reviewer_value}
+            incoming_misc = _merge_misc_info(incoming_misc, reviewer_entry)
 
         # Update status and move to appropriate category based on type
         part.status = "Reviewed"
@@ -281,6 +330,8 @@ def approve_part(part_id):
         else:
             # Default to hand if type not specified
             part.category = "hand"
+
+        part.misc_info = _merge_misc_info(part.misc_info, incoming_misc)
 
         db.session.commit()
 
@@ -370,9 +421,20 @@ def complete_part(part_id):
     """
     try:
         part = Part.query.get_or_404(part_id)
+        data = request.get_json(silent=True) or {}
+
+        incoming_misc = None
+        try:
+            if "misc_info" in data or "miscInfo" in data:
+                incoming_misc = _sanitize_misc_info(
+                    data.get("misc_info", data.get("miscInfo"))
+                )
+        except ValidationError as exc:
+            return jsonify({"error": exc.message, "field": exc.field}), 400
 
         part.status = "Completed"
         part.category = "completed"
+        part.misc_info = _merge_misc_info(part.misc_info, incoming_misc)
 
         db.session.commit()
 

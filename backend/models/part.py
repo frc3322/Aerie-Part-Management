@@ -37,6 +37,7 @@ class Part(db.Model):
     subsystem = db.Column(db.String(100), nullable=True)
     assigned = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(50), nullable=False, default="Pending")
+    misc_info = db.Column(db.JSON, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     file = db.Column(db.String(200), nullable=True)
     onshape_url = db.Column(db.String(500), nullable=True)
@@ -79,6 +80,7 @@ class Part(db.Model):
             "subsystem": self.subsystem,
             "assigned": self.assigned,
             "status": self.status,
+            "miscInfo": self.misc_info,
             "notes": self.notes,
             "file": self.file,
             "onshapeUrl": self.onshape_url,
@@ -103,6 +105,7 @@ class Part(db.Model):
             "subsystem",
             "assigned",
             "status",
+            "misc_info",
             "notes",
             "file",
             "onshape_url",
@@ -118,6 +121,7 @@ class Part(db.Model):
             "createdAt": "created_at",
             "updatedAt": "updated_at",
             "partId": "part_id",
+            "miscInfo": "misc_info",
         }
 
         for key, value in data.items():
@@ -125,6 +129,12 @@ class Part(db.Model):
             mapped_key = field_mapping.get(key, key)
 
             if mapped_key in allowed_fields and hasattr(self, mapped_key):
+                if mapped_key == "misc_info":
+                    if isinstance(value, dict):
+                        self.misc_info = value
+                    else:
+                        self.misc_info = None
+                    continue
                 if mapped_key == "amount" and value is not None:
                     try:
                         parsed_amount = int(value)

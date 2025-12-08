@@ -56,6 +56,7 @@ export function createCompletedRow(part, index) {
           part.notes || ""
         }</td>
         <td class="p-3">
+            <button onclick="globalThis.viewPartInfo('completed', ${index})" class="text-gray-400 hover:text-blue-300 mr-2" title="Info"><i class="fa-solid fa-circle-info"></i></button>
             <button onclick="globalThis.markUncompleted(${index})" class="neumorphic-btn px-3 py-1 text-yellow-400 hover:text-yellow-300 mr-2 text-sm" title="Un-complete (Restore)">
                 <i class="fa-solid fa-rotate-left"></i> Restore
             </button>

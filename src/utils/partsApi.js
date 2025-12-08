@@ -68,8 +68,8 @@ export async function deletePart(partId) {
  * @param {number} partId - Part ID
  * @returns {Promise<Object>} Updated part data
  */
-export async function approvePart(partId) {
-  return await apiPost(`/parts/${partId}/approve`);
+export async function approvePart(partId, payload = {}) {
+  return await apiPost(`/parts/${partId}/approve`, payload);
 }
 
 /**
@@ -96,8 +96,8 @@ export async function unclaimPart(partId) {
  * @param {number} partId - Part ID
  * @returns {Promise<Object>} Updated part data
  */
-export async function completePart(partId) {
-  return await apiPost(`/parts/${partId}/complete`);
+export async function completePart(partId, payload = {}) {
+  return await apiPost(`/parts/${partId}/complete`, payload);
 }
 
 /**

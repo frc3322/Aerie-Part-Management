@@ -116,6 +116,7 @@ export function createHandFabRow(part, index) {
                 ? `<button onclick="globalThis.unclaimPart(${index})" class="neumorphic-btn px-2 py-1 text-orange-400 hover:text-orange-300 mr-2" title="Unclaim Part"><i class="fa-solid fa-user-slash"></i></button>`
                 : ""
             }
+            <button onclick="globalThis.viewPartInfo('hand', ${index})" class="text-gray-400 hover:text-blue-300 mr-2" title="Info"><i class="fa-solid fa-circle-info"></i></button>
             <button ${hasDrawing ? "" : "disabled"} onclick="${
     hasDrawing ? `globalThis.viewHandDrawing(${index})` : ""
   }" class="neumorphic-btn px-2 py-1 ${

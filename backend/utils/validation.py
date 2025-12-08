@@ -36,6 +36,7 @@ def validate_part_data(data: Dict[str, Any]) -> Dict[str, Any]:
     # Validate string fields
     validated_data.update(validate_string_fields(data))
     validated_data.update(validate_numeric_fields(data))
+    validated_data.update(validate_misc_info(data))
 
     # Validate specific fields
     validate_part_type(validated_data)
@@ -96,6 +97,36 @@ def validate_string_fields(data: Dict[str, Any]) -> Dict[str, Any]:
 
                 validated_data[field] = value.strip()
 
+    return validated_data
+
+
+def validate_misc_info(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate misc_info payload as a dict of string keys to primitive values."""
+    validated_data: Dict[str, Any] = {}
+    if "misc_info" not in data and "miscInfo" not in data:
+        return validated_data
+
+    raw_misc = data.get("misc_info", data.get("miscInfo"))
+    if raw_misc is None:
+        validated_data["misc_info"] = None
+        return validated_data
+
+    if not isinstance(raw_misc, dict):
+        raise ValidationError("misc_info must be an object", "misc_info")
+
+    cleaned: Dict[str, Any] = {}
+    for key, value in raw_misc.items():
+        if not isinstance(key, str):
+            raise ValidationError("misc_info keys must be strings", "misc_info")
+        if value is None:
+            continue
+        if not isinstance(value, (str, int, float)):
+            raise ValidationError(
+                "misc_info values must be string or number", "misc_info"
+            )
+        cleaned[key] = value
+
+    validated_data["misc_info"] = cleaned if cleaned else None
     return validated_data
 
 

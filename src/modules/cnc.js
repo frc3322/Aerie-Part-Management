@@ -130,6 +130,7 @@ function renderPartCard(part, index, container) {
                 ? `<button onclick="globalThis.downloadStepFile(${part.id}, '${part.file}')" class="neumorphic-btn px-2 py-1 text-purple-400 hover:text-purple-300" title="Download File"><i class="fa-solid fa-download"></i> Download</button>`
                 : ""
             }
+            <button onclick="globalThis.viewPartInfo('cnc', ${index})" class="text-gray-400 hover:text-blue-300 transition" title="Info"><i class="fa-solid fa-circle-info"></i></button>
             <button onclick="globalThis.editPart('cnc', ${index})" class="text-gray-400 hover:text-blue-400 transition"><i class="fa-solid fa-pen"></i></button>
             <button onclick="globalThis.deletePart('cnc', ${index})" class="text-gray-400 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
         </div>
