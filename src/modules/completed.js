@@ -41,10 +41,9 @@ export function createCompletedRow(part, index) {
             <div class="font-bold text-gray-200">${
               isCNC ? part.name : part.id
             }</div>
-            <div class="text-xs text-gray-500">${
-              isCNC ? part.id : part.subsystem
-            }</div>
+            <div class="text-xs text-gray-500">ID: ${part.id}</div>
         </td>
+        <td class="p-3 text-sm text-gray-400">${part.subsystem || ""}</td>
         <td class="p-3 text-sm text-blue-300 font-semibold">${
           part.material || "Not set"
         }</td>

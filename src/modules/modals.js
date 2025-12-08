@@ -116,8 +116,9 @@ export function handleCategoryChange(type) {
   const isEdit = document.getElementById("edit-mode").value === "true";
   const originTab = document.getElementById("edit-origin-tab").value;
 
+  subField.classList.remove("hidden");
+
   if (type === "cnc") {
-    subField.classList.add("hidden");
     assignField.classList.add("hidden");
     fileField.classList.remove("hidden");
     fileLabel.innerText = "3D Model (STEP)";
@@ -127,7 +128,6 @@ export function handleCategoryChange(type) {
       fileInput.setAttribute("accept", ".step,.stp");
     }
   } else {
-    subField.classList.remove("hidden");
     fileField.classList.add("hidden");
     if (isEdit && originTab !== "review" && originTab !== "completed") {
       assignField.classList.remove("hidden");

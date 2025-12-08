@@ -46,6 +46,7 @@ function prepareApiData(formData) {
   const apiData = {
     type: formData.type,
     material: formData.material,
+    subsystem: formData.subsystem,
     amount:
       Number.isFinite(formData.amount) && formData.amount > 0
         ? formData.amount
@@ -70,7 +71,6 @@ function prepareApiData(formData) {
   } else {
     // For hand fabrication parts, name field is used as ID
     apiData.name = formData.name;
-    apiData.subsystem = formData.subsystem;
     apiData.assigned = formData.assigned;
   }
 
@@ -154,8 +154,13 @@ export async function handleFormSubmit(e) {
   try {
     const formData = extractFormData();
     const trimmedMaterial = formData.material.trim();
+    const trimmedSubsystem = formData.subsystem.trim();
     if (trimmedMaterial.length === 0) {
       alert("Material is required.");
+      return;
+    }
+    if (trimmedSubsystem.length === 0) {
+      alert("Subsystem is required.");
       return;
     }
     if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
@@ -163,6 +168,7 @@ export async function handleFormSubmit(e) {
       return;
     }
     formData.material = trimmedMaterial;
+    formData.subsystem = trimmedSubsystem;
     const apiData = prepareApiData(formData);
 
     if (formData.isEdit) {

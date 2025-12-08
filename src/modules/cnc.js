@@ -49,6 +49,11 @@ function renderPartCard(part, index, container) {
                 <h3 class="text-xl font-bold text-blue-300">${part.name}</h3>
                 <span class="text-xs text-gray-500">${part.id}</span>
                 <div class="text-sm text-gray-400 mt-1">
+                    Subsystem: <span class="text-blue-300 font-semibold">${
+                      part.subsystem || "Not set"
+                    }</span>
+                </div>
+                <div class="text-sm text-gray-400 mt-1">
                     Material: <span class="text-blue-300 font-semibold">${
                       part.material || "Not set"
                     }</span>

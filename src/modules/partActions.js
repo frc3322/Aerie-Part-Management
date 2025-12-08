@@ -216,9 +216,9 @@ export function editPart(tab, index) {
     .parentElement.classList.remove("hidden");
   document.getElementById("input-notes").value = part.notes || "";
   document.getElementById("input-onshape").value = part.onshapeUrl || "";
+  document.getElementById("input-subsystem").value = part.subsystem || "";
 
   if (type === "hand") {
-    document.getElementById("input-subsystem").value = part.subsystem || "";
     document.getElementById("input-assigned").value = part.assigned || "";
     document.getElementById("file-name-display").innerText = "No file";
   } else {

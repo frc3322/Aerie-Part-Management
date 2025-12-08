@@ -60,7 +60,7 @@ export function generateReviewFileHTML(part) {
 export function createReviewRow(part, index) {
   const isCNC = part.type === "cnc";
   const displayID = isCNC ? part.name : part.id;
-  const subDisplay = isCNC ? part.id || "New ID" : part.subsystem;
+  const subDisplay = part.subsystem || "";
   const previewHTML = generateReviewPreviewHTML(part);
   const fileHTML = generateReviewFileHTML(part);
 
