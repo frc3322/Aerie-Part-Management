@@ -52,7 +52,7 @@ create_virtualenv() {
 }
 
 install_requirements() {
-  (cd "$backend_dir" && "$uv_bin" pip install -r "$backend_dir/requirements.txt")
+  (cd "$backend_dir" && UV_PROJECT_ENVIRONMENT="$venv_path" "$uv_bin" sync --frozen --extra wsgi)
 }
 
 write_service_file() {
