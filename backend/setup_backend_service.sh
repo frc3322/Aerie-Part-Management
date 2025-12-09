@@ -20,6 +20,34 @@ install_uv() {
   fi
 }
 
+install_nodejs() {
+  if command -v node &> /dev/null && command -v npm &> /dev/null; then
+    printf "Node.js and npm are already installed.\n"
+    return
+  fi
+
+  printf "Installing Node.js and npm...\n"
+  curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+
+  if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+    printf "Node.js/npm installation failed.\n" >&2
+    exit 1
+  fi
+  printf "Node.js and npm installed successfully.\n"
+}
+
+install_npm_dependencies() {
+  printf "Installing npm dependencies...\n"
+  cd "$project_root"
+  npm install
+  if [[ $? -ne 0 ]]; then
+    printf "npm install failed.\n" >&2
+    exit 1
+  fi
+  printf "npm dependencies installed successfully.\n"
+}
+
 create_service() {
   sudo tee "$service_file" >/dev/null <<EOF
 [Unit]
@@ -50,11 +78,13 @@ enable_service() {
 
 main() {
   install_uv
+  install_nodejs
   cd "$project_root"
   "$uv_bin" venv .venv
   source .venv/bin/activate
   cd "$backend_dir"
   "$uv_bin" sync --active
+  install_npm_dependencies
   create_service
   enable_service
 }
