@@ -31,5 +31,8 @@
         "tailwindcss": "^4.1.17",
         "vite-plugin-handlebars": "^2.0.0",
         "three": "^0.128.0"
+    },
+    "prettier": {
+        "tabWidth": 4
     }
 }

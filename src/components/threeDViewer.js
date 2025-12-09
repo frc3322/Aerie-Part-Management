@@ -180,7 +180,8 @@ export function loadGLTFModel(containerId, modelUrl) {
     let lastMouseY = 0;
 
     const handleMouseDown = (event) => {
-        if (event.button === 0) { // Left click only
+        if (event.button === 0) {
+            // Left click only
             isMouseDown = true;
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
@@ -209,15 +210,18 @@ export function loadGLTFModel(containerId, modelUrl) {
     const handleWheel = (event) => {
         event.preventDefault();
         const zoomSpeed = 0.1;
-        const newZ = camera.position.z + (event.deltaY > 0 ? zoomSpeed : -zoomSpeed);
+        const newZ =
+            camera.position.z + (event.deltaY > 0 ? zoomSpeed : -zoomSpeed);
         camera.position.z = Math.max(2, Math.min(20, newZ)); // Clamp between 2 and 20
     };
 
     // Add event listeners
-    renderer.domElement.addEventListener('mousedown', handleMouseDown);
-    renderer.domElement.addEventListener('mousemove', handleMouseMove);
-    renderer.domElement.addEventListener('mouseup', handleMouseUp);
-    renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
+    renderer.domElement.addEventListener("mousedown", handleMouseDown);
+    renderer.domElement.addEventListener("mousemove", handleMouseMove);
+    renderer.domElement.addEventListener("mouseup", handleMouseUp);
+    renderer.domElement.addEventListener("wheel", handleWheel, {
+        passive: false,
+    });
 
     // Store references for cleanup and resize
     renderer.domElement._modelGroup = modelGroup;
@@ -227,7 +231,7 @@ export function loadGLTFModel(containerId, modelUrl) {
         mousedown: handleMouseDown,
         mousemove: handleMouseMove,
         mouseup: handleMouseUp,
-        wheel: handleWheel
+        wheel: handleWheel,
     };
 
     // Bright lighting setup for better visibility
@@ -240,9 +244,10 @@ export function loadGLTFModel(containerId, modelUrl) {
     scene.add(directionalLight);
 
     const loader = new GLTFLoader();
-    
+
     const loadingIndicator = document.createElement("div");
-    loadingIndicator.className = "absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-10";
+    loadingIndicator.className =
+        "absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-10";
     loadingIndicator.innerHTML = `
         <div class="text-center">
             <i class="fa-solid fa-spinner fa-spin text-blue-400 text-2xl mb-2"></i>
@@ -268,7 +273,7 @@ export function loadGLTFModel(containerId, modelUrl) {
                                     map: material.map,
                                     transparent: material.transparent,
                                     opacity: material.opacity,
-                                    side: material.side
+                                    side: material.side,
                                 });
                                 child.material = newMaterial;
                             }
@@ -282,7 +287,7 @@ export function loadGLTFModel(containerId, modelUrl) {
                                 map: child.material.map,
                                 transparent: child.material.transparent,
                                 opacity: child.material.opacity,
-                                side: child.material.side
+                                side: child.material.side,
                             });
                             child.material = newMaterial;
                         }
@@ -311,7 +316,11 @@ export function loadGLTFModel(containerId, modelUrl) {
             modelGroup.getWorldPosition(worldCenter);
 
             // Set camera position for viewing (aligned with part center height)
-            camera.position.set(worldCenter.x, worldCenter.y, worldCenter.z + 6);
+            camera.position.set(
+                worldCenter.x,
+                worldCenter.y,
+                worldCenter.z + 6
+            );
             camera.lookAt(worldCenter);
 
             loadingIndicator.remove();
@@ -321,10 +330,22 @@ export function loadGLTFModel(containerId, modelUrl) {
                     // Cleanup event listeners when container is removed
                     const canvas = renderer.domElement;
                     if (canvas._eventHandlers) {
-                        canvas.removeEventListener('mousedown', canvas._eventHandlers.mousedown);
-                        canvas.removeEventListener('mousemove', canvas._eventHandlers.mousemove);
-                        canvas.removeEventListener('mouseup', canvas._eventHandlers.mouseup);
-                        canvas.removeEventListener('wheel', canvas._eventHandlers.wheel);
+                        canvas.removeEventListener(
+                            "mousedown",
+                            canvas._eventHandlers.mousedown
+                        );
+                        canvas.removeEventListener(
+                            "mousemove",
+                            canvas._eventHandlers.mousemove
+                        );
+                        canvas.removeEventListener(
+                            "mouseup",
+                            canvas._eventHandlers.mouseup
+                        );
+                        canvas.removeEventListener(
+                            "wheel",
+                            canvas._eventHandlers.wheel
+                        );
                     }
                     return;
                 }
@@ -336,7 +357,9 @@ export function loadGLTFModel(containerId, modelUrl) {
         (progress) => {
             if (progress.lengthComputable) {
                 const percent = (progress.loaded / progress.total) * 100;
-                loadingIndicator.querySelector("p").textContent = `Loading model... ${Math.round(percent)}%`;
+                loadingIndicator.querySelector(
+                    "p"
+                ).textContent = `Loading model... ${Math.round(percent)}%`;
             }
         },
         (error) => {

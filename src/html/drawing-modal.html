@@ -1,74 +1,78 @@
 <!-- Drawing Viewer Modal -->
 <div
-  id="drawing-modal"
-  class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6"
+    id="drawing-modal"
+    class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6"
 >
-  <div
-    class="neumorphic-card w-full max-w-6xl h-[90vh] bg-gray-900 border border-gray-800 flex flex-col shadow-3d animate-fade-in relative"
-  >
     <div
-      class="flex items-start justify-between gap-4 p-4 border-b border-gray-800"
+        class="neumorphic-card w-full max-w-6xl h-[90vh] bg-gray-900 border border-gray-800 flex flex-col shadow-3d animate-fade-in relative"
     >
-      <div class="flex-1 min-w-0">
         <div
-          id="drawing-title"
-          class="text-2xl font-bold text-blue-300 truncate"
+            class="flex items-start justify-between gap-4 p-4 border-b border-gray-800"
         >
-          Drawing
+            <div class="flex-1 min-w-0">
+                <div
+                    id="drawing-title"
+                    class="text-2xl font-bold text-blue-300 truncate"
+                >
+                    Drawing
+                </div>
+                <div
+                    id="drawing-subtitle"
+                    class="text-sm text-gray-400 truncate"
+                >
+                    Hand fab drawing PDF
+                </div>
+                <div id="drawing-status" class="text-xs text-gray-500 mt-1">
+                    Loading drawing...
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    id="drawing-refresh"
+                    onclick="globalThis.refreshDrawing()"
+                    class="neumorphic-btn px-4 py-2 rounded-lg text-blue-200 hover:text-blue-100"
+                >
+                    <i class="fa-solid fa-rotate-right mr-2"></i>Refresh from
+                    Onshape
+                </button>
+                <button
+                    id="drawing-print"
+                    onclick="globalThis.printDrawing()"
+                    class="neumorphic-btn px-4 py-2 rounded-lg text-purple-200 hover:text-purple-100"
+                >
+                    <i class="fa-solid fa-print mr-2"></i>Print
+                </button>
+                <button
+                    id="drawing-close"
+                    onclick="globalThis.closeDrawingModal()"
+                    class="text-gray-400 hover:text-red-400 p-2"
+                >
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
         </div>
-        <div id="drawing-subtitle" class="text-sm text-gray-400 truncate">
-          Hand fab drawing PDF
+        <div class="flex-1 p-4">
+            <div
+                class="relative w-full h-full bg-gray-950 border border-gray-800 rounded-lg overflow-hidden"
+            >
+                <div
+                    id="drawing-spinner"
+                    class="absolute inset-0 flex items-center justify-center text-gray-300 gap-3"
+                >
+                    <i class="fa-solid fa-spinner fa-spin text-purple-400"></i>
+                    <span>Loading drawing...</span>
+                </div>
+                <div
+                    id="drawing-error"
+                    class="hidden absolute inset-0 text-red-300 text-sm text-center px-6"
+                ></div>
+                <iframe
+                    id="drawing-frame"
+                    title="Drawing PDF"
+                    class="w-full h-full hidden"
+                    allow="clipboard-write"
+                ></iframe>
+            </div>
         </div>
-        <div id="drawing-status" class="text-xs text-gray-500 mt-1">
-          Loading drawing...
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button
-          id="drawing-refresh"
-          onclick="globalThis.refreshDrawing()"
-          class="neumorphic-btn px-4 py-2 rounded-lg text-blue-200 hover:text-blue-100"
-        >
-          <i class="fa-solid fa-rotate-right mr-2"></i>Refresh from Onshape
-        </button>
-        <button
-          id="drawing-print"
-          onclick="globalThis.printDrawing()"
-          class="neumorphic-btn px-4 py-2 rounded-lg text-purple-200 hover:text-purple-100"
-        >
-          <i class="fa-solid fa-print mr-2"></i>Print
-        </button>
-        <button
-          id="drawing-close"
-          onclick="globalThis.closeDrawingModal()"
-          class="text-gray-400 hover:text-red-400 p-2"
-        >
-          <i class="fa-solid fa-times text-xl"></i>
-        </button>
-      </div>
     </div>
-    <div class="flex-1 p-4">
-      <div
-        class="relative w-full h-full bg-gray-950 border border-gray-800 rounded-lg overflow-hidden"
-      >
-        <div
-          id="drawing-spinner"
-          class="absolute inset-0 flex items-center justify-center text-gray-300 gap-3"
-        >
-          <i class="fa-solid fa-spinner fa-spin text-purple-400"></i>
-          <span>Loading drawing...</span>
-        </div>
-        <div
-          id="drawing-error"
-          class="hidden absolute inset-0 text-red-300 text-sm text-center px-6"
-        ></div>
-        <iframe
-          id="drawing-frame"
-          title="Drawing PDF"
-          class="w-full h-full hidden"
-          allow="clipboard-write"
-        ></iframe>
-      </div>
-    </div>
-  </div>
 </div>

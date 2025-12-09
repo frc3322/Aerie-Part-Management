@@ -1,8 +1,8 @@
 // API Client Utility
 // Handles authenticated API calls to the backend
 
-import { getApiKeyFromCookie } from './auth.js';
-import { showAuthModal } from '../modules/auth.js';
+import { getApiKeyFromCookie } from "./auth.js";
+import { showAuthModal } from "../modules/auth.js";
 
 /**
  * Get the base API URL
@@ -12,10 +12,10 @@ import { showAuthModal } from '../modules/auth.js';
 function getBaseUrl() {
     // Use Vite's BASE_URL which is set via VITE_BASE_PATH env var during build
     // This respects the base path configured for subpath deployments
-    const base = import.meta.env.BASE_URL || '/';
+    const base = import.meta.env.BASE_URL || "/";
     // Ensure base path ends without trailing slash for API endpoint
-    const basePath = base === '/' ? '' : base.replace(/\/$/, '');
-    return basePath + '/api';
+    const basePath = base === "/" ? "" : base.replace(/\/$/, "");
+    return basePath + "/api";
 }
 
 /**
@@ -27,13 +27,13 @@ function getHeaders(includeContentType = true) {
     const headers = {};
 
     if (includeContentType) {
-        headers['Content-Type'] = 'application/json';
+        headers["Content-Type"] = "application/json";
     }
 
     // Add API key if available
     const apiKey = getApiKeyFromCookie();
     if (apiKey) {
-        headers['X-API-Key'] = apiKey;
+        headers["X-API-Key"] = apiKey;
     }
 
     return headers;
@@ -49,7 +49,7 @@ async function apiRequest(endpoint, options = {}) {
     const url = getBaseUrl() + endpoint;
     const defaultOptions = {
         headers: getHeaders(),
-        ...options
+        ...options,
     };
 
     try {
@@ -58,13 +58,15 @@ async function apiRequest(endpoint, options = {}) {
         // Check if authentication failed
         if (response.status === 401) {
             showAuthModal();
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
         }
 
         return response;
     } catch (error) {
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            throw new Error('Network error: Unable to connect to the API server');
+        if (error.name === "TypeError" && error.message.includes("fetch")) {
+            throw new Error(
+                "Network error: Unable to connect to the API server"
+            );
         }
         throw error;
     }
@@ -93,8 +95,8 @@ export async function apiGet(endpoint, params = {}) {
  */
 export async function apiPost(endpoint, data = {}) {
     const response = await apiRequest(endpoint, {
-        method: 'POST',
-        body: JSON.stringify(data)
+        method: "POST",
+        body: JSON.stringify(data),
     });
     return await handleResponse(response);
 }
@@ -107,8 +109,8 @@ export async function apiPost(endpoint, data = {}) {
  */
 export async function apiPut(endpoint, data = {}) {
     const response = await apiRequest(endpoint, {
-        method: 'PUT',
-        body: JSON.stringify(data)
+        method: "PUT",
+        body: JSON.stringify(data),
     });
     return await handleResponse(response);
 }
@@ -120,7 +122,7 @@ export async function apiPut(endpoint, data = {}) {
  */
 export async function apiDelete(endpoint) {
     const response = await apiRequest(endpoint, {
-        method: 'DELETE'
+        method: "DELETE",
     });
     return await handleResponse(response);
 }
@@ -134,12 +136,12 @@ async function handleResponse(response) {
     let data;
 
     // Only try to parse JSON if response has a body
-    if (response.headers.get('content-type')?.includes('application/json')) {
+    if (response.headers.get("content-type")?.includes("application/json")) {
         try {
             data = await response.json();
         } catch (parseError) {
             // JSON parsing failed - this shouldn't happen if content-type is correct
-            console.warn('Failed to parse JSON response:', parseError);
+            console.warn("Failed to parse JSON response:", parseError);
             data = null;
         }
     } else {
@@ -164,9 +166,9 @@ async function handleResponse(response) {
  */
 export async function apiPostMultipart(endpoint, formData) {
     const response = await apiRequest(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: getHeaders(false),
-        body: formData
+        body: formData,
     });
     return await handleResponse(response);
 }
@@ -183,27 +185,29 @@ export async function apiDownloadFile(endpoint, filename = null) {
 
     try {
         const response = await fetch(url, {
-            method: 'GET',
-            headers: headers
+            method: "GET",
+            headers: headers,
         });
 
         if (response.status === 401) {
             showAuthModal();
-            throw new Error('Authentication required');
+            throw new Error("Authentication required");
         }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            const error = new Error(errorData.error || `HTTP ${response.status}`);
+            const error = new Error(
+                errorData.error || `HTTP ${response.status}`
+            );
             error.status = response.status;
             throw error;
         }
 
         const blob = await response.blob();
-        
+
         if (filename) {
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
             a.download = filename;
             document.body.appendChild(a);
@@ -214,8 +218,10 @@ export async function apiDownloadFile(endpoint, filename = null) {
 
         return blob;
     } catch (error) {
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            throw new Error('Network error: Unable to connect to the API server');
+        if (error.name === "TypeError" && error.message.includes("fetch")) {
+            throw new Error(
+                "Network error: Unable to connect to the API server"
+            );
         }
         throw error;
     }
@@ -227,13 +233,13 @@ export async function apiDownloadFile(endpoint, filename = null) {
  */
 export async function checkApiHealth() {
     try {
-        const response = await fetch(getBaseUrl().replace('/api', '/health'), {
-            method: 'GET',
-            headers: getHeaders()
+        const response = await fetch(getBaseUrl().replace("/api", "/health"), {
+            method: "GET",
+            headers: getHeaders(),
         });
         return response.ok;
     } catch (error) {
-        console.warn('API health check failed:', error);
+        console.warn("API health check failed:", error);
         return false;
     }
 }

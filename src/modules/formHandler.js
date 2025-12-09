@@ -9,45 +9,45 @@ import { renderCompleted } from "./completed.js";
 import { closeModal } from "./modals.js";
 import { switchTab } from "./tabs.js";
 import {
-  createPart as apiCreatePart,
-  updatePart as apiUpdatePart,
-  uploadPartFile,
-  getPart,
+    createPart as apiCreatePart,
+    updatePart as apiUpdatePart,
+    uploadPartFile,
+    getPart,
 } from "../utils/partsApi.js";
 
 function setUploadStatus(state) {
-  const statusEl = document.getElementById("upload-status");
-  if (!statusEl) return;
+    const statusEl = document.getElementById("upload-status");
+    if (!statusEl) return;
 
-  statusEl.classList.remove(
-    "hidden",
-    "text-blue-300",
-    "text-green-300",
-    "text-red-300"
-  );
+    statusEl.classList.remove(
+        "hidden",
+        "text-blue-300",
+        "text-green-300",
+        "text-red-300"
+    );
 
-  if (state === "uploading") {
-    statusEl.querySelector("span").textContent = "Uploading file...";
-    statusEl.classList.add("flex", "text-blue-300");
-    return;
-  }
+    if (state === "uploading") {
+        statusEl.querySelector("span").textContent = "Uploading file...";
+        statusEl.classList.add("flex", "text-blue-300");
+        return;
+    }
 
-  if (state === "success") {
-    statusEl.querySelector("span").textContent = "Upload complete";
-    statusEl.classList.add("flex", "text-green-300");
-    setTimeout(() => {
-      statusEl.classList.add("hidden");
-    }, 1200);
-    return;
-  }
+    if (state === "success") {
+        statusEl.querySelector("span").textContent = "Upload complete";
+        statusEl.classList.add("flex", "text-green-300");
+        setTimeout(() => {
+            statusEl.classList.add("hidden");
+        }, 1200);
+        return;
+    }
 
-  if (state === "error") {
-    statusEl.querySelector("span").textContent = "Upload failed";
-    statusEl.classList.add("flex", "text-red-300");
-    return;
-  }
+    if (state === "error") {
+        statusEl.querySelector("span").textContent = "Upload failed";
+        statusEl.classList.add("flex", "text-red-300");
+        return;
+    }
 
-  statusEl.classList.add("hidden");
+    statusEl.classList.add("hidden");
 }
 
 /**
@@ -55,22 +55,25 @@ function setUploadStatus(state) {
  * @returns {Object} Form data object
  */
 export function extractFormData() {
-  return {
-    isEdit: document.getElementById("edit-mode").value === "true",
-    index: Number.parseInt(document.getElementById("edit-index").value),
-    originTab: document.getElementById("edit-origin-tab").value,
-    type: document.getElementById("input-category").value,
-    name: document.getElementById("input-name").value,
-    partId: document.getElementById("input-part-id").value,
-    material: document.getElementById("input-material").value,
-    amount: Number.parseInt(document.getElementById("input-amount").value, 10),
-    subsystem: document.getElementById("input-subsystem").value,
-    assigned: document.getElementById("input-assigned").value,
-    status: document.getElementById("input-status").value,
-    notes: document.getElementById("input-notes").value,
-    onshapeUrl: document.getElementById("input-onshape").value,
-    fileInput: document.getElementById("input-file"),
-  };
+    return {
+        isEdit: document.getElementById("edit-mode").value === "true",
+        index: Number.parseInt(document.getElementById("edit-index").value),
+        originTab: document.getElementById("edit-origin-tab").value,
+        type: document.getElementById("input-category").value,
+        name: document.getElementById("input-name").value,
+        partId: document.getElementById("input-part-id").value,
+        material: document.getElementById("input-material").value,
+        amount: Number.parseInt(
+            document.getElementById("input-amount").value,
+            10
+        ),
+        subsystem: document.getElementById("input-subsystem").value,
+        assigned: document.getElementById("input-assigned").value,
+        status: document.getElementById("input-status").value,
+        notes: document.getElementById("input-notes").value,
+        onshapeUrl: document.getElementById("input-onshape").value,
+        fileInput: document.getElementById("input-file"),
+    };
 }
 
 /**
@@ -79,38 +82,38 @@ export function extractFormData() {
  * @returns {Object} Data formatted for API
  */
 function prepareApiData(formData) {
-  const apiData = {
-    type: formData.type,
-    partId: formData.partId,
-    material: formData.material,
-    subsystem: formData.subsystem,
-    amount:
-      Number.isFinite(formData.amount) && formData.amount > 0
-        ? formData.amount
-        : 1,
-    status: formData.status,
-    notes: formData.notes,
-    onshapeUrl: formData.onshapeUrl,
-  };
+    const apiData = {
+        type: formData.type,
+        partId: formData.partId,
+        material: formData.material,
+        subsystem: formData.subsystem,
+        amount:
+            Number.isFinite(formData.amount) && formData.amount > 0
+                ? formData.amount
+                : 1,
+        status: formData.status,
+        notes: formData.notes,
+        onshapeUrl: formData.onshapeUrl,
+    };
 
-  // Handle category - for new parts, default to review
-  if (!formData.isEdit) {
-    apiData.category = "review";
-  }
-
-  // Handle type-specific fields
-  apiData.name = formData.name;
-
-  if (formData.type === "cnc") {
-    // Handle file if uploaded
-    if (formData.fileInput.files.length > 0) {
-      apiData.file = formData.fileInput.files[0].name;
+    // Handle category - for new parts, default to review
+    if (!formData.isEdit) {
+        apiData.category = "review";
     }
-  } else {
-    apiData.assigned = formData.assigned;
-  }
 
-  return apiData;
+    // Handle type-specific fields
+    apiData.name = formData.name;
+
+    if (formData.type === "cnc") {
+        // Handle file if uploaded
+        if (formData.fileInput.files.length > 0) {
+            apiData.file = formData.fileInput.files[0].name;
+        }
+    } else {
+        apiData.assigned = formData.assigned;
+    }
+
+    return apiData;
 }
 
 /**
@@ -120,19 +123,19 @@ function prepareApiData(formData) {
  * @returns {Object|null} Updated part data or null if upload failed
  */
 async function handleFileUpload(partId, file) {
-  try {
-    setUploadStatus("uploading");
-    await uploadPartFile(partId, file);
-    const updatedPart = await getPart(partId);
-    updatePartInState(partId, updatedPart);
-    setUploadStatus("success");
-    return updatedPart;
-  } catch (error) {
-    console.error("Failed to upload file:", error);
-    setUploadStatus("error");
-    alert("Part saved but file upload failed. Please try uploading again.");
-    return null;
-  }
+    try {
+        setUploadStatus("uploading");
+        await uploadPartFile(partId, file);
+        const updatedPart = await getPart(partId);
+        updatePartInState(partId, updatedPart);
+        setUploadStatus("success");
+        return updatedPart;
+    } catch (error) {
+        console.error("Failed to upload file:", error);
+        setUploadStatus("error");
+        alert("Part saved but file upload failed. Please try uploading again.");
+        return null;
+    }
 }
 
 /**
@@ -141,13 +144,13 @@ async function handleFileUpload(partId, file) {
  * @param {Object} apiData - The prepared API data
  */
 async function handleEditPart(formData, apiData) {
-  const existingPart = appState.parts[formData.originTab][formData.index];
-  const result = await apiUpdatePart(existingPart.id, apiData);
-  updatePartInState(existingPart.id, result);
+    const existingPart = appState.parts[formData.originTab][formData.index];
+    const result = await apiUpdatePart(existingPart.id, apiData);
+    updatePartInState(existingPart.id, result);
 
-  if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
-    await handleFileUpload(existingPart.id, formData.fileInput.files[0]);
-  }
+    if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
+        await handleFileUpload(existingPart.id, formData.fileInput.files[0]);
+    }
 }
 
 /**
@@ -156,26 +159,26 @@ async function handleEditPart(formData, apiData) {
  * @param {Object} apiData - The prepared API data
  */
 async function handleCreatePart(formData, apiData) {
-  const result = await apiCreatePart(apiData);
-  addPartToState(result);
+    const result = await apiCreatePart(apiData);
+    addPartToState(result);
 
-  if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
-    await handleFileUpload(result.id, formData.fileInput.files[0]);
-  }
+    if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
+        await handleFileUpload(result.id, formData.fileInput.files[0]);
+    }
 
-  // Switch to review tab for new parts
-  switchTab("review");
+    // Switch to review tab for new parts
+    switchTab("review");
 }
 
 /**
  * Perform post-submit actions like re-rendering tabs
  */
 function performPostSubmitActions() {
-  renderReview();
-  renderCNC();
-  renderHandFab();
-  renderCompleted();
-  closeModal();
+    renderReview();
+    renderCNC();
+    renderHandFab();
+    renderCompleted();
+    closeModal();
 }
 
 /**
@@ -183,57 +186,57 @@ function performPostSubmitActions() {
  * @param {Event} e - The form submission event
  */
 export async function handleFormSubmit(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const submitButton =
-    e.target.querySelector('button[type="submit"]') ||
-    e.target.querySelector(".submit-btn");
-  if (submitButton) submitButton.disabled = true;
+    const submitButton =
+        e.target.querySelector('button[type="submit"]') ||
+        e.target.querySelector(".submit-btn");
+    if (submitButton) submitButton.disabled = true;
 
-  try {
-    const formData = extractFormData();
-    const trimmedName = formData.name.trim();
-    const trimmedPartId = formData.partId.trim();
-    const trimmedMaterial = formData.material.trim();
-    const trimmedSubsystem = formData.subsystem.trim();
-    if (trimmedName.length === 0) {
-      alert("Part name is required.");
-      return;
-    }
-    if (trimmedPartId.length === 0) {
-      alert("Part ID is required.");
-      return;
-    }
-    if (trimmedMaterial.length === 0) {
-      alert("Material is required.");
-      return;
-    }
-    if (trimmedSubsystem.length === 0) {
-      alert("Subsystem is required.");
-      return;
-    }
-    if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
-      alert("Amount must be at least 1.");
-      return;
-    }
-    formData.name = trimmedName;
-    formData.partId = trimmedPartId;
-    formData.material = trimmedMaterial;
-    formData.subsystem = trimmedSubsystem;
-    const apiData = prepareApiData(formData);
+    try {
+        const formData = extractFormData();
+        const trimmedName = formData.name.trim();
+        const trimmedPartId = formData.partId.trim();
+        const trimmedMaterial = formData.material.trim();
+        const trimmedSubsystem = formData.subsystem.trim();
+        if (trimmedName.length === 0) {
+            alert("Part name is required.");
+            return;
+        }
+        if (trimmedPartId.length === 0) {
+            alert("Part ID is required.");
+            return;
+        }
+        if (trimmedMaterial.length === 0) {
+            alert("Material is required.");
+            return;
+        }
+        if (trimmedSubsystem.length === 0) {
+            alert("Subsystem is required.");
+            return;
+        }
+        if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
+            alert("Amount must be at least 1.");
+            return;
+        }
+        formData.name = trimmedName;
+        formData.partId = trimmedPartId;
+        formData.material = trimmedMaterial;
+        formData.subsystem = trimmedSubsystem;
+        const apiData = prepareApiData(formData);
 
-    if (formData.isEdit) {
-      await handleEditPart(formData, apiData);
-    } else {
-      await handleCreatePart(formData, apiData);
-    }
+        if (formData.isEdit) {
+            await handleEditPart(formData, apiData);
+        } else {
+            await handleCreatePart(formData, apiData);
+        }
 
-    performPostSubmitActions();
-  } catch (error) {
-    console.error("Failed to save part:", error);
-    alert("Failed to save part. Please try again.");
-  } finally {
-    setUploadStatus("idle");
-    if (submitButton) submitButton.disabled = false;
-  }
+        performPostSubmitActions();
+    } catch (error) {
+        console.error("Failed to save part:", error);
+        alert("Failed to save part. Please try again.");
+    } finally {
+        setUploadStatus("idle");
+        if (submitButton) submitButton.disabled = false;
+    }
 }

@@ -2,12 +2,12 @@
 // Handles all backend API calls for parts management
 
 import {
-  apiGet,
-  apiPost,
-  apiPut,
-  apiDelete,
-  apiPostMultipart,
-  apiDownloadFile,
+    apiGet,
+    apiPost,
+    apiPut,
+    apiDelete,
+    apiPostMultipart,
+    apiDownloadFile,
 } from "./apiClient.js";
 import { getApiKeyFromCookie } from "./auth.js";
 
@@ -23,7 +23,7 @@ import { getApiKeyFromCookie } from "./auth.js";
  * @returns {Promise<Object>} Parts data with pagination info
  */
 export async function getParts(options = {}) {
-  return await apiGet("/parts/", options);
+    return await apiGet("/parts/", options);
 }
 
 /**
@@ -32,7 +32,7 @@ export async function getParts(options = {}) {
  * @returns {Promise<Object>} Part data
  */
 export async function getPart(partId) {
-  return await apiGet(`/parts/${partId}`);
+    return await apiGet(`/parts/${partId}`);
 }
 
 /**
@@ -41,7 +41,7 @@ export async function getPart(partId) {
  * @returns {Promise<Object>} Created part data
  */
 export async function createPart(partData) {
-  return await apiPost("/parts/", partData);
+    return await apiPost("/parts/", partData);
 }
 
 /**
@@ -51,7 +51,7 @@ export async function createPart(partData) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function updatePart(partId, partData) {
-  return await apiPut(`/parts/${partId}`, partData);
+    return await apiPut(`/parts/${partId}`, partData);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function updatePart(partId, partData) {
  * @returns {Promise<Object>} Success message
  */
 export async function deletePart(partId) {
-  return await apiDelete(`/parts/${partId}`);
+    return await apiDelete(`/parts/${partId}`);
 }
 
 /**
@@ -69,7 +69,7 @@ export async function deletePart(partId) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function approvePart(partId, payload = {}) {
-  return await apiPost(`/parts/${partId}/approve`, payload);
+    return await apiPost(`/parts/${partId}/approve`, payload);
 }
 
 /**
@@ -79,7 +79,7 @@ export async function approvePart(partId, payload = {}) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function assignPart(partId, assignedUser) {
-  return await apiPost(`/parts/${partId}/assign`, { assigned: assignedUser });
+    return await apiPost(`/parts/${partId}/assign`, { assigned: assignedUser });
 }
 
 /**
@@ -88,7 +88,7 @@ export async function assignPart(partId, assignedUser) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function unclaimPart(partId) {
-  return await apiPost(`/parts/${partId}/unclaim`);
+    return await apiPost(`/parts/${partId}/unclaim`);
 }
 
 /**
@@ -97,7 +97,7 @@ export async function unclaimPart(partId) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function completePart(partId, payload = {}) {
-  return await apiPost(`/parts/${partId}/complete`, payload);
+    return await apiPost(`/parts/${partId}/complete`, payload);
 }
 
 /**
@@ -106,7 +106,7 @@ export async function completePart(partId, payload = {}) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function revertPart(partId) {
-  return await apiPost(`/parts/${partId}/revert`);
+    return await apiPost(`/parts/${partId}/revert`);
 }
 
 /**
@@ -116,7 +116,7 @@ export async function revertPart(partId) {
  * @returns {Promise<Object>} Parts data
  */
 export async function getPartsByCategory(category, options = {}) {
-  return await apiGet(`/parts/categories/${category}`, options);
+    return await apiGet(`/parts/categories/${category}`, options);
 }
 
 /**
@@ -124,7 +124,7 @@ export async function getPartsByCategory(category, options = {}) {
  * @returns {Promise<Object>} Statistics data
  */
 export async function getStats() {
-  return await apiGet("/parts/stats");
+    return await apiGet("/parts/stats");
 }
 
 /**
@@ -134,9 +134,9 @@ export async function getStats() {
  * @returns {Promise<Object>} Upload result with file metadata
  */
 export async function uploadPartFile(partId, file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  return await apiPostMultipart(`/parts/${partId}/upload`, formData);
+    const formData = new FormData();
+    formData.append("file", file);
+    return await apiPostMultipart(`/parts/${partId}/upload`, formData);
 }
 
 /**
@@ -146,7 +146,7 @@ export async function uploadPartFile(partId, file) {
  * @returns {Promise<Blob>} File blob
  */
 export async function downloadPartFile(partId, filename) {
-  return await apiDownloadFile(`/parts/${partId}/download`, filename);
+    return await apiDownloadFile(`/parts/${partId}/download`, filename);
 }
 
 /**
@@ -155,24 +155,24 @@ export async function downloadPartFile(partId, filename) {
  * @returns {Promise<string>} Blob URL to the stored file
  */
 export async function getPartFileBlobUrl(partId) {
-  const base = import.meta.env.BASE_URL || "/";
-  const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-  const url = basePath + `/api/parts/${partId}/file`;
+    const base = import.meta.env.BASE_URL || "/";
+    const basePath = base === "/" ? "" : base.replace(/\/$/, "");
+    const url = basePath + `/api/parts/${partId}/file`;
 
-  const headers = {};
-  const apiKey = getApiKeyFromCookie();
-  if (apiKey) {
-    headers["X-API-Key"] = apiKey;
-  }
+    const headers = {};
+    const apiKey = getApiKeyFromCookie();
+    if (apiKey) {
+        headers["X-API-Key"] = apiKey;
+    }
 
-  const response = await fetch(url, { headers });
+    const response = await fetch(url, { headers });
 
-  if (!response.ok) {
-    throw new Error(`Failed to load file: ${response.status}`);
-  }
+    if (!response.ok) {
+        throw new Error(`Failed to load file: ${response.status}`);
+    }
 
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 }
 
 /**
@@ -181,25 +181,25 @@ export async function getPartFileBlobUrl(partId) {
  * @returns {Promise<string>} Blob URL to the GLTF model
  */
 export async function getPartModelBlobUrl(partId) {
-  // Use Vite's BASE_URL which respects the subpath configured during build
-  const base = import.meta.env.BASE_URL || "/";
-  const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-  const url = basePath + `/api/parts/${partId}/model`;
+    // Use Vite's BASE_URL which respects the subpath configured during build
+    const base = import.meta.env.BASE_URL || "/";
+    const basePath = base === "/" ? "" : base.replace(/\/$/, "");
+    const url = basePath + `/api/parts/${partId}/model`;
 
-  const headers = {};
-  const apiKey = getApiKeyFromCookie();
-  if (apiKey) {
-    headers["X-API-Key"] = apiKey;
-  }
+    const headers = {};
+    const apiKey = getApiKeyFromCookie();
+    if (apiKey) {
+        headers["X-API-Key"] = apiKey;
+    }
 
-  const response = await fetch(url, { headers });
+    const response = await fetch(url, { headers });
 
-  if (!response.ok) {
-    throw new Error(`Failed to load model: ${response.status}`);
-  }
+    if (!response.ok) {
+        throw new Error(`Failed to load model: ${response.status}`);
+    }
 
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 }
 
 /**
@@ -210,24 +210,24 @@ export async function getPartModelBlobUrl(partId) {
  * @returns {Promise<string>} Blob URL to the drawing PDF
  */
 export async function getPartDrawingBlobUrl(partId, options = {}) {
-  const { refresh = false } = options;
-  const base = import.meta.env.BASE_URL || "/";
-  const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-  const query = refresh ? "?refresh=true" : "";
-  const url = basePath + `/api/parts/${partId}/drawing${query}`;
+    const { refresh = false } = options;
+    const base = import.meta.env.BASE_URL || "/";
+    const basePath = base === "/" ? "" : base.replace(/\/$/, "");
+    const query = refresh ? "?refresh=true" : "";
+    const url = basePath + `/api/parts/${partId}/drawing${query}`;
 
-  const headers = {};
-  const apiKey = getApiKeyFromCookie();
-  if (apiKey) {
-    headers["X-API-Key"] = apiKey;
-  }
+    const headers = {};
+    const apiKey = getApiKeyFromCookie();
+    if (apiKey) {
+        headers["X-API-Key"] = apiKey;
+    }
 
-  const response = await fetch(url, { headers });
+    const response = await fetch(url, { headers });
 
-  if (!response.ok) {
-    throw new Error(`Failed to load drawing: ${response.status}`);
-  }
+    if (!response.ok) {
+        throw new Error(`Failed to load drawing: ${response.status}`);
+    }
 
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
 }

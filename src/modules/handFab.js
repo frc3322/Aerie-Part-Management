@@ -10,31 +10,31 @@ import { filterParts, getStatusClass } from "../utils/helpers.js";
  * @returns {string} HTML string for days claimed indicator
  */
 export function calculateDaysClaimedHTML(part) {
-  if (part.status !== "In Progress" || !part.assigned || !part.claimedDate) {
-    return "";
-  }
+    if (part.status !== "In Progress" || !part.assigned || !part.claimedDate) {
+        return "";
+    }
 
-  const now = new Date();
-  const claimed = new Date(part.claimedDate);
-  const diffTime = Math.abs(now - claimed);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const now = new Date();
+    const claimed = new Date(part.claimedDate);
+    const diffTime = Math.abs(now - claimed);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  // Color logic: 0 (green) -> 5 (red)
-  let r, g;
-  if (diffDays <= 0) {
-    r = 0;
-    g = 255;
-  } else if (diffDays >= 5) {
-    r = 255;
-    g = 0;
-  } else {
-    // Interpolate
-    const ratio = diffDays / 5;
-    r = Math.floor(255 * ratio);
-    g = Math.floor(255 * (1 - ratio));
-  }
+    // Color logic: 0 (green) -> 5 (red)
+    let r, g;
+    if (diffDays <= 0) {
+        r = 0;
+        g = 255;
+    } else if (diffDays >= 5) {
+        r = 255;
+        g = 0;
+    } else {
+        // Interpolate
+        const ratio = diffDays / 5;
+        r = Math.floor(255 * ratio);
+        g = Math.floor(255 * (1 - ratio));
+    }
 
-  return `<div class="ml-2 w-5 h-5 rounded text-[10px] flex items-center justify-center text-black font-bold shadow-sm" style="background-color: rgb(${r}, ${g}, 0);" title="Days Claimed: ${diffDays}">
+    return `<div class="ml-2 w-5 h-5 rounded text-[10px] flex items-center justify-center text-black font-bold shadow-sm" style="background-color: rgb(${r}, ${g}, 0);" title="Days Claimed: ${diffDays}">
                                 ${diffDays}
                                </div>`;
 }
@@ -46,39 +46,39 @@ export function calculateDaysClaimedHTML(part) {
  * @returns {HTMLElement} The created table row element
  */
 export function createHandFabRow(part, index) {
-  const daysClaimedHTML = calculateDaysClaimedHTML(part);
-  const statusClass = getStatusClass(part.status);
-  const showStartButton =
-    part.status === "Reviewed" || part.status === "Already Started";
-  const showCompleteButton =
-    part.status === "In Progress" || part.status === "Already Started";
-  const hasDrawing = Boolean(part.onshapeUrl);
+    const daysClaimedHTML = calculateDaysClaimedHTML(part);
+    const statusClass = getStatusClass(part.status);
+    const showStartButton =
+        part.status === "Reviewed" || part.status === "Already Started";
+    const showCompleteButton =
+        part.status === "In Progress" || part.status === "Already Started";
+    const hasDrawing = Boolean(part.onshapeUrl);
 
-  const cadPreview = `<div class="w-12 h-12 bg-gray-800 rounded border border-gray-700 flex items-center justify-center text-purple-400 cursor-pointer hover:border-purple-400 transition overflow-hidden relative group" onclick="window.open('${
-    part.onshapeUrl || "#"
-  }', '_blank')" title="View CAD">
+    const cadPreview = `<div class="w-12 h-12 bg-gray-800 rounded border border-gray-700 flex items-center justify-center text-purple-400 cursor-pointer hover:border-purple-400 transition overflow-hidden relative group" onclick="window.open('${
+        part.onshapeUrl || "#"
+    }', '_blank')" title="View CAD">
                                     <i class="fa-solid fa-cube text-lg group-hover:scale-110 transition-transform"></i>
                             </div>`;
 
-  const row = document.createElement("tr");
-  row.className =
-    "border-b border-gray-800 hover:bg-gray-800 transition duration-200";
+    const row = document.createElement("tr");
+    row.className =
+        "border-b border-gray-800 hover:bg-gray-800 transition duration-200";
 
-  row.innerHTML = `
+    row.innerHTML = `
         <td class="p-3">
             ${cadPreview}
         </td>
         <td class="p-3">
             <div class="font-mono text-sm text-blue-200 font-bold">${
-              part.name || "Unnamed"
+                part.name || "Unnamed"
             }</div>
             <div class="text-xs text-gray-500">ID: ${
-              part.partId || part.id || "N/A"
+                part.partId || part.id || "N/A"
             }</div>
         </td>
         <td class="p-3">${part.subsystem || "-"}</td>
         <td class="p-3 text-sm text-blue-300 font-semibold">${
-          part.material || "-"
+            part.material || "-"
         }</td>
         <td class="p-3 text-sm text-blue-200 font-semibold">${part.amount}</td>
         <td class="p-3">
@@ -98,56 +98,56 @@ export function createHandFabRow(part, index) {
             </span>
         </td>
         <td class="p-3 text-sm text-gray-400 max-w-xs truncate">${
-          part.notes || ""
+            part.notes || ""
         }</td>
         <td class="p-3">
             ${
-              showStartButton
-                ? `<button onclick="globalThis.markInProgress('hand', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-2" title="Start Work / Claim"><i class="fa-solid fa-play"></i></button>`
-                : ""
+                showStartButton
+                    ? `<button onclick="globalThis.markInProgress('hand', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-2" title="Start Work / Claim"><i class="fa-solid fa-play"></i></button>`
+                    : ""
             }
             ${
-              showCompleteButton
-                ? `<button onclick="globalThis.markCompleted('hand', ${index})" class="neumorphic-btn px-2 py-1 text-green-400 hover:text-green-300 mr-2" title="Mark Completed"><i class="fa-solid fa-check-circle"></i></button>`
-                : ""
+                showCompleteButton
+                    ? `<button onclick="globalThis.markCompleted('hand', ${index})" class="neumorphic-btn px-2 py-1 text-green-400 hover:text-green-300 mr-2" title="Mark Completed"><i class="fa-solid fa-check-circle"></i></button>`
+                    : ""
             }
             ${
-              part.assigned && part.assigned !== ""
-                ? `<button onclick="globalThis.unclaimPart(${index})" class="neumorphic-btn px-2 py-1 text-orange-400 hover:text-orange-300 mr-2" title="Unclaim Part"><i class="fa-solid fa-user-slash"></i></button>`
-                : ""
+                part.assigned && part.assigned !== ""
+                    ? `<button onclick="globalThis.unclaimPart(${index})" class="neumorphic-btn px-2 py-1 text-orange-400 hover:text-orange-300 mr-2" title="Unclaim Part"><i class="fa-solid fa-user-slash"></i></button>`
+                    : ""
             }
             <button onclick="globalThis.viewPartInfo('hand', ${index})" class="text-gray-400 hover:text-blue-300 mr-2" title="Info"><i class="fa-solid fa-circle-info"></i></button>
             <button ${hasDrawing ? "" : "disabled"} onclick="${
-    hasDrawing ? `globalThis.viewHandDrawing(${index})` : ""
-  }" class="neumorphic-btn px-2 py-1 ${
-    hasDrawing
-      ? "text-purple-300 hover:text-purple-200"
-      : "text-gray-500 cursor-not-allowed opacity-50"
-  } mr-2" title="${
-    hasDrawing ? "View/Print Drawing" : "No drawing URL provided"
-  }">
+        hasDrawing ? `globalThis.viewHandDrawing(${index})` : ""
+    }" class="neumorphic-btn px-2 py-1 ${
+        hasDrawing
+            ? "text-purple-300 hover:text-purple-200"
+            : "text-gray-500 cursor-not-allowed opacity-50"
+    } mr-2" title="${
+        hasDrawing ? "View/Print Drawing" : "No drawing URL provided"
+    }">
                 <i class="fa-solid fa-print"></i>
             </button>
             <button onclick="globalThis.editPart('hand', ${index})" class="text-gray-400 hover:text-blue-400 mr-2"><i class="fa-solid fa-pen"></i></button>
             <button onclick="globalThis.deletePart('hand', ${index})" class="text-gray-400 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
         </td>
     `;
-  return row;
+    return row;
 }
 
 function createHandFabCard(part, index) {
-  const statusClass = getStatusClass(part.status);
-  const showStartButton =
-    part.status === "Reviewed" || part.status === "Already Started";
-  const showCompleteButton =
-    part.status === "In Progress" || part.status === "Already Started";
-  const hasDrawing = Boolean(part.onshapeUrl);
-  const showInfoButton = !appState.isMobile;
-  const showPrintButton = !appState.isMobile && hasDrawing;
-  const showEditButton = !appState.isMobile;
-  const card = document.createElement("div");
-  card.className = "mobile-card";
-  card.innerHTML = `
+    const statusClass = getStatusClass(part.status);
+    const showStartButton =
+        part.status === "Reviewed" || part.status === "Already Started";
+    const showCompleteButton =
+        part.status === "In Progress" || part.status === "Already Started";
+    const hasDrawing = Boolean(part.onshapeUrl);
+    const showInfoButton = !appState.isMobile;
+    const showPrintButton = !appState.isMobile && hasDrawing;
+    const showEditButton = !appState.isMobile;
+    const card = document.createElement("div");
+    card.className = "mobile-card";
+    card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
       <div>
         <div class="text-sm font-semibold text-blue-100">
@@ -164,120 +164,122 @@ function createHandFabCard(part, index) {
     </div>
     <div class="mobile-card-actions mt-3">
       ${
-        showStartButton
-          ? `<button onclick="globalThis.markInProgress('hand', ${index})" class="mobile-icon-btn text-blue-300" aria-label="Start Work">
+          showStartButton
+              ? `<button onclick="globalThis.markInProgress('hand', ${index})" class="mobile-icon-btn text-blue-300" aria-label="Start Work">
               <i class="fa-solid fa-play"></i>
             </button>`
-          : ""
+              : ""
       }
       ${
-        showCompleteButton
-          ? `<button onclick="globalThis.markCompleted('hand', ${index})" class="mobile-icon-btn text-green-300" aria-label="Mark Completed">
+          showCompleteButton
+              ? `<button onclick="globalThis.markCompleted('hand', ${index})" class="mobile-icon-btn text-green-300" aria-label="Mark Completed">
               <i class="fa-solid fa-check-circle"></i>
             </button>`
-          : ""
+              : ""
       }
       ${
-        part.assigned && part.assigned !== ""
-          ? `<button onclick="globalThis.unclaimPart(${index})" class="mobile-icon-btn text-orange-300" aria-label="Unclaim Part">
+          part.assigned && part.assigned !== ""
+              ? `<button onclick="globalThis.unclaimPart(${index})" class="mobile-icon-btn text-orange-300" aria-label="Unclaim Part">
               <i class="fa-solid fa-user-slash"></i>
             </button>`
-          : ""
+              : ""
       }
       ${
-        showInfoButton
-          ? `<button onclick="globalThis.viewPartInfo('hand', ${index})" class="mobile-icon-btn text-gray-300" aria-label="Info">
+          showInfoButton
+              ? `<button onclick="globalThis.viewPartInfo('hand', ${index})" class="mobile-icon-btn text-gray-300" aria-label="Info">
         <i class="fa-solid fa-circle-info"></i>
       </button>`
-          : ""
+              : ""
       }
       ${
-        showPrintButton
-          ? `<button onclick="globalThis.viewHandDrawing(${index})" class="mobile-icon-btn text-purple-300" aria-label="View Drawing">
+          showPrintButton
+              ? `<button onclick="globalThis.viewHandDrawing(${index})" class="mobile-icon-btn text-purple-300" aria-label="View Drawing">
         <i class="fa-solid fa-print"></i>
       </button>`
-          : ""
+              : ""
       }
       ${
-        showEditButton
-          ? `<button onclick="globalThis.editPart('hand', ${index})" class="mobile-icon-btn text-blue-200" aria-label="Edit Part">
+          showEditButton
+              ? `<button onclick="globalThis.editPart('hand', ${index})" class="mobile-icon-btn text-blue-200" aria-label="Edit Part">
         <i class="fa-solid fa-pen"></i>
       </button>`
-          : ""
+              : ""
       }
       <button onclick="globalThis.deletePart('hand', ${index})" class="mobile-icon-btn text-red-300" aria-label="Delete Part">
         <i class="fa-solid fa-trash"></i>
       </button>
     </div>
   `;
-  return card;
+    return card;
 }
 
 /**
  * Render the hand fabrication tab
  */
 export function renderHandFab() {
-  const tbody = document.getElementById("hand-fab-tbody");
-  const mobileList = document.getElementById("hand-mobile-list");
-  const table = document.getElementById("hand-table");
-  tbody.innerHTML = "";
+    const tbody = document.getElementById("hand-fab-tbody");
+    const mobileList = document.getElementById("hand-mobile-list");
+    const table = document.getElementById("hand-table");
+    tbody.innerHTML = "";
 
-  if (appState.isMobile) {
-    if (table) table.classList.add("hidden");
-    if (mobileList) mobileList.classList.remove("hidden");
-  } else {
-    if (table) table.classList.remove("hidden");
-    if (mobileList) {
-      mobileList.classList.add("hidden");
-      mobileList.innerHTML = "";
-    }
-  }
-
-  // Show loading state if data is being loaded
-  if (
-    appState.loadingTab === "hand" ||
-    (appState.isLoading && appState.parts.hand.length === 0)
-  ) {
-    if (appState.isMobile && mobileList) {
-      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-purple-300 mr-2"></i> Loading hand fabrication parts...</div>`;
+    if (appState.isMobile) {
+        if (table) table.classList.add("hidden");
+        if (mobileList) mobileList.classList.remove("hidden");
     } else {
-      const row = document.createElement("tr");
-      row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
-      tbody.appendChild(row);
+        if (table) table.classList.remove("hidden");
+        if (mobileList) {
+            mobileList.classList.add("hidden");
+            mobileList.innerHTML = "";
+        }
     }
-    return;
-  }
 
-  const filtered = filterParts(appState.parts.hand, appState.searchQuery);
+    // Show loading state if data is being loaded
+    if (
+        appState.loadingTab === "hand" ||
+        (appState.isLoading && appState.parts.hand.length === 0)
+    ) {
+        if (appState.isMobile && mobileList) {
+            mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-purple-300 mr-2"></i> Loading hand fabrication parts...</div>`;
+        } else {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
+            tbody.appendChild(row);
+        }
+        return;
+    }
 
-  if (appState.isMobile && mobileList) {
-    mobileList.innerHTML = "";
+    const filtered = filterParts(appState.parts.hand, appState.searchQuery);
+
+    if (appState.isMobile && mobileList) {
+        mobileList.innerHTML = "";
+        if (filtered.length === 0) {
+            mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400">${
+                appState.searchQuery
+                    ? "No results found."
+                    : "No Hand Fab parts."
+            }</div>`;
+            return;
+        }
+        for (const part of filtered) {
+            const index = appState.parts.hand.indexOf(part);
+            const card = createHandFabCard(part, index);
+            mobileList.appendChild(card);
+        }
+        return;
+    }
+
     if (filtered.length === 0) {
-      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400">${
-        appState.searchQuery ? "No results found." : "No Hand Fab parts."
-      }</div>`;
-      return;
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500">${
+            appState.searchQuery ? "No results found." : "No Hand Fab parts."
+        }</td>`;
+        tbody.appendChild(row);
+        return;
     }
+
     for (const part of filtered) {
-      const index = appState.parts.hand.indexOf(part);
-      const card = createHandFabCard(part, index);
-      mobileList.appendChild(card);
+        const index = appState.parts.hand.indexOf(part);
+        const row = createHandFabRow(part, index);
+        tbody.appendChild(row);
     }
-    return;
-  }
-
-  if (filtered.length === 0) {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500">${
-      appState.searchQuery ? "No results found." : "No Hand Fab parts."
-    }</td>`;
-    tbody.appendChild(row);
-    return;
-  }
-
-  for (const part of filtered) {
-    const index = appState.parts.hand.indexOf(part);
-    const row = createHandFabRow(part, index);
-    tbody.appendChild(row);
-  }
 }

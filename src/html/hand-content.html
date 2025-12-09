@@ -1,94 +1,94 @@
 <!-- Hand Fab Section -->
 <div id="content-hand" class="hidden neumorphic-card p-6 overflow-x-auto">
-  <table id="hand-table" class="w-full text-left border-collapse">
-    <thead>
-      <tr class="text-blue-400 border-b border-gray-700">
-        <th class="p-3">CAD</th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="partId"
-          onclick="sortTable('hand', 'partId')"
-        >
-          ID / Name
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="partId"
-          ></i>
-        </th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="subsystem"
-          onclick="sortTable('hand', 'subsystem')"
-        >
-          Subsystem
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="subsystem"
-          ></i>
-        </th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="material"
-          onclick="sortTable('hand', 'material')"
-        >
-          Material
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="material"
-          ></i>
-        </th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="amount"
-          onclick="sortTable('hand', 'amount')"
-        >
-          Amount
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="amount"
-          ></i>
-        </th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="assigned"
-          onclick="sortTable('hand', 'assigned')"
-        >
-          Assigned To
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="assigned"
-          ></i>
-        </th>
-        <th
-          class="p-3 cursor-pointer hover:text-blue-300 transition"
-          data-sort-category="hand"
-          data-sort-key="status"
-          onclick="sortTable('hand', 'status')"
-        >
-          Status
-          <i
-            class="fa-solid fa-sort text-xs ml-1 sort-icon"
-            data-sort-category="hand"
-            data-sort-key="status"
-          ></i>
-        </th>
-        <th class="p-3">Notes</th>
-        <th class="p-3">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="hand-fab-tbody" class="text-gray-300">
-      <!-- Rows injected here -->
-    </tbody>
-  </table>
-  <div id="hand-mobile-list" class="hidden flex flex-col gap-3 mt-2"></div>
+    <table id="hand-table" class="w-full text-left border-collapse">
+        <thead>
+            <tr class="text-blue-400 border-b border-gray-700">
+                <th class="p-3">CAD</th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="partId"
+                    onclick="sortTable('hand', 'partId')"
+                >
+                    ID / Name
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="partId"
+                    ></i>
+                </th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="subsystem"
+                    onclick="sortTable('hand', 'subsystem')"
+                >
+                    Subsystem
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="subsystem"
+                    ></i>
+                </th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="material"
+                    onclick="sortTable('hand', 'material')"
+                >
+                    Material
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="material"
+                    ></i>
+                </th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="amount"
+                    onclick="sortTable('hand', 'amount')"
+                >
+                    Amount
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="amount"
+                    ></i>
+                </th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="assigned"
+                    onclick="sortTable('hand', 'assigned')"
+                >
+                    Assigned To
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="assigned"
+                    ></i>
+                </th>
+                <th
+                    class="p-3 cursor-pointer hover:text-blue-300 transition"
+                    data-sort-category="hand"
+                    data-sort-key="status"
+                    onclick="sortTable('hand', 'status')"
+                >
+                    Status
+                    <i
+                        class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                        data-sort-category="hand"
+                        data-sort-key="status"
+                    ></i>
+                </th>
+                <th class="p-3">Notes</th>
+                <th class="p-3">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="hand-fab-tbody" class="text-gray-300">
+            <!-- Rows injected here -->
+        </tbody>
+    </table>
+    <div id="hand-mobile-list" class="hidden flex flex-col gap-3 mt-2"></div>
 </div>

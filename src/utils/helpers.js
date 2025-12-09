@@ -8,19 +8,19 @@
  * @returns {Array} Filtered list of parts
  */
 export function filterParts(list, searchQuery) {
-  if (!searchQuery) return list;
-  const lowerQuery = searchQuery.toLowerCase();
-  return list.filter((part) => {
-    return (
-      part.name?.toLowerCase().includes(lowerQuery) ||
-      String(part.id)?.toLowerCase().includes(lowerQuery) ||
-      part.notes?.toLowerCase().includes(lowerQuery) ||
-      part.subsystem?.toLowerCase().includes(lowerQuery) ||
-      part.assigned?.toLowerCase().includes(lowerQuery) ||
-      part.status?.toLowerCase().includes(lowerQuery) ||
-      part.material?.toLowerCase().includes(lowerQuery)
-    );
-  });
+    if (!searchQuery) return list;
+    const lowerQuery = searchQuery.toLowerCase();
+    return list.filter((part) => {
+        return (
+            part.name?.toLowerCase().includes(lowerQuery) ||
+            String(part.id)?.toLowerCase().includes(lowerQuery) ||
+            part.notes?.toLowerCase().includes(lowerQuery) ||
+            part.subsystem?.toLowerCase().includes(lowerQuery) ||
+            part.assigned?.toLowerCase().includes(lowerQuery) ||
+            part.status?.toLowerCase().includes(lowerQuery) ||
+            part.material?.toLowerCase().includes(lowerQuery)
+        );
+    });
 }
 
 /**
@@ -29,20 +29,20 @@ export function filterParts(list, searchQuery) {
  * @returns {string} CSS class name for the status
  */
 export function getStatusClass(status) {
-  switch (status) {
-    case "Pending":
-      return "status-pending";
-    case "Reviewed":
-      return "status-reviewed";
-    case "In Progress":
-      return "status-inprogress";
-    case "Completed":
-      return "status-completed";
-    case "Already Started":
-      return "status-already-started";
-    default:
-      return "text-gray-400";
-  }
+    switch (status) {
+        case "Pending":
+            return "status-pending";
+        case "Reviewed":
+            return "status-reviewed";
+        case "In Progress":
+            return "status-inprogress";
+        case "Completed":
+            return "status-completed";
+        case "Already Started":
+            return "status-already-started";
+        default:
+            return "text-gray-400";
+    }
 }
 
 /**
@@ -53,15 +53,15 @@ export function getStatusClass(status) {
  * @returns {Array} Sorted array
  */
 export function sortArrayByKey(array, key, direction = 1) {
-  return array.sort((a, b) => {
-    let valA = a[key] || "";
-    let valB = b[key] || "";
-    valA = valA.toString().toLowerCase();
-    valB = valB.toString().toLowerCase();
-    if (valA < valB) return -1 * direction;
-    if (valA > valB) return 1 * direction;
-    return 0;
-  });
+    return array.sort((a, b) => {
+        let valA = a[key] || "";
+        let valB = b[key] || "";
+        valA = valA.toString().toLowerCase();
+        valB = valB.toString().toLowerCase();
+        if (valA < valB) return -1 * direction;
+        if (valA > valB) return 1 * direction;
+        return 0;
+    });
 }
 
 /**
@@ -71,7 +71,7 @@ export function sortArrayByKey(array, key, direction = 1) {
  * @returns {string} Generated ID
  */
 export function generatePartId(prefix, number) {
-  return `${prefix}-${number.toString().padStart(3, "0")}`;
+    return `${prefix}-${number.toString().padStart(3, "0")}`;
 }
 
 /**
@@ -80,8 +80,8 @@ export function generatePartId(prefix, number) {
  * @returns {string} Formatted date string
  */
 export function formatDate(date) {
-  if (!date) return "";
-  return new Date(date).toLocaleDateString();
+    if (!date) return "";
+    return new Date(date).toLocaleDateString();
 }
 
 /**
@@ -91,8 +91,8 @@ export function formatDate(date) {
  * @returns {number} Number of days between dates
  */
 export function daysBetween(date1, date2) {
-  const diffTime = Math.abs(new Date(date2) - new Date(date1));
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = Math.abs(new Date(date2) - new Date(date1));
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -102,15 +102,15 @@ export function daysBetween(date1, date2) {
  * @returns {Function} Debounced function
  */
 export function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
     };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
 }
 
 /**
@@ -119,7 +119,7 @@ export function debounce(func, wait) {
  * @returns {boolean} True if empty, false otherwise
  */
 export function isEmpty(str) {
-  return !str || str.trim().length === 0;
+    return !str || str.trim().length === 0;
 }
 
 /**
@@ -128,8 +128,18 @@ export function isEmpty(str) {
  * @returns {string} Capitalized string
  */
 export function capitalize(str) {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Get lowercase file extension from a filename
+ * @param {string} filename - Filename to parse
+ * @returns {string} File extension without dot
+ */
+export function getFileExtension(filename) {
+    if (!filename || !filename.includes(".")) return "";
+    return filename.split(".").pop().toLowerCase();
 }
 
 /**
@@ -138,11 +148,11 @@ export function capitalize(str) {
  * @returns {string} Initials
  */
 export function getInitials(name) {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((word) => word.charAt(0))
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+    if (!name) return "?";
+    return name
+        .split(" ")
+        .map((word) => word.charAt(0))
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 }

@@ -3,18 +3,18 @@
 
 import { setApiKey, clearApiKey, appState } from "./state.js";
 import {
-  setApiKeyCookie,
-  checkAuthStatus,
-  getApiKeyFromCookie,
+    setApiKeyCookie,
+    checkAuthStatus,
+    getApiKeyFromCookie,
 } from "../utils/auth.js";
 
 /**
  * Hide the Action Icon Key when modals are shown
  */
 export function hideActionIconKey() {
-    const actionKey = document.getElementById('action-key');
+    const actionKey = document.getElementById("action-key");
     if (actionKey) {
-        actionKey.classList.add('hidden');
+        actionKey.classList.add("hidden");
     }
 }
 
@@ -22,25 +22,25 @@ export function hideActionIconKey() {
  * Show the Action Icon Key when modals are hidden
  */
 export function showActionIconKey() {
-  if (appState.isMobile) return;
-  const actionKey = document.getElementById("action-key");
-  if (actionKey) {
-    actionKey.classList.remove("hidden");
-  }
+    if (appState.isMobile) return;
+    const actionKey = document.getElementById("action-key");
+    if (actionKey) {
+        actionKey.classList.remove("hidden");
+    }
 }
 
 /**
  * Show the authentication modal
  */
 export function showAuthModal() {
-    const modal = document.getElementById('auth-modal');
+    const modal = document.getElementById("auth-modal");
     if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
         hideActionIconKey();
         // Focus the input field
         setTimeout(() => {
-            const input = document.getElementById('auth-api-key');
+            const input = document.getElementById("auth-api-key");
             if (input) {
                 input.focus();
             }
@@ -52,10 +52,10 @@ export function showAuthModal() {
  * Hide the authentication modal
  */
 export function hideAuthModal() {
-    const modal = document.getElementById('auth-modal');
+    const modal = document.getElementById("auth-modal");
     if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
         showActionIconKey();
     }
 }
@@ -64,11 +64,11 @@ export function hideAuthModal() {
  * Show authentication error message
  * @param {string} message - Error message to display
  */
-function showAuthError(message = 'Invalid API key. Please try again.') {
-    const errorDiv = document.getElementById('auth-error');
+function showAuthError(message = "Invalid API key. Please try again.") {
+    const errorDiv = document.getElementById("auth-error");
     if (errorDiv) {
         errorDiv.textContent = message;
-        errorDiv.classList.remove('hidden');
+        errorDiv.classList.remove("hidden");
     }
 }
 
@@ -76,9 +76,9 @@ function showAuthError(message = 'Invalid API key. Please try again.') {
  * Hide authentication error message
  */
 function hideAuthError() {
-    const errorDiv = document.getElementById('auth-error');
+    const errorDiv = document.getElementById("auth-error");
     if (errorDiv) {
-        errorDiv.classList.add('hidden');
+        errorDiv.classList.add("hidden");
     }
 }
 
@@ -87,18 +87,18 @@ function hideAuthError() {
  * @param {boolean} isLoading - Whether the form is in loading state
  */
 function setAuthLoading(isLoading) {
-    const submitBtn = document.getElementById('auth-submit-btn');
-    const submitText = document.getElementById('auth-submit-text');
-    const input = document.getElementById('auth-api-key');
+    const submitBtn = document.getElementById("auth-submit-btn");
+    const submitText = document.getElementById("auth-submit-text");
+    const input = document.getElementById("auth-api-key");
 
     if (submitBtn && submitText && input) {
         if (isLoading) {
             submitBtn.disabled = true;
-            submitText.textContent = 'Validating...';
+            submitText.textContent = "Validating...";
             input.disabled = true;
         } else {
             submitBtn.disabled = false;
-            submitText.textContent = 'Authenticate';
+            submitText.textContent = "Authenticate";
             input.disabled = false;
         }
     }
@@ -108,8 +108,8 @@ function setAuthLoading(isLoading) {
  * Reset the authentication form
  */
 function resetAuthForm() {
-    const form = document.getElementById('auth-form');
-    const input = document.getElementById('auth-api-key');
+    const form = document.getElementById("auth-form");
+    const input = document.getElementById("auth-api-key");
 
     if (form) {
         form.reset();
@@ -128,12 +128,12 @@ function resetAuthForm() {
 export async function handleAuthSubmit(event) {
     event.preventDefault();
 
-    const apiKeyInput = document.getElementById('auth-api-key');
+    const apiKeyInput = document.getElementById("auth-api-key");
     if (!apiKeyInput) return;
 
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) {
-        showAuthError('API key is required');
+        showAuthError("API key is required");
         return;
     }
 
@@ -154,15 +154,16 @@ export async function handleAuthSubmit(event) {
             resetAuthForm();
 
             // Dispatch custom event to notify other modules
-            globalThis.dispatchEvent(new CustomEvent('authenticated'));
-
+            globalThis.dispatchEvent(new CustomEvent("authenticated"));
         } else {
-            showAuthError('Invalid API key. Please check and try again.');
+            showAuthError("Invalid API key. Please check and try again.");
             setAuthLoading(false);
         }
     } catch (error) {
-        console.error('Authentication error:', error);
-        showAuthError('Network error. Please check your connection and try again.');
+        console.error("Authentication error:", error);
+        showAuthError(
+            "Network error. Please check your connection and try again."
+        );
         setAuthLoading(false);
     }
 }
@@ -183,10 +184,10 @@ export async function checkAuthentication() {
             // API key is valid, set it in state and hide any visible auth modal
             setApiKey(apiKey);
             // Ensure modal is hidden immediately, even if it was previously shown
-            const modal = document.getElementById('auth-modal');
+            const modal = document.getElementById("auth-modal");
             if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
             }
             return true;
         }
