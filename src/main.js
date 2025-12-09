@@ -28,8 +28,17 @@ globalThis.tailwind = {
 };
 
 // Import all modules
-import { initializeState, appState } from "./modules/state.js";
-import { switchTab, handleSearch, sortTable } from "./modules/tabs.js";
+import {
+  initializeState,
+  appState,
+  detectMobileDevice,
+} from "./modules/state.js";
+import {
+  switchTab,
+  handleSearch,
+  sortTable,
+  configureMobileUI,
+} from "./modules/tabs.js";
 import {
   openSettingsModal,
   closeSettingsModal,
@@ -86,11 +95,13 @@ function applyTooltip(element) {
  */
 function applyTabVisibilitySettings() {
   const tabs = ["review", "cnc", "hand", "completed"];
+  const forcedHidden = appState.isMobile ? ["review", "cnc"] : [];
 
   tabs.forEach((tab) => {
     const btn = document.getElementById(`tab-${tab}`);
     const checkbox = document.getElementById(`check-${tab}`);
-    const isVisible = appState.tabVisibility[tab];
+    const isVisible =
+      appState.tabVisibility[tab] && !forcedHidden.includes(tab);
 
     if (btn && checkbox) {
       checkbox.checked = isVisible;
@@ -126,12 +137,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   initializeTooltips();
   tooltipObserver.observe(document.body, { childList: true, subtree: true });
 
+  detectMobileDevice();
+  configureMobileUI();
+
   // Check if user is authenticated by validating with backend (will show modal if not)
   const isAuthenticated = await checkAuthentication();
   if (isAuthenticated) {
     // User is authenticated, initialize the app
     initializeState();
     applyTabVisibilitySettings();
+    configureMobileUI();
     switchTab(appState.currentTab); // Use the persisted current tab
   }
   // If not authenticated, the modal will be shown and app initialization will happen after authentication
@@ -139,9 +154,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Listen for successful authentication to initialize the app
 globalThis.addEventListener("authenticated", () => {
+  detectMobileDevice();
   initializeState();
   applyTabVisibilitySettings();
+  configureMobileUI();
   switchTab(appState.currentTab); // Use the persisted current tab instead of hardcoded "review"
+});
+
+globalThis.addEventListener("resize", () => {
+  const wasMobile = appState.isMobile;
+  detectMobileDevice();
+  const modeChanged = wasMobile !== appState.isMobile;
+  applyTabVisibilitySettings();
+  configureMobileUI();
+  if (modeChanged && !appState.isMobile && !["review", "cnc", "hand", "completed"].includes(appState.currentTab)) {
+    appState.currentTab = "review";
+  }
+  switchTab(appState.currentTab);
 });
 
 // Export global functions for HTML onclick handlers

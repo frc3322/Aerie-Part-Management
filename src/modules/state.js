@@ -49,6 +49,7 @@ export const appState = {
     hand: true,
     completed: true,
   },
+  isMobile: false,
 };
 
 /**
@@ -60,12 +61,42 @@ function loadPersistedState() {
   if (savedTab && ["review", "cnc", "hand", "completed"].includes(savedTab)) {
     appState.currentTab = savedTab;
   }
+  if (appState.isMobile && !["hand", "completed"].includes(appState.currentTab)) {
+    appState.currentTab = "hand";
+  }
 
   // Load tab visibility settings
   const savedVisibility = loadTabVisibility();
   if (savedVisibility && typeof savedVisibility === "object") {
     appState.tabVisibility = { ...appState.tabVisibility, ...savedVisibility };
   }
+}
+
+/**
+ * Detect whether the current device should use the mobile layout.
+ * Uses touch + user agent and falls back to small viewport width.
+ * @returns {boolean} True if mobile device detected
+ */
+export function detectMobileDevice() {
+  const agent = navigator.userAgent || "";
+  const hasTouch =
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+  const uaMobile = /android|iphone|ipad|ipod|windows phone|blackberry|mobile/i.test(
+    agent
+  );
+  const isUaDataMobile = navigator.userAgentData?.mobile === true;
+  const smallViewport = window.innerWidth <= 768;
+  const isMobile = Boolean((hasTouch && (uaMobile || isUaDataMobile)) || smallViewport);
+  appState.isMobile = isMobile;
+  if (isMobile && !["hand", "completed"].includes(appState.currentTab)) {
+    appState.currentTab = "hand";
+  }
+  if (!isMobile && !["review", "cnc", "hand", "completed"].includes(appState.currentTab)) {
+    appState.currentTab = "review";
+  }
+  return isMobile;
 }
 
 /**

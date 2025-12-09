@@ -3,7 +3,7 @@
   <div class="mb-4 text-gray-400 italic text-sm">
     History of all completed parts.
   </div>
-  <table class="w-full text-left border-collapse">
+  <table id="completed-table" class="w-full text-left border-collapse">
     <thead>
       <tr class="text-blue-400 border-b border-gray-700">
         <th
@@ -91,6 +91,7 @@
       <!-- Rows injected here -->
     </tbody>
   </table>
+  <div id="completed-mobile-list" class="hidden flex flex-col gap-3 mt-2"></div>
   <div id="completed-empty" class="hidden text-center py-8 text-gray-500">
     <i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i>
     <p>No completed parts yet.</p>
