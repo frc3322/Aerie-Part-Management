@@ -173,9 +173,7 @@ def check_uv() -> bool:
 
 def install_dependencies() -> bool:
     """Install project dependencies using uv."""
-    return run_command(
-        "uv pip install -r requirements.txt", "Installing dependencies with uv"
-    )
+    return run_command("uv sync --active", "Installing dependencies with uv")
 
 
 def build_frontend(config: dict) -> bool:
