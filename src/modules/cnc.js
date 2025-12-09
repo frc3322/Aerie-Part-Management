@@ -5,9 +5,9 @@ import { appState } from "./state.js";
 import { filterParts, getStatusClass } from "../utils/helpers.js";
 import { loadGLTFModel } from "../components/threeDViewer.js";
 import {
-  getPartModelBlobUrl,
-  getPartFileBlobUrl,
-  downloadPartFile,
+    getPartModelBlobUrl,
+    getPartFileBlobUrl,
+    downloadPartFile,
 } from "../utils/partsApi.js";
 
 /**
@@ -15,11 +15,11 @@ import {
  * @param {HTMLElement} container - The container element
  */
 function renderLoadingState(container) {
-  const loadingState = document.createElement("div");
-  loadingState.className = "col-span-full text-center py-8 text-gray-500";
-  loadingState.innerHTML =
-    '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-2"></i> Loading CNC parts...</div>';
-  container.appendChild(loadingState);
+    const loadingState = document.createElement("div");
+    loadingState.className = "col-span-full text-center py-8 text-gray-500";
+    loadingState.innerHTML =
+        '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-2"></i> Loading CNC parts...</div>';
+    container.appendChild(loadingState);
 }
 
 /**
@@ -27,17 +27,17 @@ function renderLoadingState(container) {
  * @param {HTMLElement} container - The container element
  */
 function renderEmptyState(container) {
-  const emptyState = document.createElement("div");
-  emptyState.className = "col-span-full text-center py-8 text-gray-500";
-  emptyState.innerHTML = appState.searchQuery
-    ? "<p>No results found.</p>"
-    : "<p>No CNC parts available.</p>";
-  container.appendChild(emptyState);
+    const emptyState = document.createElement("div");
+    emptyState.className = "col-span-full text-center py-8 text-gray-500";
+    emptyState.innerHTML = appState.searchQuery
+        ? "<p>No results found.</p>"
+        : "<p>No CNC parts available.</p>";
+    container.appendChild(emptyState);
 }
 
 function getFileExtension(filename) {
-  if (!filename || !filename.includes(".")) return "";
-  return filename.split(".").pop().toLowerCase();
+    if (!filename || !filename.includes(".")) return "";
+    return filename.split(".").pop().toLowerCase();
 }
 
 /**
@@ -47,20 +47,21 @@ function getFileExtension(filename) {
  * @param {HTMLElement} container - The container element
  */
 function renderPartCard(part, index, container) {
-  const statusClass = getStatusClass(part.status);
-  const card = document.createElement("div");
-  card.className =
-    "neumorphic-card p-5 flex flex-col gap-3 transform transition hover:scale-[1.02] duration-300";
+    const statusClass = getStatusClass(part.status);
+    const showInfoEditButtons = !appState.isMobile;
+    const card = document.createElement("div");
+    card.className =
+        "neumorphic-card p-5 flex flex-col gap-3 transform transition hover:scale-[1.02] duration-300";
 
-  const fileExt = getFileExtension(part.file);
-  const hasStep = fileExt === "step" || fileExt === "stp";
-  const hasPdf = fileExt === "pdf";
+    const fileExt = getFileExtension(part.file);
+    const hasStep = fileExt === "step" || fileExt === "stp";
+    const hasPdf = fileExt === "pdf";
 
-  card.innerHTML = `
+    card.innerHTML = `
         <div class="flex justify-between items-start">
             <div>
                 <h3 class="text-xl font-bold text-blue-300">${
-                  part.name || "Unnamed"
+                    part.name || "Unnamed"
                 }</h3>
                 <div class="text-sm text-blue-200 font-semibold mt-1">
                     Amount: ${part.amount}
@@ -75,12 +76,12 @@ function renderPartCard(part, index, container) {
                 </span>
                 <div class="text-sm text-gray-400">
                     Subsystem: <span class="text-blue-300 font-semibold">${
-                      part.subsystem || "Not set"
+                        part.subsystem || "Not set"
                     }</span>
                 </div>
                 <div class="text-sm text-gray-400">
                     Material: <span class="text-blue-300 font-semibold">${
-                      part.material || "Not set"
+                        part.material || "Not set"
                     }</span>
                 </div>
             </div>
@@ -88,21 +89,21 @@ function renderPartCard(part, index, container) {
 
         <div class="h-48 w-full bg-gray-800 rounded-lg relative overflow-hidden shadow-3d-inset" id="model-view-${index}">
             ${
-              hasStep
-                ? `<div class="absolute inset-0 flex items-center justify-center">
+                hasStep
+                    ? `<div class="absolute inset-0 flex items-center justify-center">
                         <div class="text-center">
                             <i class="fa-solid fa-cube text-4xl text-blue-500 mb-2 animate-pulse"></i>
                             <p class="text-xs text-gray-400">Loading model...</p>
                         </div>
                     </div>`
-                : hasPdf
-                ? `<div class="absolute inset-0 flex items-center justify-center">
+                    : hasPdf
+                    ? `<div class="absolute inset-0 flex items-center justify-center">
                         <div class="text-center">
                             <i class="fa-solid fa-file-pdf text-4xl text-red-400 mb-2 animate-pulse"></i>
                             <p class="text-xs text-gray-400">Loading PDF...</p>
                         </div>
                     </div>`
-                : `<div class="absolute inset-0 flex items-center justify-center text-center text-gray-600">
+                    : `<div class="absolute inset-0 flex items-center justify-center text-center text-gray-600">
                         <div>
                             <i class="fa-solid fa-cloud-upload text-3xl mb-2"></i>
                             <p class="text-xs">No File</p>
@@ -113,30 +114,35 @@ function renderPartCard(part, index, container) {
 
         <div class="bg-gray-800 p-3 rounded-lg shadow-3d-inset min-h-[60px]">
             <p class="text-sm text-gray-400 italic">"${
-              part.notes || "No notes"
+                part.notes || "No notes"
             }"</p>
         </div>
 
         <div class="flex justify-end mt-2 gap-2">
             ${
-              part.status === "In Progress" || part.status === "Already Started"
-                ? `<button onclick="globalThis.markCompleted('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-green-400 hover:text-green-300 mr-auto" title="Mark Completed"><i class="fa-solid fa-check-circle"></i> Done</button>`
-                : part.status === "Reviewed"
-                ? `<button onclick="globalThis.markInProgress('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-auto" title="Mark In Progress"><i class="fa-solid fa-play"></i> Start</button>`
-                : ""
+                part.status === "In Progress" ||
+                part.status === "Already Started"
+                    ? `<button onclick="globalThis.markCompleted('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-green-400 hover:text-green-300 mr-auto" title="Mark Completed"><i class="fa-solid fa-check-circle"></i> Done</button>`
+                    : part.status === "Reviewed"
+                    ? `<button onclick="globalThis.markInProgress('cnc', ${index})" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-auto" title="Mark In Progress"><i class="fa-solid fa-play"></i> Start</button>`
+                    : ""
             }
             ${
-              part.file
-                ? `<button onclick="globalThis.downloadStepFile(${part.id}, '${part.file}')" class="neumorphic-btn px-2 py-1 text-purple-400 hover:text-purple-300" title="Download File"><i class="fa-solid fa-download"></i> Download</button>`
-                : ""
+                part.file
+                    ? `<button onclick="globalThis.downloadStepFile(${part.id}, '${part.file}')" class="neumorphic-btn px-2 py-1 text-purple-400 hover:text-purple-300" title="Download File"><i class="fa-solid fa-download"></i> Download</button>`
+                    : ""
             }
-            <button onclick="globalThis.viewPartInfo('cnc', ${index})" class="text-gray-400 hover:text-blue-300 transition" title="Info"><i class="fa-solid fa-circle-info"></i></button>
-            <button onclick="globalThis.editPart('cnc', ${index})" class="text-gray-400 hover:text-blue-400 transition"><i class="fa-solid fa-pen"></i></button>
+            ${
+                showInfoEditButtons
+                    ? `<button onclick="globalThis.viewPartInfo('cnc', ${index})" class="text-gray-400 hover:text-blue-300 transition" title="Info"><i class="fa-solid fa-circle-info"></i></button>
+            <button onclick="globalThis.editPart('cnc', ${index})" class="text-gray-400 hover:text-blue-400 transition"><i class="fa-solid fa-pen"></i></button>`
+                    : ""
+            }
             <button onclick="globalThis.deletePart('cnc', ${index})" class="text-gray-400 hover:text-red-400 transition"><i class="fa-solid fa-trash"></i></button>
         </div>
     `;
 
-  container.appendChild(card);
+    container.appendChild(card);
 }
 
 /**
@@ -145,32 +151,32 @@ function renderPartCard(part, index, container) {
  * @param {number} index - The part index
  */
 function loadPartModel(part, index) {
-  if (!part.file) return;
+    if (!part.file) return;
 
-  const fileExt = getFileExtension(part.file);
-  const containerId = `model-view-${index}`;
+    const fileExt = getFileExtension(part.file);
+    const containerId = `model-view-${index}`;
 
-  setTimeout(async () => {
-    try {
-      if (fileExt === "pdf") {
-        const fileUrl = await getPartFileBlobUrl(part.id);
-        const container = document.getElementById(containerId);
-        if (container) {
-          container.innerHTML = `
+    setTimeout(async () => {
+        try {
+            if (fileExt === "pdf") {
+                const fileUrl = await getPartFileBlobUrl(part.id);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
             <iframe src="${fileUrl}" class="absolute inset-0 w-full h-full border-0 bg-white"></iframe>
             <div class="absolute top-2 right-2 bg-gray-900 bg-opacity-70 text-xs text-white px-2 py-1 rounded">PDF Preview</div>
           `;
-        }
-        return;
-      }
+                }
+                return;
+            }
 
-      const modelUrl = await getPartModelBlobUrl(part.id);
-      loadGLTFModel(containerId, modelUrl);
-    } catch (error) {
-      console.error("Failed to load file:", error);
-      const container = document.getElementById(containerId);
-      if (container) {
-        container.innerHTML = `
+            const modelUrl = await getPartModelBlobUrl(part.id);
+            loadGLTFModel(containerId, modelUrl);
+        } catch (error) {
+            console.error("Failed to load file:", error);
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `
                     <div class="absolute inset-0 flex items-center justify-center text-center text-red-400">
                         <div>
                             <i class="fa-solid fa-exclamation-triangle text-2xl mb-2"></i>
@@ -178,61 +184,62 @@ function loadPartModel(part, index) {
                         </div>
                     </div>
                 `;
-      }
-    }
-  }, 0);
+            }
+        }
+    }, 0);
 }
 
 /**
  * Render the CNC tab
  */
 export function renderCNC() {
-  const container = document.getElementById("content-cnc");
-  container.innerHTML = "";
+    const container = document.getElementById("content-cnc");
+    container.innerHTML = "";
 
-  if (
-    appState.loadingTab === "cnc" ||
-    (appState.isLoading && appState.parts.cnc.length === 0)
-  ) {
-    renderLoadingState(container);
-    return;
-  }
-
-  let filtered = filterParts(appState.parts.cnc, appState.searchQuery);
-
-  // Sort parts: In Progress and Already Started first, then Reviewed
-  filtered = filtered.sort((a, b) => {
-    const statusA = a.status;
-    const statusB = b.status;
-
-    // Define priority order: In Progress/Already Started first, then Reviewed, then others
-    const getPriority = (status) => {
-      if (status === "In Progress" || status === "Already Started") return 1;
-      if (status === "Reviewed") return 2;
-      return 3;
-    };
-
-    const priorityA = getPriority(statusA);
-    const priorityB = getPriority(statusB);
-
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
+    if (
+        appState.loadingTab === "cnc" ||
+        (appState.isLoading && appState.parts.cnc.length === 0)
+    ) {
+        renderLoadingState(container);
+        return;
     }
 
-    // If same priority, maintain original order
-    return 0;
-  });
+    let filtered = filterParts(appState.parts.cnc, appState.searchQuery);
 
-  if (filtered.length === 0) {
-    renderEmptyState(container);
-    return;
-  }
+    // Sort parts: In Progress and Already Started first, then Reviewed
+    filtered = filtered.sort((a, b) => {
+        const statusA = a.status;
+        const statusB = b.status;
 
-  for (const part of filtered) {
-    const index = appState.parts.cnc.indexOf(part);
-    renderPartCard(part, index, container);
-    loadPartModel(part, index);
-  }
+        // Define priority order: In Progress/Already Started first, then Reviewed, then others
+        const getPriority = (status) => {
+            if (status === "In Progress" || status === "Already Started")
+                return 1;
+            if (status === "Reviewed") return 2;
+            return 3;
+        };
+
+        const priorityA = getPriority(statusA);
+        const priorityB = getPriority(statusB);
+
+        if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+        }
+
+        // If same priority, maintain original order
+        return 0;
+    });
+
+    if (filtered.length === 0) {
+        renderEmptyState(container);
+        return;
+    }
+
+    for (const part of filtered) {
+        const index = appState.parts.cnc.indexOf(part);
+        renderPartCard(part, index, container);
+        loadPartModel(part, index);
+    }
 }
 
 /**
@@ -241,10 +248,10 @@ export function renderCNC() {
  * @param {string} filename - Filename for download
  */
 export async function downloadStepFile(partId, filename) {
-  try {
-    await downloadPartFile(partId, filename);
-  } catch (error) {
-    console.error("Failed to download file:", error);
-    alert("Failed to download file. Please try again.");
-  }
+    try {
+        await downloadPartFile(partId, filename);
+    } catch (error) {
+        console.error("Failed to download file:", error);
+        alert("Failed to download file. Please try again.");
+    }
 }

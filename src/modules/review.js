@@ -69,7 +69,7 @@ export function createReviewRow(part, index) {
   row.className =
     "border-b border-gray-800 hover:bg-gray-800 transition duration-200";
   row.innerHTML = `
-        <td class="p-3">
+        <td class="p-3 align-middle">
             <span class="px-2 py-1 rounded text-xs font-bold ${
               isCNC
                 ? "bg-blue-900 text-blue-200"
@@ -78,29 +78,35 @@ export function createReviewRow(part, index) {
                 ${isCNC ? "CNC" : "HAND FAB"}
             </span>
         </td>
-        <td class="p-3">
+        <td class="p-3 align-middle">
             ${previewHTML}
         </td>
-        <td class="p-3">
+        <td class="p-3 align-middle">
             <div class="font-bold text-gray-200">${displayName}</div>
             <div class="text-xs text-gray-500">ID: ${displayPartId}</div>
         </td>
-        <td class="p-3 text-sm text-gray-400">${subDisplay}</td>
-        <td class="p-3 text-sm text-blue-300 font-semibold">${
+        <td class="p-3 align-middle text-sm text-gray-400">${subDisplay}</td>
+        <td class="p-3 align-middle text-sm text-blue-300 font-semibold">${
           part.material || "Not set"
         }</td>
-        <td class="p-3">
+        <td class="p-3 align-middle">
              ${fileHTML}
         </td>
-        <td class="p-3 text-sm text-gray-500 max-w-xs truncate">${
+        <td class="p-3 align-middle text-sm text-gray-500 max-w-xs truncate">${
           part.notes || ""
         }</td>
-        <td class="p-3 flex items-center gap-2">
-            <button onclick="globalThis.approvePart(${index})" class="neumorphic-btn px-3 py-1 text-green-400 text-sm rounded hover:text-green-300" title="Approve & Move">
-                <i class="fa-solid fa-check"></i> Review
-            </button>
-            <button onclick="globalThis.editPart('review', ${index})" class="text-gray-400 hover:text-blue-400 px-2"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="globalThis.deletePart('review', ${index})" class="text-gray-400 hover:text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+        <td class="p-3 align-middle">
+            <div class="flex items-center gap-2 whitespace-nowrap">
+                <button onclick="globalThis.approvePart(${index})" class="neumorphic-btn px-3 py-1 text-green-400 text-sm rounded hover:text-green-300" title="Approve & Move">
+                    <i class="fa-solid fa-check"></i> Review
+                </button>
+                ${
+                  appState.isMobile
+                    ? ""
+                    : `<button onclick="globalThis.editPart('review', ${index})" class="text-gray-400 hover:text-blue-400 px-2"><i class="fa-solid fa-pen"></i></button>`
+                }
+                <button onclick="globalThis.deletePart('review', ${index})" class="text-gray-400 hover:text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+            </div>
         </td>
     `;
   return row;

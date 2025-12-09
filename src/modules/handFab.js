@@ -135,25 +135,136 @@ export function createHandFabRow(part, index) {
   return row;
 }
 
+function createHandFabCard(part, index) {
+  const statusClass = getStatusClass(part.status);
+  const showStartButton =
+    part.status === "Reviewed" || part.status === "Already Started";
+  const showCompleteButton =
+    part.status === "In Progress" || part.status === "Already Started";
+  const hasDrawing = Boolean(part.onshapeUrl);
+  const showInfoButton = !appState.isMobile;
+  const showPrintButton = !appState.isMobile && hasDrawing;
+  const showEditButton = !appState.isMobile;
+  const card = document.createElement("div");
+  card.className = "mobile-card";
+  card.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-sm font-semibold text-blue-100">
+          ${part.name || "Unnamed"}
+        </div>
+        <div class="text-[11px] text-gray-500">
+          ${part.partId || part.id || "N/A"}
+        </div>
+      </div>
+      <span class="mobile-status-pill ${statusClass}">${part.status}</span>
+    </div>
+    <div class="text-[11px] text-gray-400 mt-1">
+      ${part.assigned ? `Assigned: ${part.assigned}` : "Unassigned"}
+    </div>
+    <div class="mobile-card-actions mt-3">
+      ${
+        showStartButton
+          ? `<button onclick="globalThis.markInProgress('hand', ${index})" class="mobile-icon-btn text-blue-300" aria-label="Start Work">
+              <i class="fa-solid fa-play"></i>
+            </button>`
+          : ""
+      }
+      ${
+        showCompleteButton
+          ? `<button onclick="globalThis.markCompleted('hand', ${index})" class="mobile-icon-btn text-green-300" aria-label="Mark Completed">
+              <i class="fa-solid fa-check-circle"></i>
+            </button>`
+          : ""
+      }
+      ${
+        part.assigned && part.assigned !== ""
+          ? `<button onclick="globalThis.unclaimPart(${index})" class="mobile-icon-btn text-orange-300" aria-label="Unclaim Part">
+              <i class="fa-solid fa-user-slash"></i>
+            </button>`
+          : ""
+      }
+      ${
+        showInfoButton
+          ? `<button onclick="globalThis.viewPartInfo('hand', ${index})" class="mobile-icon-btn text-gray-300" aria-label="Info">
+        <i class="fa-solid fa-circle-info"></i>
+      </button>`
+          : ""
+      }
+      ${
+        showPrintButton
+          ? `<button onclick="globalThis.viewHandDrawing(${index})" class="mobile-icon-btn text-purple-300" aria-label="View Drawing">
+        <i class="fa-solid fa-print"></i>
+      </button>`
+          : ""
+      }
+      ${
+        showEditButton
+          ? `<button onclick="globalThis.editPart('hand', ${index})" class="mobile-icon-btn text-blue-200" aria-label="Edit Part">
+        <i class="fa-solid fa-pen"></i>
+      </button>`
+          : ""
+      }
+      <button onclick="globalThis.deletePart('hand', ${index})" class="mobile-icon-btn text-red-300" aria-label="Delete Part">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  `;
+  return card;
+}
+
 /**
  * Render the hand fabrication tab
  */
 export function renderHandFab() {
   const tbody = document.getElementById("hand-fab-tbody");
+  const mobileList = document.getElementById("hand-mobile-list");
+  const table = document.getElementById("hand-table");
   tbody.innerHTML = "";
+
+  if (appState.isMobile) {
+    if (table) table.classList.add("hidden");
+    if (mobileList) mobileList.classList.remove("hidden");
+  } else {
+    if (table) table.classList.remove("hidden");
+    if (mobileList) {
+      mobileList.classList.add("hidden");
+      mobileList.innerHTML = "";
+    }
+  }
 
   // Show loading state if data is being loaded
   if (
     appState.loadingTab === "hand" ||
     (appState.isLoading && appState.parts.hand.length === 0)
   ) {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
-    tbody.appendChild(row);
+    if (appState.isMobile && mobileList) {
+      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-purple-300 mr-2"></i> Loading hand fabrication parts...</div>`;
+    } else {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
+      tbody.appendChild(row);
+    }
     return;
   }
 
   const filtered = filterParts(appState.parts.hand, appState.searchQuery);
+
+  if (appState.isMobile && mobileList) {
+    mobileList.innerHTML = "";
+    if (filtered.length === 0) {
+      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400">${
+        appState.searchQuery ? "No results found." : "No Hand Fab parts."
+      }</div>`;
+      return;
+    }
+    for (const part of filtered) {
+      const index = appState.parts.hand.indexOf(part);
+      const card = createHandFabCard(part, index);
+      mobileList.appendChild(card);
+    }
+    return;
+  }
 
   if (filtered.length === 0) {
     const row = document.createElement("tr");
@@ -161,11 +272,12 @@ export function renderHandFab() {
       appState.searchQuery ? "No results found." : "No Hand Fab parts."
     }</td>`;
     tbody.appendChild(row);
-  } else {
-    for (const part of filtered) {
-      const index = appState.parts.hand.indexOf(part);
-      const row = createHandFabRow(part, index);
-      tbody.appendChild(row);
-    }
+    return;
+  }
+
+  for (const part of filtered) {
+    const index = appState.parts.hand.indexOf(part);
+    const row = createHandFabRow(part, index);
+    tbody.appendChild(row);
   }
 }

@@ -10,23 +10,136 @@ import { saveCurrentTab } from "./persistence.js";
 
 // Debounce timer for search
 let searchDebounceTimer = null;
+const DESKTOP_TABS = ["review", "cnc", "hand", "completed"];
+const MOBILE_TABS = ["hand", "completed"];
+let mobileGesturesAttached = false;
+let swipeStartX = 0;
+let swipeStartY = 0;
+
+function getAllowedTabs() {
+  return appState.isMobile ? MOBILE_TABS : DESKTOP_TABS;
+}
+
+function updateMobileNavActive(tab) {
+  const handBtn = document.getElementById("mobile-tab-hand");
+  const completedBtn = document.getElementById("mobile-tab-completed");
+  const buttons = [
+    { element: handBtn, tab: "hand" },
+    { element: completedBtn, tab: "completed" },
+  ];
+  buttons.forEach(({ element, tab: buttonTab }) => {
+    if (!element) return;
+    if (buttonTab === tab) {
+      element.classList.add("mobile-tab-active");
+    } else {
+      element.classList.remove("mobile-tab-active");
+    }
+  });
+}
+
+function toggleMobileNavVisibility() {
+  const nav = document.getElementById("mobile-tab-nav");
+  if (!nav) return;
+  nav.classList.toggle("hidden", !appState.isMobile);
+}
+
+function toggleDesktopTabsVisibility() {
+  const desktopRow = document.getElementById("desktop-tab-row");
+  if (!desktopRow) return;
+  desktopRow.classList.toggle("hidden", appState.isMobile);
+}
+
+function toggleActionKeyVisibility() {
+  const actionKey = document.getElementById("action-key");
+  if (!actionKey) return;
+  actionKey.classList.toggle("hidden", appState.isMobile);
+}
+
+function toggleAddButtonVisibility() {
+  const addBtn = document.getElementById("add-part-btn");
+  if (!addBtn) return;
+  addBtn.classList.toggle("hidden", appState.isMobile);
+}
+
+function toggleSettingsButtonVisibility() {
+  const settingsBtn = document.getElementById("settings-btn");
+  if (!settingsBtn) return;
+  settingsBtn.classList.toggle("hidden", appState.isMobile);
+}
+
+function handleSwipeDirection(direction) {
+  const order = getAllowedTabs();
+  const currentIndex = order.indexOf(appState.currentTab);
+  if (currentIndex === -1) return;
+  const nextIndex = currentIndex + direction;
+  if (nextIndex < 0 || nextIndex >= order.length) return;
+  switchTab(order[nextIndex]);
+}
+
+function onTouchStart(event) {
+  if (!appState.isMobile) return;
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  swipeStartX = touch.clientX;
+  swipeStartY = touch.clientY;
+}
+
+function onTouchEnd(event) {
+  if (!appState.isMobile) return;
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  const deltaX = touch.clientX - swipeStartX;
+  const deltaY = touch.clientY - swipeStartY;
+  if (Math.abs(deltaX) < 40 || Math.abs(deltaY) > 60) return;
+  handleSwipeDirection(deltaX < 0 ? 1 : -1);
+}
+
+function attachSwipeHandlers() {
+  if (mobileGesturesAttached) return;
+  const targets = ["content-hand", "content-completed"]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+  targets.forEach((target) => {
+    target.addEventListener("touchstart", onTouchStart, { passive: true });
+    target.addEventListener("touchend", onTouchEnd, { passive: true });
+  });
+  mobileGesturesAttached = true;
+}
+
+export function configureMobileUI() {
+  toggleMobileNavVisibility();
+  toggleDesktopTabsVisibility();
+  toggleActionKeyVisibility();
+  toggleAddButtonVisibility();
+  toggleSettingsButtonVisibility();
+  if (appState.isMobile) {
+    attachSwipeHandlers();
+    updateMobileNavActive(appState.currentTab);
+  }
+}
 
 /**
  * Switch to a specific tab
  * @param {string} tab - The tab to switch to
  */
 export async function switchTab(tab) {
-  appState.currentTab = tab;
+  let targetTab = tab;
+  const allowedTabs = getAllowedTabs();
+  if (!allowedTabs.includes(targetTab)) {
+    targetTab = allowedTabs[0];
+  }
+  appState.currentTab = targetTab;
 
   // Save current tab to localStorage
-  saveCurrentTab(tab);
+  saveCurrentTab(targetTab);
 
   // Reset UI
-  for (const t of ["review", "cnc", "hand", "completed"]) {
+  for (const t of DESKTOP_TABS) {
     const btn = document.getElementById(`tab-${t}`);
     const content = document.getElementById(`content-${t}`);
+    if (!btn || !content) continue;
 
-    if (t === tab) {
+    if (t === targetTab) {
       btn.classList.add("active-tab", "text-blue-400");
       btn.classList.remove("text-gray-400");
       content.classList.remove("hidden");
@@ -39,18 +152,19 @@ export async function switchTab(tab) {
       content.classList.remove("grid");
     }
   }
+  updateMobileNavActive(targetTab);
 
   // Fetch fresh data from server
   try {
-    if (tab === "review") {
+    if (targetTab === "review") {
       // Load all parts for review tab to ensure proper categorization
       await loadAllParts();
     } else {
       // Load fresh data for specific category
-      await loadPartsForCategory(tab);
+      await loadPartsForCategory(targetTab);
     }
   } catch (error) {
-    console.error(`Failed to load ${tab} data:`, error);
+    console.error(`Failed to load ${targetTab} data:`, error);
     // Still render with current data if fetch fails
   }
 }

@@ -15,6 +15,44 @@ export function generateEmptyMessageCompleted() {
   return '<i class="fa-solid fa-box-open text-4xl mb-3 opacity-50"></i><p>No completed parts yet.</p>';
 }
 
+function createCompletedCard(part, index) {
+  const isCNC = part.type === "cnc";
+  const showInfoButton = !appState.isMobile;
+  const card = document.createElement("div");
+  card.className = "mobile-card";
+  card.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="text-sm font-semibold text-blue-100">${part.name || "Unnamed"}</div>
+        <div class="text-[11px] text-gray-500">${part.partId || part.id || "N/A"}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="mobile-type-pill ${isCNC ? "type-cnc" : "type-hand"}">
+          ${isCNC ? "CNC" : "HAND FAB"}
+        </span>
+        <span class="mobile-status-pill status-completed">Completed</span>
+      </div>
+    </div>
+    <div class="text-[11px] text-gray-400 mt-1">${part.subsystem || ""}</div>
+    <div class="mobile-card-actions mt-3">
+      ${
+        showInfoButton
+          ? `<button onclick="globalThis.viewPartInfo('completed', ${index})" class="mobile-icon-btn text-gray-300" aria-label="Info">
+        <i class="fa-solid fa-circle-info"></i>
+      </button>`
+          : ""
+      }
+      <button onclick="globalThis.markUncompleted(${index})" class="mobile-icon-btn text-yellow-300" aria-label="Restore">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button onclick="globalThis.deletePart('completed', ${index})" class="mobile-icon-btn text-red-300" aria-label="Delete">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  `;
+  return card;
+}
+
 /**
  * Create a completed table row
  * @param {Object} part - The part object
@@ -72,30 +110,67 @@ export function createCompletedRow(part, index) {
 export function renderCompleted() {
   const tbody = document.getElementById("completed-tbody");
   const emptyMsg = document.getElementById("completed-empty");
+  const mobileList = document.getElementById("completed-mobile-list");
+  const table = document.getElementById("completed-table");
   tbody.innerHTML = "";
+
+  if (appState.isMobile) {
+    if (table) table.classList.add("hidden");
+    if (mobileList) mobileList.classList.remove("hidden");
+    if (emptyMsg) emptyMsg.classList.add("hidden");
+  } else {
+    if (table) table.classList.remove("hidden");
+    if (mobileList) {
+      mobileList.classList.add("hidden");
+      mobileList.innerHTML = "";
+    }
+  }
 
   // Show loading state if data is being loaded
   if (
     appState.loadingTab === "completed" ||
     (appState.isLoading && appState.parts.completed.length === 0)
   ) {
-    emptyMsg.classList.remove("hidden");
-    emptyMsg.innerHTML =
-      '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-green-400 mr-2"></i> Loading completed parts...</div>';
+    if (appState.isMobile && mobileList) {
+      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-green-300 mr-2"></i> Loading completed parts...</div>`;
+    } else if (emptyMsg) {
+      emptyMsg.classList.remove("hidden");
+      emptyMsg.innerHTML =
+        '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-green-400 mr-2"></i> Loading completed parts...</div>';
+    }
     return;
   }
 
   const filtered = filterParts(appState.parts.completed, appState.searchQuery);
 
-  if (filtered.length === 0) {
-    emptyMsg.classList.remove("hidden");
-    emptyMsg.innerHTML = generateEmptyMessageCompleted();
-  } else {
-    emptyMsg.classList.add("hidden");
+  if (appState.isMobile && mobileList) {
+    mobileList.innerHTML = "";
+    if (filtered.length === 0) {
+      mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400">${generateEmptyMessageCompleted()}</div>`;
+      return;
+    }
     for (const part of filtered) {
       const index = appState.parts.completed.indexOf(part);
-      const row = createCompletedRow(part, index);
-      tbody.appendChild(row);
+      const card = createCompletedCard(part, index);
+      mobileList.appendChild(card);
     }
+    return;
+  }
+
+  if (filtered.length === 0) {
+    if (emptyMsg) {
+      emptyMsg.classList.remove("hidden");
+      emptyMsg.innerHTML = generateEmptyMessageCompleted();
+    }
+    return;
+  }
+
+  if (emptyMsg) {
+    emptyMsg.classList.add("hidden");
+  }
+  for (const part of filtered) {
+    const index = appState.parts.completed.indexOf(part);
+    const row = createCompletedRow(part, index);
+    tbody.appendChild(row);
   }
 }
