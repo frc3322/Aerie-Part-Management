@@ -82,6 +82,11 @@ import {
 } from "./modules/drawingViewer.js";
 import { showPartInfo } from "./modules/infoModals.js";
 
+const REFRESH_NOTICE_DELAY_MS = 5 * 60 * 1000;
+let refreshNoticeTimerId = null;
+let refreshNoticeElement = null;
+let refreshNoticeVisible = false;
+
 function applyTooltip(element) {
     const tooltipText = element.getAttribute("title");
     if (!tooltipText || element.dataset.tooltipInitialized === "true") return;
@@ -133,6 +138,69 @@ function renderCat() {
     document.body.append(shell);
 }
 
+function buildRefreshNotice() {
+    if (refreshNoticeElement) return refreshNoticeElement;
+    const wrapper = document.createElement("div");
+    wrapper.id = "refresh-notice";
+    wrapper.className = "refresh-notice animate-fade-in shadow-3d";
+
+    const header = document.createElement("div");
+    header.className = "refresh-notice__header";
+
+    const dismissButton = document.createElement("button");
+    dismissButton.type = "button";
+    dismissButton.className = "refresh-notice__dismiss";
+    dismissButton.setAttribute("aria-label", "Dismiss refresh reminder");
+    dismissButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    dismissButton.addEventListener("click", () => {
+        wrapper.remove();
+        refreshNoticeVisible = false;
+    });
+
+    header.append(dismissButton);
+
+    const title = document.createElement("div");
+    title.className = "refresh-notice__title";
+    title.textContent = "New data may be available";
+
+    const message = document.createElement("p");
+    message.className = "refresh-notice__message";
+    message.textContent = "Refresh to see the latest parts.";
+
+    const actions = document.createElement("div");
+    actions.className = "refresh-notice__actions";
+
+    const refreshButton = document.createElement("button");
+    refreshButton.type = "button";
+    refreshButton.className = "refresh-notice__button neumorphic-btn";
+    refreshButton.innerHTML =
+        '<i class="fa-solid fa-arrows-rotate mr-2"></i><span>Refresh now</span>';
+    refreshButton.addEventListener("click", () => {
+        window.location.reload();
+    });
+
+    actions.append(refreshButton);
+
+    wrapper.append(header, title, message, actions);
+    refreshNoticeElement = wrapper;
+    return wrapper;
+}
+
+function showRefreshNotice() {
+    if (refreshNoticeVisible) return;
+    const notice = buildRefreshNotice();
+    document.body.append(notice);
+    refreshNoticeVisible = true;
+}
+
+function scheduleRefreshNotice() {
+    clearTimeout(refreshNoticeTimerId);
+    refreshNoticeTimerId = window.setTimeout(
+        showRefreshNotice,
+        REFRESH_NOTICE_DELAY_MS
+    );
+}
+
 const tooltipObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
         mutation.addedNodes.forEach((node) => {
@@ -171,6 +239,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         applyTabVisibilitySettings();
         configureMobileUI();
         switchTab(appState.currentTab);
+        scheduleRefreshNotice();
     }
 });
 
@@ -180,6 +249,7 @@ globalThis.addEventListener("authenticated", () => {
     applyTabVisibilitySettings();
     configureMobileUI();
     switchTab(appState.currentTab);
+    scheduleRefreshNotice();
 });
 
 globalThis.addEventListener("resize", () => {

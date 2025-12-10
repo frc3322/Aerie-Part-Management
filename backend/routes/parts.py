@@ -62,7 +62,9 @@ def _append_hand_worker(existing_misc: Any, worker_name: str) -> Dict[str, Any]:
     """
     if not worker_name:
         return existing_misc if isinstance(existing_misc, dict) else {}
-    misc_copy: Dict[str, Any] = existing_misc.copy() if isinstance(existing_misc, dict) else {}
+    misc_copy: Dict[str, Any] = (
+        existing_misc.copy() if isinstance(existing_misc, dict) else {}
+    )
     raw_log = misc_copy.get("handWorkers") or misc_copy.get("hand_workers") or []
     normalized_log: List[Dict[str, str]] = []
     if isinstance(raw_log, list):

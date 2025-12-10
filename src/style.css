@@ -226,3 +226,90 @@ body {
     bottom: -10px;
     opacity: 0.9;
 }
+
+#refresh-notice {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: min(280px, calc(100% - 32px));
+    padding: 10px 12px 12px 12px;
+    border-radius: 13px;
+    background: linear-gradient(145deg, #252a35, #1c1f27);
+    border: 1px solid rgba(99, 179, 237, 0.22);
+    box-shadow: 8px 8px 16px #161920, -8px -8px 16px #2f3642;
+    color: #e2e8f0;
+    z-index: 70;
+    backdrop-filter: blur(8px);
+    position: fixed;
+}
+
+.refresh-notice__header {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.refresh-notice__title {
+    margin-top: 2px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.refresh-notice__message {
+    margin-top: 2px;
+    color: #cbd5e0;
+    line-height: 1.4;
+    font-size: 13px;
+}
+
+.refresh-notice__actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.refresh-notice__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    color: #e2f3ff;
+    font-size: 13px;
+    background: linear-gradient(145deg, #3a7bd5, #2b567a);
+    box-shadow: 6px 6px 14px #152032, -6px -6px 14px #315a7f;
+    border: 1px solid rgba(99, 179, 237, 0.28);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.refresh-notice__button:hover {
+    transform: translateY(-1px);
+    box-shadow: 8px 8px 16px #152032, -8px -8px 16px #315a7f;
+}
+
+.refresh-notice__button:active {
+    transform: translateY(0);
+    box-shadow: inset 4px 4px 10px #1b2a3e, inset -4px -4px 10px #2f4d6b;
+}
+
+.refresh-notice__dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.15s ease;
+}
+
+.refresh-notice__dismiss:hover {
+    color: #63b3ed;
+    background: rgba(99, 179, 237, 0.12);
+}
