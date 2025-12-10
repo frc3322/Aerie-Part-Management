@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ $EUID -ne 0 ]]; then
+  printf "This script must be run as root.\n" >&2
+  exit 1
+fi
+
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 backend_dir="$project_root/backend"
 venv_path="${VENV_PATH:-$project_root/.venv}"
@@ -12,8 +17,9 @@ install_uv() {
   if [[ -n "$uv_bin" ]]; then
     return
   fi
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  uv_bin="$(command -v uv || true)"
+  # Install uv into a global location so the systemd user can read it.
+  UV_INSTALL_DIR=/usr/local/bin curl -LsSf https://astral.sh/uv/install.sh | sh
+  uv_bin="${UV_BIN:-$(command -v uv || true)}"
   if [[ -z "$uv_bin" ]]; then
     printf "uv installation failed. Install uv and rerun.\n" >&2
     exit 1
@@ -56,12 +62,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=$(whoami)
-Group=$(whoami)
-WorkingDirectory=$backend_dir
-Environment="PATH=$venv_path/bin:\$PATH"
-Environment="VIRTUAL_ENV=$venv_path"
-ExecStart=$uv_bin run python $backend_dir/deploy.py prod-multi --port 5000
+User=root
+Group=root
+Environment="PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+WorkingDirectory=/root/part-management-system/backend
+ExecStart=/root/.local/bin/uv run python /root/part-management-system/backend/deploy.py prod-multi --port 5000
 Restart=always
 RestartSec=5
 
