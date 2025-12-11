@@ -2,7 +2,7 @@
 
 ## State Architecture
 
-The Part Management System uses a **centralized, in-memory state management** approach implemented in vanilla JavaScript. The `state.js` module serves as the single source of truth for all application data.
+The Part Management System uses a **reactive state management** approach implemented in vanilla JavaScript. The system combines a centralized state object with an observer pattern that automatically triggers UI updates when state changes. This provides the benefits of reactive frameworks without external dependencies.
 
 ## Core State Structure
 
@@ -56,6 +56,112 @@ export const appState = {
  * }} Part
  */
 ```
+
+## Reactive State System
+
+The application uses a reactive state management system (`reactiveState.js`) that provides automatic UI updates when state changes. This system wraps the central state object and provides subscription-based reactivity.
+
+### Core Reactive Functions
+
+#### `initReactiveState(state)` - Initialize reactivity
+
+```javascript
+/**
+ * Initialize reactive state wrapper
+ * @param {Object} state - State object to make reactive
+ * @returns {Object} Reactive state reference
+ */
+export function initReactiveState(state) {
+    // Sets up reactive state infrastructure
+}
+```
+
+#### `setState(path, value)` - Reactive state updates
+
+```javascript
+/**
+ * Update state reactively at specified path
+ * @param {string} path - Dot-notation path (e.g., "currentTab", "parts.review")
+ * @param {*} value - New value or updater function
+ */
+export function setState(path, value) {
+    // Updates state and notifies subscribers
+}
+```
+
+**Update Patterns**:
+```javascript
+// Direct value assignment
+setState("currentTab", "review");
+
+// Nested object updates
+setState("parts.review", []);
+
+// Functional updates
+setState("searchQuery", (prev) => prev + " filter");
+
+// Deep property updates
+setState("parts.hand.0.status", "In Progress");
+```
+
+#### `subscribe(path, callback)` - State change subscriptions
+
+```javascript
+/**
+ * Subscribe to state changes at specific path
+ * @param {string} path - Path to watch ("*" for all changes)
+ * @param {Function} callback - Callback function (value, fullState)
+ * @returns {Function} Unsubscribe function
+ */
+export function subscribe(path, callback) {
+    // Registers reactive callback
+}
+```
+
+**Subscription Examples**:
+```javascript
+// Subscribe to tab changes
+subscribe("currentTab", (tab) => switchTab(tab));
+
+// Subscribe to parts updates
+subscribe("parts.review", (parts) => renderReview(parts));
+
+// Subscribe to all state changes
+subscribe("*", (change, state) => {
+    console.log("State changed:", change.path, change.value);
+});
+```
+
+### Reactive Integration Pattern
+
+**Module Integration**:
+```javascript
+// In tabs.js - reactive tab switching
+subscribe("currentTab", (tab) => {
+    // Update UI when currentTab changes
+    switchTab(tab);
+});
+
+// In review.js - reactive part list updates
+subscribe("parts.review", (parts) => {
+    // Re-render when review parts change
+    renderReview();
+});
+
+// In state.js - reactive search filtering
+subscribe("searchQuery", (query) => {
+    // Apply search filter when query changes
+    applySearchFilter(query);
+});
+```
+
+### Benefits of Reactive State
+
+- **Automatic UI Updates**: Components automatically reflect state changes
+- **Performance**: Targeted re-renders instead of full page updates
+- **Clean Architecture**: Clear separation between state logic and UI updates
+- **Developer Experience**: No manual DOM synchronization required
+- **Memory Efficient**: Granular subscriptions prevent unnecessary updates
 
 ## State Management Patterns
 

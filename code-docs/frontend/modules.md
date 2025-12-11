@@ -2,7 +2,7 @@
 
 ## Module Organization
 
-The `src/modules/` directory contains the core business logic, organized by feature and responsibility. Each module follows consistent patterns for imports, exports, and documentation.
+The `src/modules/` directory contains the core business logic, organized by feature and responsibility. Each module follows consistent patterns for imports, exports, and documentation. The architecture has been modernized with utility modules providing shared functionality and reactive state management for automatic UI updates.
 
 ## Core Modules
 
@@ -148,6 +148,116 @@ checkAuthentication() // Returns promise<boolean>
 
 **Modal Types**: Settings, Add Part, Assign Part, Unclaim Part
 
+## Utility Modules
+
+### Utility Module Architecture
+
+The `src/utils/` directory contains specialized utility modules that provide shared functionality across the application. These modules implement common patterns and reduce code duplication.
+
+#### eventDelegation.js - Event Handling System
+
+**Purpose**: Centralized event delegation system that replaces scattered onclick handlers
+
+**Integration Pattern**:
+```javascript
+import { registerActions, initEventDelegation } from '../utils/eventDelegation.js';
+
+// Register action handlers
+const actions = {
+    approvePart: (index) => approveAndMovePart(index),
+    switchTab: (tab) => switchTab(tab),
+    handleSearch: (query) => setState('searchQuery', query)
+};
+
+registerActions(actions);
+initEventDelegation();
+```
+
+**Benefits**: Reduces DOM queries, cleaner HTML, consistent event handling
+
+#### reactiveState.js - Reactive State Management
+
+**Purpose**: Observer pattern for automatic UI updates on state changes
+
+**Integration Pattern**:
+```javascript
+import { subscribe, setState } from '../utils/reactiveState.js';
+
+// Reactive UI updates
+subscribe('currentTab', (tab) => renderTabContent(tab));
+subscribe('parts.review', (parts) => renderReviewList(parts));
+
+// State updates trigger automatic re-renders
+setState('currentTab', 'cnc');
+```
+
+**Benefits**: Automatic UI synchronization, granular updates, clean separation of concerns
+
+#### templateHelpers.js - DOM Creation Utilities
+
+**Purpose**: Programmatic DOM element creation and manipulation
+
+**Integration Pattern**:
+```javascript
+import { createElement, renderList } from '../utils/templateHelpers.js';
+
+// Create elements programmatically
+const button = createElement('button', {
+    className: 'neumorphic-btn',
+    dataset: { action: 'approvePart', index: 5 },
+    children: [createElement('i', { className: 'fa fa-check' })]
+});
+
+// Efficient list rendering
+renderList(container, parts, (part, index) => createPartCard(part, index));
+```
+
+**Benefits**: Type-safe DOM creation, no innerHTML, maintainable templates
+
+#### modalManager.js - Modal Dialog Management
+
+**Purpose**: Centralized modal management with accessibility support
+
+**Integration Pattern**:
+```javascript
+import { openModal, closeModal, setModalLoading } from '../utils/modalManager.js';
+
+// Open modal with options
+openModal('settings-modal', {
+    onOpen: (modal) => initializeSettings(modal),
+    focusSelector: '.settings-input'
+});
+
+// Loading states
+setModalLoading('processing-modal', true);
+await processData();
+setModalLoading('processing-modal', false);
+closeModal('processing-modal');
+```
+
+**Benefits**: Consistent UX, accessibility compliance, centralized modal logic
+
+#### apiErrorHandler.js - Error Handling Wrapper
+
+**Purpose**: Standardized error handling for API operations
+
+**Integration Pattern**:
+```javascript
+import { withErrorHandling } from '../utils/apiErrorHandler.js';
+
+// Wrap API calls with error handling
+await withErrorHandling(
+    async () => await deletePart(partId),
+    {
+        loadingTargets: [deleteButton],
+        onError: (error) => showErrorMessage(error.message),
+        onSuccess: () => refreshUI()
+    }
+);
+```
+
+**Benefits**: DRY error handling, consistent loading states, user-friendly errors
+
 ## Feature-Specific Modules
 
 ### 6. review.js - Review Tab Logic
@@ -204,15 +314,21 @@ checkAuthentication() // Returns promise<boolean>
 
 ```
 main.js
-├── state.js (core state)
-├── tabs.js
-│   ├── review.js → state.js
-│   ├── cnc.js → state.js
-│   ├── handFab.js → state.js, utils/helpers.js
-│   └── completed.js → state.js
-├── partActions.js → state.js, tabs.js
-├── modals.js → state.js, utils/helpers.js
-└── formHandler.js → state.js, tabs.js, utils/helpers.js
+├── utils/
+│   ├── eventDelegation.js (event handling system)
+│   ├── reactiveState.js (reactive state management)
+│   ├── modalManager.js (modal system)
+│   ├── apiErrorHandler.js (error handling)
+│   └── templateHelpers.js (DOM utilities)
+├── state.js (core state + reactive wrapper)
+├── tabs.js (navigation + reactive subscriptions)
+│   ├── review.js → reactiveState, templateHelpers
+│   ├── cnc.js → reactiveState, templateHelpers
+│   ├── handFab.js → reactiveState, templateHelpers, helpers.js
+│   └── completed.js → reactiveState, templateHelpers
+├── partActions.js → reactiveState, modalManager, apiErrorHandler
+├── modals.js → reactiveState, modalManager, templateHelpers, helpers.js
+└── formHandler.js → reactiveState, modalManager, templateHelpers, helpers.js
 ```
 
 ## Common Patterns

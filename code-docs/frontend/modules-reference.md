@@ -111,6 +111,74 @@
 - `handleAuthSubmit()`: Process login form
 - `showAuthModal()`: Display auth dialog
 
+## Utility Modules
+
+### eventDelegation.js - Event Delegation System
+**Purpose**: Centralized event handling system using data-action attributes
+
+**Key Functions**:
+- `initEventDelegation(root)`: Initialize delegation on root element
+- `registerActions(actionMap)`: Register action handler functions
+- `handleDelegatedClick/Submit/Change/Keyup`: Internal event handlers
+
+**Event Types**: click, submit, change, keyup events
+
+**Benefits**: Replaces onclick handlers, reduces DOM queries, cleaner HTML
+
+### reactiveState.js - Reactive State Management
+**Purpose**: Observer pattern for automatic UI updates on state changes
+
+**Key Functions**:
+- `initReactiveState(state)`: Wrap state object with reactivity
+- `setState(path, value)`: Update state and notify subscribers
+- `subscribe(path, callback)`: Subscribe to state changes
+- `getState(path)`: Read state values
+
+**Subscription Patterns**: Path-based (e.g., "currentTab", "parts.review") or global ("*")
+
+**Benefits**: Automatic UI synchronization, granular updates, clean architecture
+
+### templateHelpers.js - DOM Creation Utilities
+**Purpose**: Programmatic DOM element creation and manipulation
+
+**Key Functions**:
+- `createElement(tag, options)`: Create DOM elements with configuration
+- `html(markup)`: Parse HTML strings into DocumentFragments
+- `cloneTemplate(id)`: Clone HTML template elements
+- `renderList(container, items, renderItem)`: Efficient list rendering
+
+**Options**: className, text, attrs, dataset, children
+
+**Benefits**: Type-safe DOM creation, no innerHTML, maintainable code
+
+### modalManager.js - Modal Dialog Management
+**Purpose**: Centralized modal management with accessibility support
+
+**Key Functions**:
+- `openModal(id, options)`: Open modal with focus management
+- `closeModal(id, options)`: Close modal and cleanup
+- `setModalLoading(id, isLoading)`: Manage loading states
+- `ensureKeyListener()`: Setup ESC key handling
+
+**Features**: Focus management, keyboard navigation, ARIA support, modal stacking
+
+**Benefits**: Consistent UX, accessibility compliance, centralized logic
+
+### apiErrorHandler.js - API Error Handling
+**Purpose**: Standardized error handling wrapper for async operations
+
+**Key Functions**:
+- `withErrorHandling(asyncFn, options)`: Wrap async functions with error handling
+
+**Options**:
+- `onError`: Custom error handler
+- `onSuccess`: Success callback
+- `onFinally`: Cleanup callback
+- `loadingTargets`: Elements to disable during operation
+- `fallbackMessage`: Default error message
+
+**Benefits**: DRY principle, consistent loading states, user-friendly errors
+
 ## HTML Components
 
 ### tabs.html - Navigation Tabs

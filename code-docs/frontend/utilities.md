@@ -220,6 +220,489 @@ try {
 
 ---
 
+## Event Delegation System (eventDelegation.js)
+
+### Overview
+
+**Purpose**: Centralized event handling system that replaces scattered `onclick` attributes with a unified delegation pattern
+
+**Architecture**: Uses a single event listener on the document body that dispatches actions based on `data-action` attributes
+
+### Core Functions
+
+#### `initEventDelegation(root)` - Initialize delegation system
+
+```javascript
+/**
+ * Initialize event delegation on a root element
+ * @param {Element} root - Root element for delegation (defaults to document)
+ */
+export function initEventDelegation(root = document) {
+    // Sets up listeners for click, submit, change, and keyup events
+}
+```
+
+**Event Types Supported**:
+- `click` - Button clicks and general interactions
+- `submit` - Form submissions
+- `change` - Select dropdown changes
+- `keyup` - Keyboard input events
+
+#### `registerActions(actionMap)` - Register action handlers
+
+```javascript
+/**
+ * Register action handlers for delegation
+ * @param {Object} actionMap - Object mapping action names to handler functions
+ */
+export function registerActions(actionMap) {
+    // Maps action names to their handler functions
+}
+```
+
+**Usage Pattern**:
+```javascript
+import { registerActions, initEventDelegation } from './utils/eventDelegation.js';
+
+const actions = {
+    approvePart: (index) => { /* approve logic */ },
+    switchTab: (tabName) => { /* tab switching */ }
+};
+
+registerActions(actions);
+initEventDelegation();
+```
+
+### Event Payload Processing
+
+**Data Attribute Extraction**:
+- `data-action` - Specifies the action to dispatch
+- `data-*` - Additional parameters passed to the action handler
+- Automatic type coercion (strings, numbers, booleans)
+
+**Handler Parameter Mapping**:
+```javascript
+// HTML: <button data-action="approvePart" data-index="5" data-category="review">
+approvePart(index, event) // Called with extracted parameters
+```
+
+### Benefits
+
+- **Reduced DOM Queries**: Single delegation listener vs multiple individual listeners
+- **Cleaner HTML**: No inline `onclick` handlers
+- **Consistent Event Handling**: Standardized parameter extraction and error handling
+- **Memory Efficient**: Fewer event listeners attached to DOM elements
+
+---
+
+## Reactive State Management (reactiveState.js)
+
+### Overview
+
+**Purpose**: Reactive state management system that automatically triggers UI updates when state changes
+
+**Architecture**: Observer pattern with path-based subscriptions for granular reactivity
+
+### Core Functions
+
+#### `initReactiveState(state)` - Initialize reactive state
+
+```javascript
+/**
+ * Initialize reactive state wrapper around existing state object
+ * @param {Object} state - The state object to make reactive
+ * @returns {Object} Reactive state proxy
+ */
+export function initReactiveState(state) {
+    // Wraps state object with reactivity
+}
+```
+
+#### `setState(path, value)` - Update state reactively
+
+```javascript
+/**
+ * Update state at specified path and notify subscribers
+ * @param {string} path - Dot-notation path to state property
+ * @param {*} value - New value or updater function
+ */
+export function setState(path, value) {
+    // Updates state and triggers reactive updates
+}
+```
+
+**Path Examples**:
+```javascript
+setState("currentTab", "review");           // Direct property
+setState("parts.review", []);               // Nested object
+setState("isAuthenticated", true);          // Boolean value
+setState("searchQuery", (prev) => prev + "x"); // Function updater
+```
+
+#### `subscribe(path, callback)` - Subscribe to state changes
+
+```javascript
+/**
+ * Subscribe to changes at specific path
+ * @param {string} path - Path to watch (or "*" for all changes)
+ * @param {Function} callback - Callback function (value, fullState)
+ * @returns {Function} Unsubscribe function
+ */
+export function subscribe(path, callback) {
+    // Registers callback for state changes
+}
+```
+
+**Subscription Patterns**:
+```javascript
+// Subscribe to specific property
+const unsubscribe = subscribe("currentTab", (tab) => {
+    renderTab(tab);
+});
+
+// Subscribe to nested changes
+subscribe("parts.review", (parts) => {
+    renderReviewList(parts);
+});
+
+// Subscribe to all changes
+subscribe("*", (change, state) => {
+    console.log("State changed:", change);
+});
+```
+
+### Reactive Integration
+
+**Automatic UI Updates**:
+```javascript
+// In module initialization
+subscribe("currentTab", (tab) => switchTab(tab));
+subscribe("searchQuery", (query) => handleSearch(query));
+subscribe("parts.review", (parts) => renderReview(parts));
+```
+
+**Benefits**:
+- **Automatic Updates**: UI automatically reflects state changes
+- **Granular Subscriptions**: Subscribe only to relevant state changes
+- **Performance**: Targeted re-renders instead of full page updates
+- **Clean Architecture**: Clear separation between state and UI logic
+
+---
+
+## Template Helpers (templateHelpers.js)
+
+### Overview
+
+**Purpose**: Utility functions for programmatic DOM creation and manipulation
+
+**Architecture**: Pure functions that create DOM elements without side effects
+
+### Core Functions
+
+#### `createElement(tag, options)` - Create DOM elements programmatically
+
+```javascript
+/**
+ * Create a DOM element with specified attributes and content
+ * @param {string} tag - HTML tag name
+ * @param {Object} options - Element configuration
+ * @returns {Element} Created DOM element
+ */
+export function createElement(tag, options = {}) {
+    // Creates and configures DOM element
+}
+```
+
+**Configuration Options**:
+```javascript
+const button = createElement("button", {
+    className: "neumorphic-btn",
+    text: "Click Me",
+    attrs: { type: "button", disabled: false },
+    dataset: { action: "handleClick", index: 5 },
+    children: [iconElement]
+});
+```
+
+#### `html(markup)` - Parse HTML strings
+
+```javascript
+/**
+ * Parse HTML string into DocumentFragment
+ * @param {string} markup - HTML markup string
+ * @returns {DocumentFragment} Parsed HTML content
+ */
+export function html(markup) {
+    // Creates template and returns content
+}
+```
+
+**Usage**:
+```javascript
+const fragment = html(`
+    <div class="card">
+        <h3>Title</h3>
+        <p>Description</p>
+    </div>
+`);
+container.appendChild(fragment);
+```
+
+#### `cloneTemplate(id)` - Clone HTML templates
+
+```javascript
+/**
+ * Clone content from HTML template element
+ * @param {string} id - Template element ID
+ * @returns {Element|null} Cloned template content
+ */
+export function cloneTemplate(id) {
+    // Clones template content safely
+}
+```
+
+**Template Usage**:
+```html
+<template id="part-card-template">
+    <div class="part-card">
+        <h4 class="part-name"></h4>
+        <p class="part-status"></p>
+    </div>
+</template>
+```
+
+```javascript
+const card = cloneTemplate("part-card-template");
+// Populate and use card
+```
+
+#### `renderList(container, items, renderItem)` - Efficient list rendering
+
+```javascript
+/**
+ * Render list of items into container with efficient DOM updates
+ * @param {Element} container - Container element
+ * @param {Array} items - Array of items to render
+ * @param {Function} renderItem - Function to render individual item
+ */
+export function renderList(container, items, renderItem) {
+    // Efficiently renders list with minimal DOM manipulation
+}
+```
+
+**List Rendering Pattern**:
+```javascript
+function createPartCard(part, index) {
+    return createElement("div", {
+        className: "part-card",
+        dataset: { action: "editPart", index },
+        children: [
+            createElement("h4", { text: part.name }),
+            createElement("p", { text: part.status })
+        ]
+    });
+}
+
+// Render parts list
+renderList(container, parts, createPartCard);
+```
+
+### Benefits
+
+- **No InnerHTML**: Safer than string-based HTML generation
+- **Type Safety**: Leverages JavaScript's type system
+- **Performance**: Efficient DOM operations
+- **Maintainability**: Clear, readable code structure
+
+---
+
+## Modal Management (modalManager.js)
+
+### Overview
+
+**Purpose**: Centralized modal dialog management with accessibility and focus handling
+
+**Architecture**: Stack-based modal system supporting multiple concurrent modals
+
+### Core Functions
+
+#### `openModal(id, options)` - Open modal dialog
+
+```javascript
+/**
+ * Open modal and manage focus/accessibility
+ * @param {string} id - Modal element ID
+ * @param {Object} options - Modal configuration
+ */
+export function openModal(id, options = {}) {
+    // Opens modal with proper accessibility
+}
+```
+
+**Configuration Options**:
+```javascript
+openModal("settings-modal", {
+    onOpen: (modal) => initializeSettings(modal),
+    focusSelector: ".first-input",
+    closeOnBackdrop: true
+});
+```
+
+#### `closeModal(id, options)` - Close modal dialog
+
+```javascript
+/**
+ * Close modal and restore previous state
+ * @param {string} id - Modal element ID
+ * @param {Object} options - Close configuration
+ */
+export function closeModal(id, options = {}) {
+    // Closes modal and handles cleanup
+}
+```
+
+**Close Options**:
+```javascript
+closeModal("settings-modal", {
+    onClose: (modal) => saveSettings(modal)
+});
+```
+
+### Accessibility Features
+
+**Focus Management**:
+- Automatic focus to first focusable element or specified selector
+- Focus trap within modal
+- Restore focus to trigger element on close
+
+**Keyboard Navigation**:
+- ESC key closes top modal
+- Tab navigation within modal bounds
+- Proper ARIA attributes
+
+**Screen Reader Support**:
+- ARIA labels and descriptions
+- Focus announcements
+- Screen reader friendly markup
+
+### Modal State Management
+
+**Modal Stack**:
+- Supports multiple open modals
+- Proper z-index layering
+- ESC closes only top modal
+
+**Loading States**:
+```javascript
+export function setModalLoading(id, isLoading) {
+    // Disables/enables modal controls during operations
+}
+```
+
+**Usage Pattern**:
+```javascript
+// Open with loading state
+openModal("processing-modal");
+setModalLoading("processing-modal", true);
+
+// Perform async operation
+await processData();
+
+// Close when done
+setModalLoading("processing-modal", false);
+closeModal("processing-modal");
+```
+
+### Benefits
+
+- **Consistent UX**: Standardized modal behavior across application
+- **Accessibility**: WCAG compliant focus and keyboard navigation
+- **Maintainability**: Centralized modal logic
+- **Flexibility**: Configurable open/close behavior
+
+---
+
+## API Error Handling (apiErrorHandler.js)
+
+### Overview
+
+**Purpose**: Standardized error handling wrapper for asynchronous API operations
+
+**Architecture**: Higher-order function that wraps async operations with consistent error handling
+
+### Core Function
+
+#### `withErrorHandling(asyncFn, options)` - Wrap async operations
+
+```javascript
+/**
+ * Execute async function with standardized error handling
+ * @param {Function} asyncFn - Async function to execute
+ * @param {Object} options - Error handling configuration
+ * @returns {Promise} Result of async function
+ */
+export async function withErrorHandling(asyncFn, options = {}) {
+    // Wraps function with loading states and error handling
+}
+```
+
+**Configuration Options**:
+```javascript
+const result = await withErrorHandling(
+    async () => {
+        // API call logic
+        return await deletePart(partId);
+    },
+    {
+        onError: (error) => console.error("Delete failed:", error),
+        onSuccess: (result) => showSuccessMessage(),
+        onFinally: () => refreshUI(),
+        loadingTargets: [deleteButton, modalElement],
+        fallbackMessage: "Failed to delete part"
+    }
+);
+```
+
+### Loading State Management
+
+**Automatic UI Updates**:
+- Disables specified elements during operation
+- Shows loading indicators
+- Re-enables elements on completion
+
+**Target Selection**:
+```javascript
+// Disable specific button
+loadingTargets: [submitButton]
+
+// Disable multiple elements
+loadingTargets: [form, submitButton, cancelButton]
+
+// Disable all buttons in modal
+loadingTargets: modal.querySelectorAll('button')
+```
+
+### Error Handling Patterns
+
+**Consistent Error Display**:
+- User-friendly error messages
+- Fallback messages for unknown errors
+- Optional custom error handlers
+
+**Error Propagation**:
+- Errors are logged to console
+- Custom error handlers can be provided
+- Errors re-thrown after handling for caller processing
+
+### Benefits
+
+- **DRY Principle**: Eliminates repetitive try/catch blocks
+- **Consistent UX**: Standardized loading and error states
+- **Maintainability**: Centralized error handling logic
+- **Flexibility**: Configurable behavior per operation
+
+---
+
 ## Core Utilities (helpers.js)
 
 ### 1. Data Filtering
