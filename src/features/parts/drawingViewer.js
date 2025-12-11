@@ -1,6 +1,6 @@
-import { appState } from "./state.js";
-import { getPartDrawingBlobUrl } from "../utils/partsApi.js";
-import { hideActionIconKey, showActionIconKey } from "./auth.js";
+import { appState } from "../state/state.js";
+import { getPartDrawingBlobUrl } from "../../core/api/partsApi.js";
+import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 
 let drawingObjectUrl = null;
 let currentPartId = null;

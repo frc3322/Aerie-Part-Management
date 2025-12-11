@@ -1,8 +1,8 @@
 // Completed Tab Module
 // Handles the completed tab display and functionality
 
-import { appState } from "./state.js";
-import { filterParts } from "../utils/helpers.js";
+import { appState } from "../state/state.js";
+import { filterParts } from "../../core/utils/helpers.js";
 
 /**
  * Generate empty state message for completed tab

@@ -1,19 +1,19 @@
 // Form Handler Module
 // Handles form submission, data extraction, and part creation
 
-import { appState, updatePartInState, addPartToState } from "./state.js";
-import { renderReview } from "./review.js";
-import { renderCNC } from "./cnc.js";
-import { renderHandFab } from "./handFab.js";
-import { renderCompleted } from "./completed.js";
-import { closeModal } from "./modals.js";
-import { switchTab } from "./tabs.js";
+import { appState, updatePartInState, addPartToState } from "../state/state.js";
+import { renderReview } from "../tabs/review.js";
+import { renderCNC } from "../tabs/cnc.js";
+import { renderHandFab } from "../tabs/handFab.js";
+import { renderCompleted } from "../tabs/completed.js";
+import { closeModal } from "../modals/modals.js";
+import { switchTab } from "../navigation/tabs.js";
 import {
     createPart as apiCreatePart,
     updatePart as apiUpdatePart,
     uploadPartFile,
     getPart,
-} from "../utils/partsApi.js";
+} from "../../core/api/partsApi.js";
 
 function getMaterialInputValue() {
     const materialSelect = document.getElementById("input-material-select");

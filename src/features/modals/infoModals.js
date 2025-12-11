@@ -2,10 +2,10 @@
 // Handles capturing reviewer + misc key/values on review,
 // and displaying misc info for any part.
 
-import { renderReview } from "./review.js";
-import { renderCNC } from "./cnc.js";
-import { renderHandFab } from "./handFab.js";
-import { hideActionIconKey, showActionIconKey } from "./auth.js";
+import { renderReview } from "../tabs/review.js";
+import { renderCNC } from "../tabs/cnc.js";
+import { renderHandFab } from "../tabs/handFab.js";
+import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 
 const MODAL_IDS = {
     review: "review-misc-modal",

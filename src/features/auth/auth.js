@@ -1,12 +1,12 @@
 // Authentication Modal Module
 // Handles the authentication popup and API key validation
 
-import { setApiKey, clearApiKey, appState } from "./state.js";
+import { setApiKey, clearApiKey, appState } from "../state/state.js";
 import {
     setApiKeyCookie,
     checkAuthStatus,
     getApiKeyFromCookie,
-} from "../utils/auth.js";
+} from "../../core/auth/auth.js";
 
 /**
  * Hide the Action Icon Key when modals are shown

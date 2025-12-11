@@ -1,9 +1,9 @@
 // Review Tab Module
 // Handles the review tab display and functionality
 
-import { appState } from "./state.js";
-import { filterParts } from "../utils/helpers.js";
-import { createElement, renderList } from "../utils/templateHelpers.js";
+import { appState } from "../state/state.js";
+import { filterParts } from "../../core/utils/helpers.js";
+import { createElement, renderList } from "../../core/dom/templateHelpers.js";
 
 /**
  * Generate empty state message for review tab

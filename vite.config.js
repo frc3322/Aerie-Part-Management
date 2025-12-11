@@ -16,7 +16,11 @@ export default defineConfig({
     plugins: [
         tailwindcss(),
         handlebars({
-            partialDirectory: [path.resolve(__dirname, "./src/html")],
+            partialDirectory: [
+                path.resolve(__dirname, "./src/templates/layout"),
+                path.resolve(__dirname, "./src/templates/content"),
+                path.resolve(__dirname, "./src/templates/modals"),
+            ],
         }),
     ],
     build: {

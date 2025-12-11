@@ -305,7 +305,7 @@ export async function duplicatePart(partId, modifications = {}) {
 
 #### Adding Modal-Based Features
 
-1. **Create modal HTML template** in `src/html/`
+1. **Create modal HTML template** in `src/templates/modals/`
 2. **Use modalManager** for open/close operations
 3. **Add form handlers** with `data-action` attributes
 4. **Implement validation** and error handling

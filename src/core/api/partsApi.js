@@ -9,7 +9,7 @@ import {
     apiPostMultipart,
     apiDownloadFile,
 } from "./apiClient.js";
-import { getApiKeyFromCookie } from "./auth.js";
+import { getApiKeyFromCookie } from "../auth/auth.js";
 
 /**
  * Get all parts with optional filtering and pagination

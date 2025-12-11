@@ -1,17 +1,17 @@
 // State Management Module
 // Manages all application state and provides state-related utilities
 
-import { getParts, getStats } from "../utils/partsApi.js";
-import { renderReview } from "./review.js";
-import { renderCNC } from "./cnc.js";
-import { renderHandFab } from "./handFab.js";
-import { renderCompleted } from "./completed.js";
+import { getParts, getStats } from "../../core/api/partsApi.js";
+import { renderReview } from "../tabs/review.js";
+import { renderCNC } from "../tabs/cnc.js";
+import { renderHandFab } from "../tabs/handFab.js";
+import { renderCompleted } from "../tabs/completed.js";
 import { loadCurrentTab, loadTabVisibility } from "./persistence.js";
 import {
     initReactiveState,
     setState,
     getState,
-} from "../utils/reactiveState.js";
+} from "../../core/state/reactiveState.js";
 
 /** @typedef {{id?: number, type?: string, name?: string, subsystem?: string, assigned?: string, status: string, notes?: string, file?: string, onshapeUrl?: string, claimedDate?: string, category?: string, createdAt?: string, updatedAt?: string, amount?: number}} Part */
 

@@ -6,13 +6,17 @@ import {
     loadAllParts,
     loadPartsForCategory,
     setSearchQuery,
-} from "./state.js";
-import { renderReview } from "./review.js";
-import { renderCNC } from "./cnc.js";
-import { renderHandFab } from "./handFab.js";
-import { renderCompleted } from "./completed.js";
-import { saveCurrentTab } from "./persistence.js";
-import { getState, subscribe, setState } from "../utils/reactiveState.js";
+} from "../state/state.js";
+import { renderReview } from "../tabs/review.js";
+import { renderCNC } from "../tabs/cnc.js";
+import { renderHandFab } from "../tabs/handFab.js";
+import { renderCompleted } from "../tabs/completed.js";
+import { saveCurrentTab } from "../state/persistence.js";
+import {
+    getState,
+    subscribe,
+    setState,
+} from "../../core/state/reactiveState.js";
 
 // Debounce timer for search
 let searchDebounceTimer = null;

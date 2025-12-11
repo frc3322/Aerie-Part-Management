@@ -1,17 +1,21 @@
 // Part Actions Module
 // Handles part management actions like approve, complete, edit, delete
 
-import { appState, updatePartInState, removePartFromState } from "./state.js";
-import { renderReview } from "./review.js";
-import { renderCNC } from "./cnc.js";
-import { renderHandFab } from "./handFab.js";
-import { renderCompleted } from "./completed.js";
+import {
+    appState,
+    updatePartInState,
+    removePartFromState,
+} from "../state/state.js";
+import { renderReview } from "../tabs/review.js";
+import { renderCNC } from "../tabs/cnc.js";
+import { renderHandFab } from "../tabs/handFab.js";
+import { renderCompleted } from "../tabs/completed.js";
 import {
     openAddModal,
     handleCategoryChange,
     setMaterialField,
-} from "./modals.js";
-import { hideActionIconKey, showActionIconKey } from "./auth.js";
+} from "../modals/modals.js";
+import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import {
     approvePart as apiApprovePart,
     assignPart as apiAssignPart,
@@ -20,14 +24,14 @@ import {
     revertPart as apiRevertPart,
     deletePart as apiDeletePart,
     updatePart as apiUpdatePart,
-} from "../utils/partsApi.js";
-import { openReviewDetails, showPartInfo } from "./infoModals.js";
+} from "../../core/api/partsApi.js";
+import { openReviewDetails, showPartInfo } from "../modals/infoModals.js";
 import {
     openModal as openManagedModal,
     closeModal as closeManagedModal,
     setModalLoading,
-} from "../utils/modalManager.js";
-import { withErrorHandling } from "../utils/apiErrorHandler.js";
+} from "../../core/dom/modalManager.js";
+import { withErrorHandling } from "../../core/api/apiErrorHandler.js";
 
 let pendingStorageContext = null;
 let pendingAmountConfirmation = null;

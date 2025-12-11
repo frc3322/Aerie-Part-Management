@@ -33,13 +33,13 @@ import {
     initializeState,
     appState,
     detectMobileDevice,
-} from "./modules/state.js";
+} from "./features/state/state.js";
 import {
     switchTab,
     handleSearch,
     sortTable,
     configureMobileUI,
-} from "./modules/tabs.js";
+} from "./features/navigation/tabs.js";
 import {
     openSettingsModal,
     closeSettingsModal,
@@ -49,7 +49,7 @@ import {
     handleCategoryChange,
     handleMaterialChange,
     updateFileName,
-} from "./modules/modals.js";
+} from "./features/modals/modals.js";
 import {
     markCompleted,
     markUncompleted,
@@ -65,27 +65,27 @@ import {
     closeCompleteAmountModal,
     confirmCompleteAmount,
     viewPartInfo,
-} from "./modules/partActions.js";
-import { handleFormSubmit } from "./modules/formHandler.js";
+} from "./features/parts/partActions.js";
+import { handleFormSubmit } from "./features/forms/formHandler.js";
 import {
     initializeAuthModal,
     showAuthModal,
     handleAuthSubmit,
     checkAuthentication,
     hideAuthModal,
-} from "./modules/auth.js";
-import { downloadStepFile } from "./modules/cnc.js";
+} from "./features/auth/auth.js";
+import { downloadStepFile } from "./features/tabs/cnc.js";
 import {
     viewHandDrawing,
     closeDrawingModal,
     printDrawing,
     refreshDrawing,
-} from "./modules/drawingViewer.js";
-import { showPartInfo } from "./modules/infoModals.js";
+} from "./features/parts/drawingViewer.js";
+import { showPartInfo } from "./features/modals/infoModals.js";
 import {
     initEventDelegation,
     registerActions,
-} from "./utils/eventDelegation.js";
+} from "./core/dom/eventDelegation.js";
 
 const REFRESH_NOTICE_DELAY_MS = 5 * 60 * 1000;
 let refreshNoticeTimerId = null;

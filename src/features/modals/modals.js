@@ -1,14 +1,14 @@
 // Modal Management Module
 // Handles all modal dialogs and UI interactions
 
-import { appState } from "./state.js";
-import { saveTabVisibility } from "./persistence.js";
-import { hideActionIconKey, showActionIconKey } from "./auth.js";
-import { getCurrentTab, switchTab } from "./tabs.js";
+import { appState } from "../state/state.js";
+import { saveTabVisibility } from "../state/persistence.js";
+import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
+import { getCurrentTab, switchTab } from "../navigation/tabs.js";
 import {
     openModal as openManagedModal,
     closeModal as closeManagedModal,
-} from "../utils/modalManager.js";
+} from "../../core/dom/modalManager.js";
 
 const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
 

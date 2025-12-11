@@ -1,8 +1,8 @@
 // Hand Fabrication Tab Module
 // Handles the hand fabrication tab display and functionality
 
-import { appState } from "./state.js";
-import { filterParts, getStatusClass } from "../utils/helpers.js";
+import { appState } from "../state/state.js";
+import { filterParts, getStatusClass } from "../../core/utils/helpers.js";
 
 /**
  * Calculate days claimed HTML for a part

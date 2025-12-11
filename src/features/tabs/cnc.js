@@ -1,18 +1,18 @@
 // CNC Tab Module
 // Handles the CNC tab display and functionality
 
-import { appState } from "./state.js";
+import { appState } from "../state/state.js";
 import {
     filterParts,
     getStatusClass,
     getFileExtension,
-} from "../utils/helpers.js";
-import { loadGLTFModel } from "../components/threeDViewer.js";
+} from "../../core/utils/helpers.js";
+import { loadGLTFModel } from "../../components/threeDViewer.js";
 import {
     getPartModelBlobUrl,
     getPartFileBlobUrl,
     downloadPartFile,
-} from "../utils/partsApi.js";
+} from "../../core/api/partsApi.js";
 
 /**
  * Render loading state for CNC tab

@@ -1,8 +1,8 @@
 // API Client Utility
 // Handles authenticated API calls to the backend
 
-import { getApiKeyFromCookie } from "./auth.js";
-import { showAuthModal } from "../modules/auth.js";
+import { getApiKeyFromCookie } from "../auth/auth.js";
+import { showAuthModal } from "../../features/auth/auth.js";
 
 /**
  * Get the base API URL
