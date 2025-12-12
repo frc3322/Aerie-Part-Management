@@ -89,13 +89,8 @@ export async function checkAuthStatus(apiKey) {
         const base = import.meta.env.BASE_URL || "/";
         const basePath = base === "/" ? "" : base.replace(/\/$/, "");
 
-        // In development, use localhost:5000; in production, use relative URL with base path
-        const isDevelopment =
-            globalThis.location.hostname === "localhost" &&
-            globalThis.location.port === "3000";
-        const authUrl = isDevelopment
-            ? "http://localhost:5000/api/parts/auth/check"
-            : basePath + "/api/parts/auth/check";
+        // Always use relative URL with base path - works for both dev and prod when frontend/backend are same server
+        const authUrl = basePath + "/api/parts/auth/check";
 
         const response = await fetch(authUrl, {
             method: "GET",
