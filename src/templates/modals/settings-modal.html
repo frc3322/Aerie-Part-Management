@@ -6,87 +6,104 @@
     <div class="neumorphic-card p-8 w-full max-w-sm relative animate-fade-in">
         <button
             data-action="closeSettingsModal"
-            class="absolute top-4 right-4 text-gray-400 hover:text-red-400"
+            class="absolute top-4 right-4 neumorphic-btn w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400"
         >
-            <i class="fa-solid fa-times text-xl"></i>
+            <i class="fa-solid fa-times"></i>
         </button>
 
-        <h2 class="text-2xl font-bold text-blue-400 mb-6">Settings</h2>
-
-        <div class="space-y-4">
-            <p class="text-gray-400 text-sm font-bold mb-2">VISIBLE TABS</p>
-
-            <label
-                class="flex items-center justify-between p-3 rounded-lg bg-gray-800 cursor-pointer hover:bg-gray-700 transition"
-            >
-                <span class="text-gray-300">Needs Review</span>
-                <input
-                    type="checkbox"
-                    id="check-review"
-                    data-action="toggleTabVisibility"
-                    data-tab="review"
-                    checked
-                    class="accent-blue-400 w-5 h-5"
-                />
-            </label>
-
-            <label
-                class="flex items-center justify-between p-3 rounded-lg bg-gray-800 cursor-pointer hover:bg-gray-700 transition"
-            >
-                <span class="text-gray-300">cnc/laser</span>
-                <input
-                    type="checkbox"
-                    id="check-cnc"
-                    data-action="toggleTabVisibility"
-                    data-tab="cnc"
-                    checked
-                    class="accent-blue-400 w-5 h-5"
-                />
-            </label>
-
-            <label
-                class="flex items-center justify-between p-3 rounded-lg bg-gray-800 cursor-pointer hover:bg-gray-700 transition"
-            >
-                <span class="text-gray-300">Hand Fab Parts</span>
-                <input
-                    type="checkbox"
-                    id="check-hand"
-                    data-action="toggleTabVisibility"
-                    data-tab="hand"
-                    checked
-                    class="accent-blue-400 w-5 h-5"
-                />
-            </label>
-
-            <label
-                class="flex items-center justify-between p-3 rounded-lg bg-gray-800 cursor-pointer hover:bg-gray-700 transition"
-            >
-                <span class="text-gray-300">Completed</span>
-                <input
-                    type="checkbox"
-                    id="check-completed"
-                    data-action="toggleTabVisibility"
-                    data-tab="completed"
-                    checked
-                    class="accent-blue-400 w-5 h-5"
-                />
-            </label>
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center">
+                <i class="fa-solid fa-gear text-xl text-blue-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-blue-400">Settings</h2>
         </div>
 
-        <div class="space-y-4">
-            <p class="text-gray-400 text-sm font-bold mb-2">DISPLAY SETTINGS</p>
+        <div class="space-y-6">
+            <!-- Visible Tabs Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-eye text-blue-400"></i>
+                    <h3 class="text-lg font-bold text-gray-300">Visible Tabs</h3>
+                </div>
 
-            <label
-                class="flex items-center justify-between p-3 rounded-lg bg-gray-800 cursor-pointer hover:bg-gray-700 transition"
-            >
-                <span class="text-gray-300">Disable 3JS Previews</span>
-                <input
-                    type="checkbox"
-                    id="check-disable-3js"
-                    data-action="toggleDisable3JS"
-                    class="accent-blue-400 w-5 h-5"
-                />
-            </label>
+                <div class="space-y-3">
+                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                        <span class="text-gray-300 font-medium">Needs Review</span>
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-review"
+                                data-action="toggleTabVisibility"
+                                data-tab="review"
+                                checked
+                            />
+                        </div>
+                    </label>
+
+                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                        <span class="text-gray-300 font-medium">CNC/Laser</span>
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-cnc"
+                                data-action="toggleTabVisibility"
+                                data-tab="cnc"
+                                checked
+                            />
+                        </div>
+                    </label>
+
+                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                        <span class="text-gray-300 font-medium">Hand Fab Parts</span>
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-hand"
+                                data-action="toggleTabVisibility"
+                                data-tab="hand"
+                                checked
+                            />
+                        </div>
+                    </label>
+
+                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                        <span class="text-gray-300 font-medium">Completed</span>
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-completed"
+                                data-action="toggleTabVisibility"
+                                data-tab="completed"
+                                checked
+                            />
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Display Settings Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-display text-blue-400"></i>
+                    <h3 class="text-lg font-bold text-gray-300">Display Settings</h3>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-cube text-gray-500"></i>
+                            <span class="text-gray-300 font-medium">Disable 3D Previews</span>
+                        </div>
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-disable-3js"
+                                data-action="toggleDisable3JS"
+                            />
+                        </div>
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 </div>
