@@ -12,7 +12,9 @@
         </button>
 
         <div class="text-center mb-6">
-            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center">
+            <div
+                class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center"
+            >
                 <i class="fa-solid fa-gear text-xl text-blue-400"></i>
             </div>
             <h2 class="text-2xl font-bold text-blue-400">Settings</h2>
@@ -23,12 +25,18 @@
             <div>
                 <div class="flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-eye text-blue-400"></i>
-                    <h3 class="text-lg font-bold text-gray-300">Visible Tabs</h3>
+                    <h3 class="text-lg font-bold text-gray-300">
+                        Visible Tabs
+                    </h3>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
-                        <span class="text-gray-300 font-medium">Needs Review</span>
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
+                        <span class="text-gray-300 font-medium"
+                            >Needs Review</span
+                        >
                         <div class="settings-checkbox-container">
                             <input
                                 type="checkbox"
@@ -40,7 +48,9 @@
                         </div>
                     </label>
 
-                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
                         <span class="text-gray-300 font-medium">CNC/Laser</span>
                         <div class="settings-checkbox-container">
                             <input
@@ -53,8 +63,12 @@
                         </div>
                     </label>
 
-                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
-                        <span class="text-gray-300 font-medium">Hand Fab Parts</span>
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
+                        <span class="text-gray-300 font-medium"
+                            >Hand Fab Parts</span
+                        >
                         <div class="settings-checkbox-container">
                             <input
                                 type="checkbox"
@@ -66,7 +80,9 @@
                         </div>
                     </label>
 
-                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
                         <span class="text-gray-300 font-medium">Completed</span>
                         <div class="settings-checkbox-container">
                             <input
@@ -78,6 +94,23 @@
                             />
                         </div>
                     </label>
+
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
+                        <span class="text-gray-300 font-medium"
+                            >Leaderboard</span
+                        >
+                        <div class="settings-checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="check-leaderboard"
+                                data-action="toggleTabVisibility"
+                                data-tab="leaderboard"
+                                checked
+                            />
+                        </div>
+                    </label>
                 </div>
             </div>
 
@@ -85,14 +118,20 @@
             <div>
                 <div class="flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-display text-blue-400"></i>
-                    <h3 class="text-lg font-bold text-gray-300">Display Settings</h3>
+                    <h3 class="text-lg font-bold text-gray-300">
+                        Display Settings
+                    </h3>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg">
+                    <label
+                        class="neumorphic-input flex items-center justify-between p-4 cursor-pointer hover:bg-gray-800/50 transition rounded-lg"
+                    >
                         <div class="flex items-center gap-2">
                             <i class="fa-solid fa-cube text-gray-500"></i>
-                            <span class="text-gray-300 font-medium">Disable 3D Previews</span>
+                            <span class="text-gray-300 font-medium"
+                                >Disable 3D Previews</span
+                            >
                         </div>
                         <div class="settings-checkbox-container">
                             <input

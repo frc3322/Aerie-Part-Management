@@ -23,6 +23,16 @@ export function openSettingsModal() {
         disable3JSCheckbox.checked = Boolean(getState("disable3JSPreview"));
     }
 
+    // Initialize tab visibility checkboxes
+    const tabVisibility = getState("tabVisibility");
+    const tabs = ["review", "cnc", "hand", "completed", "leaderboard"];
+    tabs.forEach((tab) => {
+        const checkbox = document.getElementById(`check-${tab}`);
+        if (checkbox) {
+            checkbox.checked = Boolean(tabVisibility[tab]);
+        }
+    });
+
     openManagedModal("settings-modal", {
         onOpen: hideActionIconKey,
     });
@@ -68,7 +78,7 @@ export function toggleTabVisibility(eventOrTab) {
         // If we just hid the active tab, switch to another
         const currentTab = getCurrentTab();
         if (currentTab === tab) {
-            const tabs = ["review", "cnc", "hand", "completed"];
+            const tabs = ["review", "cnc", "hand", "completed", "leaderboard"];
             const nextVisible = tabs.find(
                 (t) => document.getElementById(`check-${t}`).checked
             );
