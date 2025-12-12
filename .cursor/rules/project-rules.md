@@ -26,7 +26,15 @@
 ```
 src/
 ├── main.js              # App entry point
-├── style.css           # Global styles
+├── style.css           # Global styles (imports CSS modules)
+├── css/                # Organized stylesheet modules
+│   ├── base.css        # Tailwind import, body, scrollbar
+│   ├── components.css  # Neumorphic design system
+│   ├── status.css      # Status color classes
+│   ├── animations.css  # Keyframe animations
+│   ├── mobile.css      # Mobile-specific styles
+│   ├── modals.css      # Modal dialogs styles
+│   └── utilities.css   # Utility classes (tooltips, notifications)
 ├── core/               # Core utilities
 │   ├── api/           # API client functions
 │   ├── state/         # State management

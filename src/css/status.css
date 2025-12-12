@@ -1,0 +1,5 @@
+.status-reviewed { color: #f6e05e; }
+.status-inprogress { color: #63b3ed; }
+.status-completed { color: #68d391; }
+.status-pending { color: #fc8181; }
+.status-already-started { color: #ed8936; }

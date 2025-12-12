@@ -1,0 +1,91 @@
+.tooltip-target {
+    position: relative;
+}
+
+.tooltip-target::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(23, 25, 35, 0.95);
+    color: #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px #1a1c24, -5px -5px 10px #2e3240;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease, transform 120ms ease;
+    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    z-index: 60;
+}
+
+.tooltip-target:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+#viewer-container canvas {
+    border-radius: 8px;
+    width: 100% !important;
+    height: 200px !important;
+}
+
+.cat {
+    position: fixed;
+    bottom: -40px;
+    left: 16px;
+    width: 30px;
+    opacity: 0.12;
+    transition: opacity 0.2s ease, bottom 0.2s ease;
+    filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+    z-index: 4;
+}
+
+.cat img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.cat:hover {
+    bottom: -10px;
+    opacity: 0.9;
+}
+
+/* Notification Styles */
+#notification-container {
+    z-index: 1000;
+}
+
+.notification {
+    animation: slideIn 0.3s ease-out;
+    margin-bottom: 8px;
+}
+
+.notification:hover {
+    transform: translateX(-2px);
+    transition: transform 0.2s ease;
+}
+
+.notification .dismiss-btn {
+    transition: all 0.2s ease;
+}
+
+.notification .dismiss-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+/* Confetti Animation Styles */
+.confetti-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+    will-change: transform, opacity;
+    left: 0;
+    top: 0;
+}
