@@ -1,7 +1,7 @@
 // Modal Management Module
 // Handles all modal dialogs and UI interactions
 
-import { appState } from "../state/state.js";
+import { appState, toggleDisable3JSPreview } from "../state/state.js";
 import { saveTabVisibility } from "../state/persistence.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import { getCurrentTab, switchTab } from "../navigation/tabs.js";
@@ -16,6 +16,12 @@ const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
  * Open the settings modal
  */
 export function openSettingsModal() {
+    // Initialize checkbox states
+    const disable3JSCheckbox = document.getElementById("check-disable-3js");
+    if (disable3JSCheckbox) {
+        disable3JSCheckbox.checked = appState.disable3JSPreview;
+    }
+
     openManagedModal("settings-modal", {
         onOpen: hideActionIconKey,
     });
@@ -68,6 +74,16 @@ export function toggleTabVisibility(eventOrTab) {
             if (nextVisible) switchTab(nextVisible);
         }
     }
+}
+
+/**
+ * Toggle disable 3JS preview setting
+ */
+export function toggleDisable3JS() {
+    const checkbox = document.getElementById("check-disable-3js");
+    if (!checkbox) return;
+
+    toggleDisable3JSPreview();
 }
 
 /**

@@ -2,6 +2,7 @@
 // Handles the CNC tab display and functionality
 
 import { appState } from "../state/state.js";
+import { getState } from "../../core/state/reactiveState.js";
 import {
     filterParts,
     getStatusClass,
@@ -176,6 +177,7 @@ function loadPartModel(part, index) {
 
     const fileExt = getFileExtension(part.file);
     const containerId = `model-view-${index}`;
+    const is3JSPreviewDisabled = getState("disable3JSPreview");
 
     setTimeout(async () => {
         try {
@@ -187,6 +189,22 @@ function loadPartModel(part, index) {
             <iframe src="${fileUrl}" class="absolute inset-0 w-full h-full border-0 bg-white"></iframe>
             <div class="absolute top-2 right-2 bg-gray-900 bg-opacity-70 text-xs text-white px-2 py-1 rounded">PDF Preview</div>
           `;
+                }
+                return;
+            }
+
+            // Check if 3JS previews are disabled
+            if (is3JSPreviewDisabled && fileExt === "step" || fileExt === "stp") {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+          <div class="absolute inset-0 flex items-center justify-center text-center text-gray-400">
+            <div>
+              <i class="fa-solid fa-cube text-3xl mb-2"></i>
+              <p class="text-xs">3D Preview Disabled</p>
+            </div>
+          </div>
+        `;
                 }
                 return;
             }

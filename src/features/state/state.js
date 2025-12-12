@@ -6,7 +6,7 @@ import { renderReview } from "../tabs/review.js";
 import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
 import { renderCompleted } from "../tabs/completed.js";
-import { loadCurrentTab, loadTabVisibility } from "./persistence.js";
+import { loadCurrentTab, loadTabVisibility, loadDisable3JSPreview } from "./persistence.js";
 import {
     initReactiveState,
     setState,
@@ -54,6 +54,8 @@ export const appState = {
         hand: true,
         completed: true,
     },
+    // Display settings
+    disable3JSPreview: false,
     isMobile: false,
 };
 
@@ -82,6 +84,12 @@ function loadPersistedState() {
             ...getState("tabVisibility"),
             ...savedVisibility,
         });
+    }
+
+    // Load disable 3JS preview setting
+    const savedDisable3JS = loadDisable3JSPreview();
+    if (typeof savedDisable3JS === "boolean") {
+        setState("disable3JSPreview", savedDisable3JS);
     }
 }
 
@@ -266,6 +274,20 @@ export function setCurrentTab(tab) {
  */
 export function setSearchQuery(query) {
     setState("searchQuery", query);
+}
+
+/**
+ * Toggle the disable 3JS preview setting
+ */
+export function toggleDisable3JSPreview() {
+    const currentValue = getState("disable3JSPreview");
+    const newValue = !currentValue;
+    setState("disable3JSPreview", newValue);
+
+    // Import here to avoid circular dependency
+    import("./persistence.js").then(({ saveDisable3JSPreview }) => {
+        saveDisable3JSPreview(newValue);
+    });
 }
 
 /**
