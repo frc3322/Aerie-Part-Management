@@ -154,6 +154,30 @@ checkAuthentication() // Returns promise<boolean>
 
 The `src/utils/` directory contains specialized utility modules that provide shared functionality across the application. These modules implement common patterns and reduce code duplication.
 
+### Animation & Visual Effects
+
+#### triggerNeumorphicAnimations() - Shadow Emergence System
+
+**Purpose**: Triggers smooth shadow emergence animations for neumorphic UI elements after page load
+
+**Location**: `main.js` (inline function)
+
+**Integration Pattern**:
+```javascript
+// Automatically called after page initialization
+// Triggers shadow animations for all neumorphic elements simultaneously
+triggerNeumorphicAnimations();
+```
+
+**Animation Details**:
+- Applies `animate-pop-up` class to `.neumorphic-card` elements (1s duration)
+- Applies `animate-pop-up-btn` class to `.neumorphic-btn` elements (1.8s duration)
+- Applies `animate-pop-up-input` class to `.neumorphic-input` elements (1.8s duration)
+- Uses `will-change: box-shadow` for performance optimization
+- Animates shadows from 0px to full neumorphic depth
+
+**Benefits**: Creates polished visual entrance effect, prevents FOUC, enhances neumorphic design system
+
 #### eventDelegation.js - Event Handling System
 
 **Purpose**: Centralized event delegation system that replaces scattered onclick handlers

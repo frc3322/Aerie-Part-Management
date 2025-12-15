@@ -302,6 +302,32 @@ The `src/html/` directory contains modular HTML templates that form the user int
 
 ## CSS Classes and Styling
 
+### FOUC Prevention System
+
+**Purpose**: Prevents Flash of Unstyled Content by initially hiding the page and fading it in smoothly
+
+**Implementation**:
+```css
+/* In index.html head */
+body {
+    visibility: hidden;
+    opacity: 0;
+}
+body.loaded {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.2s ease-in;
+}
+```
+
+**JavaScript Integration**:
+```javascript
+// In main.js - shows content after CSS loads
+document.body.classList.add('loaded');
+```
+
+**Benefits**: Eliminates unstyled content flash, provides smooth page entrance, improves perceived performance
+
 ### Neumorphic Design System
 
 **Core Classes**:
@@ -311,6 +337,11 @@ The `src/html/` directory contains modular HTML templates that form the user int
 - `neumorphic-tab` - Tab navigation
 - `shadow-3d` - 3D shadow effects
 - `shadow-3d-inset` - Inset shadow effects
+
+**Animation Classes**:
+- `animate-pop-up` - Shadow emergence animation for cards (1s duration)
+- `animate-pop-up-btn` - Shadow emergence animation for buttons (1.8s duration)
+- `animate-pop-up-input` - Shadow emergence animation for inputs (1.8s duration)
 
 **Status Classes**:
 - `status-pending` - Yellow/amber styling

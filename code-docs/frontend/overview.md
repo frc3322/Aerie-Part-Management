@@ -55,6 +55,8 @@ The application follows a **modular architecture** with clear separation of conc
 - **3D Visualization**: Planned Three.js components for model viewing
 - **Responsive Design**: Modern neumorphic UI with Tailwind CSS
 - **Modal Management**: Dynamic forms and confirmation dialogs
+- **Page Loading Experience**: FOUC prevention with smooth fade-in transitions
+- **Visual Polish**: Shadow emergence animations for neumorphic elements
 
 ## Technology Stack
 
@@ -66,6 +68,7 @@ The application follows a **modular architecture** with clear separation of conc
 - **3D Graphics**: Three.js (planned for future implementation)
 - **Icons**: Font Awesome
 - **Build Tool**: Vite
+- **Visual Effects**: CSS animations and FOUC prevention
 
 ## Development Notes
 
@@ -75,6 +78,8 @@ The application follows a **modular architecture** with clear separation of conc
 - Modular design enables easy testing and maintenance
 - Authentication system integrated throughout the application
 - API communication abstracted into reusable utilities
+- FOUC prevention with critical CSS and smooth transitions
+- Neumorphic shadow animations for polished visual effects
 - No external state management libraries (vanilla JS approach)
 
 ## Related Documentation
