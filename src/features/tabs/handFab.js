@@ -93,14 +93,14 @@ export function createHandFabRow(part, index) {
             </div>
         </td>
         <td class="p-3">
-            <span class="px-2 py-1 rounded text-xs font-bold ${statusClass} bg-gray-900 border border-gray-700">
+            <span class="px-2 py-1 rounded text-xs font-bold ${statusClass} bg-gray-900 border border-gray-700 status-indicator">
                 ${part.status}
             </span>
         </td>
         <td class="p-3 text-sm text-gray-400 max-w-xs truncate">${
             part.notes || ""
         }</td>
-        <td class="p-3">
+        <td class="p-3 action-buttons">
             ${
                 showStartButton
                     ? `<button data-action="markInProgress" data-tab="hand" data-index="${index}" class="neumorphic-btn px-2 py-1 text-blue-400 hover:text-blue-300 mr-2" title="Start Work / Claim"><i class="fa-solid fa-play"></i></button>`

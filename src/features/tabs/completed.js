@@ -75,7 +75,7 @@ export function createCompletedRow(part, index) {
                  isCNC
                      ? "bg-blue-900 text-blue-200"
                      : "bg-purple-900 text-purple-200"
-             } border border-white/10">
+             } border border-white/10 status-indicator">
                 ${isCNC ? "CNC" : "HAND FAB"}
             </span>
         </td>
@@ -90,14 +90,14 @@ export function createCompletedRow(part, index) {
             part.material || "Not set"
         }</td>
         <td class="p-3">
-             <span class="px-2 py-1 rounded text-xs font-bold status-completed bg-gray-900 border border-gray-700">
+             <span class="px-2 py-1 rounded text-xs font-bold status-completed bg-gray-900 border border-gray-700 status-indicator">
                 Completed
             </span>
         </td>
         <td class="p-3 text-sm text-gray-500 max-w-xs truncate">${
             part.notes || ""
         }</td>
-        <td class="p-3">
+        <td class="p-3 action-buttons">
             <button data-action="viewPartInfo" data-tab="completed" data-index="${index}" class="text-gray-400 hover:text-blue-300 mr-2" title="Info"><i class="fa-solid fa-circle-info"></i></button>
             <button data-action="markUncompleted" data-index="${index}" class="neumorphic-btn px-3 py-1 text-yellow-400 hover:text-yellow-300 mr-2 text-sm" title="Un-complete (Restore)">
                 <i class="fa-solid fa-rotate-left"></i> Restore

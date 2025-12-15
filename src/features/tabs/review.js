@@ -79,7 +79,7 @@ export function createReviewRow(part, index) {
             isCNC
                 ? "bg-blue-900 text-blue-200"
                 : "bg-purple-900 text-purple-200"
-        } border border-white/10`,
+        } border border-white/10 status-indicator`,
         text: isCNC ? "CNC" : "HAND FAB",
     });
     typeCell.appendChild(typeBadge);
@@ -114,7 +114,7 @@ export function createReviewRow(part, index) {
         className: "p-3 align-middle",
     });
     const actionsWrapper = createElement("div", {
-        className: "flex items-center gap-2 whitespace-nowrap",
+        className: "flex items-center gap-2 whitespace-nowrap action-buttons",
     });
 
     const approveButton = createElement("button", {

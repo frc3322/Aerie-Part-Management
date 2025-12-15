@@ -56,7 +56,7 @@ function buildHeaderSection(part, statusClass) {
         }</div>
       </div>
       <div class="flex flex-col items-end gap-2">
-        <span class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 ${statusClass} shadow-3d-inset">
+        <span class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 ${statusClass} shadow-3d-inset status-indicator">
           ${part.status}
         </span>
         <div class="text-sm text-gray-400">Subsystem: <span class="text-blue-300 font-semibold">${
@@ -137,7 +137,7 @@ function buildActionButtons(part, index, showInfoEditButtons) {
         : "";
 
     return `
-    <div class="flex justify-end mt-2 gap-2">
+    <div class="flex justify-end mt-2 gap-2 action-buttons">
       ${statusButton}
       ${downloadButton}
       ${infoButtons}
