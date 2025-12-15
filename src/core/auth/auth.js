@@ -42,27 +42,6 @@ export function getApiKeyFromCookie() {
     return null;
 }
 
-/**
- * Delete the API key cookie
- */
-export function deleteApiKeyCookie() {
-    const pastDate = new Date();
-    pastDate.setTime(pastDate.getTime() - 1000); // Set to past date
-
-    const path = "path=/";
-    const expires = `expires=${pastDate.toUTCString()}`;
-
-    document.cookie = `${API_KEY_COOKIE_NAME}=; ${expires}; ${path}`;
-}
-
-/**
- * Check if the API key cookie exists and is not expired
- * @returns {boolean} True if cookie exists and is valid, false otherwise
- */
-export function hasValidApiKeyCookie() {
-    return getApiKeyFromCookie() !== null;
-}
-
 // Rate limiting for auth checks
 let lastAuthCheckTime = 0;
 const AUTH_CHECK_COOLDOWN = 2000; // 2 seconds
@@ -109,15 +88,4 @@ export async function checkAuthStatus(apiKey) {
         console.error("Error checking auth status:", error);
         return false;
     }
-}
-
-/**
- * Validate an API key by attempting a simple API call
- * @param {string} apiKey - The API key to validate
- * @returns {Promise<boolean>} True if API key is valid, false otherwise
- * @deprecated Use checkAuthStatus instead for proper rate limiting
- */
-export async function validateApiKey(apiKey) {
-    // Redirect to the new rate-limited function
-    return await checkAuthStatus(apiKey);
 }

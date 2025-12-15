@@ -226,20 +226,3 @@ export async function apiDownloadFile(endpoint, filename = null) {
         throw error;
     }
 }
-
-/**
- * Check if the API server is reachable
- * @returns {Promise<boolean>} True if server is reachable
- */
-export async function checkApiHealth() {
-    try {
-        const response = await fetch(getBaseUrl().replace("/api", "/health"), {
-            method: "GET",
-            headers: getHeaders(),
-        });
-        return response.ok;
-    } catch (error) {
-        console.warn("API health check failed:", error);
-        return false;
-    }
-}
