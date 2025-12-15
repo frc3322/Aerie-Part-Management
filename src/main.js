@@ -230,6 +230,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     tooltipObserver.observe(document.body, { childList: true, subtree: true });
     renderCat();
 
+    // Handle action key click-through behavior when faded
+    const actionKey = document.getElementById("action-key");
+    if (actionKey) {
+        actionKey.addEventListener("click", (e) => {
+            // If the element is faded (opacity < 0.1), let clicks pass through
+            const opacity = Number.parseFloat(getComputedStyle(actionKey).opacity);
+            if (opacity < 0.1) {
+                e.stopPropagation();
+                // Create a new event at the same position to pass through
+                const newEvent = new MouseEvent(e.type, {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    screenX: e.screenX,
+                    screenY: e.screenY,
+                    button: e.button,
+                    buttons: e.buttons,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey,
+                    metaKey: e.metaKey
+                });
+                // Dispatch the event to the element underneath
+                document.elementFromPoint(e.clientX, e.clientY)?.dispatchEvent(newEvent);
+                e.preventDefault();
+            }
+        });
+    }
+
     detectMobileDevice();
     configureMobileUI();
 

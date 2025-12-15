@@ -89,3 +89,17 @@
     left: 0;
     top: 0;
 }
+
+/* Action Icon Key Styles */
+#action-key {
+    transition: opacity 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: opacity;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#action-key:hover {
+    opacity: 0;
+}
