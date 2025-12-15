@@ -24,15 +24,19 @@ import {
     revertPart as apiRevertPart,
     deletePart as apiDeletePart,
     updatePart as apiUpdatePart,
-} from "../../core/api/partsApi.js";
+} from "../../core/api/router.js";
 import { openReviewDetails, showPartInfo } from "../modals/infoModals.js";
 import {
     openModal as openManagedModal,
     closeModal as closeManagedModal,
     setModalLoading,
 } from "../../core/dom/modalManager.js";
-import { withErrorHandling } from "../../core/api/apiErrorHandler.js";
-import { showErrorNotification, showWarningNotification, showInfoNotification } from "../../core/dom/notificationManager.js";
+import { withErrorHandling } from "../../core/api/router.js";
+import {
+    showErrorNotification,
+    showWarningNotification,
+    showInfoNotification,
+} from "../../core/dom/notificationManager.js";
 import { celebrateCompletion } from "../../utils/confetti.js";
 
 let pendingStorageContext = null;
@@ -95,7 +99,10 @@ function openStorageModal(context) {
         "storage-modal-description"
     );
     if (!input || !submitButton || !cancelButton) {
-        showErrorNotification("Storage Error", "Storage modal is unavailable. Please try again.");
+        showErrorNotification(
+            "Storage Error",
+            "Storage modal is unavailable. Please try again."
+        );
         return;
     }
     const mode = context?.mode || "complete";
@@ -160,7 +167,10 @@ async function handleStorageSubmit(event) {
     const payload =
         Object.keys(mergedMisc).length > 0 ? { miscInfo: mergedMisc } : {};
     if (mode === "unclaim" && !storageLocation) {
-        showWarningNotification("Storage Required", "Please provide the storage location before unclaiming.");
+        showWarningNotification(
+            "Storage Required",
+            "Please provide the storage location before unclaiming."
+        );
         return;
     }
     const shouldShowLoading = mode !== "claimInfo";
@@ -190,7 +200,10 @@ async function handleStorageSubmit(event) {
         },
         {
             onError: () =>
-                showErrorNotification("Storage Error", "Failed to save storage location. Please try again."),
+                showErrorNotification(
+                    "Storage Error",
+                    "Failed to save storage location. Please try again."
+                ),
             onFinally: () => {
                 if (shouldShowLoading) setStorageModalLoading(false);
                 if (triggerButton && shouldShowLoading)
@@ -236,7 +249,11 @@ export async function markUncompleted(index, event) {
         },
         {
             loadingTargets: button,
-            onError: () => showErrorNotification("Revert Failed", "Failed to revert part. Please try again."),
+            onError: () =>
+                showErrorNotification(
+                    "Revert Failed",
+                    "Failed to revert part. Please try again."
+                ),
         }
     );
 }
@@ -248,17 +265,39 @@ export async function markUncompleted(index, event) {
  */
 export async function approvePart(index, event) {
     const part = appState.parts.review[index];
-    console.log("[approvePart] Starting approval for part:", part.id, part.name);
-    console.log("[approvePart] Current review parts count:", appState.parts.review.length);
+    console.log(
+        "[approvePart] Starting approval for part:",
+        part.id,
+        part.name
+    );
+    console.log(
+        "[approvePart] Current review parts count:",
+        appState.parts.review.length
+    );
     openReviewDetails(part, async (payload) => {
-        console.log("[approvePart] onSubmit callback called with payload:", payload);
+        console.log(
+            "[approvePart] onSubmit callback called with payload:",
+            payload
+        );
         const updatedPart = await apiApprovePart(part.id, payload || {});
         console.log("[approvePart] API returned updated part:", updatedPart);
-        console.log("[approvePart] Updated part category:", updatedPart.category);
-        console.log("[approvePart] Before updatePartInState - review count:", appState.parts.review.length);
+        console.log(
+            "[approvePart] Updated part category:",
+            updatedPart.category
+        );
+        console.log(
+            "[approvePart] Before updatePartInState - review count:",
+            appState.parts.review.length
+        );
         updatePartInState(part.id, updatedPart);
-        console.log("[approvePart] After updatePartInState - review count:", appState.parts.review.length);
-        console.log("[approvePart] Review parts:", appState.parts.review.map(p => ({ id: p.id, name: p.name })));
+        console.log(
+            "[approvePart] After updatePartInState - review count:",
+            appState.parts.review.length
+        );
+        console.log(
+            "[approvePart] Review parts:",
+            appState.parts.review.map((p) => ({ id: p.id, name: p.name }))
+        );
     });
 }
 
@@ -326,7 +365,10 @@ export async function deletePart(tab, index, event) {
             {
                 loadingTargets: button,
                 onError: () =>
-                    showErrorNotification("Delete Failed", "Failed to delete part. Please try again."),
+                    showErrorNotification(
+                        "Delete Failed",
+                        "Failed to delete part. Please try again."
+                    ),
             }
         );
     }
@@ -367,7 +409,10 @@ export async function markInProgress(tab, index, event) {
         {
             loadingTargets: button,
             onError: () =>
-                showErrorNotification("Status Update Failed", "Failed to update part status. Please try again."),
+                showErrorNotification(
+                    "Status Update Failed",
+                    "Failed to update part status. Please try again."
+                ),
         }
     );
 }
@@ -462,7 +507,10 @@ export async function confirmAssignment() {
             },
             {
                 onError: () =>
-                    showErrorNotification("Assignment Failed", "Failed to assign part. Please try again."),
+                    showErrorNotification(
+                        "Assignment Failed",
+                        "Failed to assign part. Please try again."
+                    ),
             }
         );
     }

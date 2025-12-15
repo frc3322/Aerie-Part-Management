@@ -1,7 +1,7 @@
 // State Management Module
 // Manages all application state and provides state-related utilities
 
-import { getParts, getStats } from "../../core/api/partsApi.js";
+import { getParts, getStats } from "../../core/api/router.js";
 import { showErrorNotification } from "../../core/dom/notificationManager.js";
 import { renderReview } from "../tabs/review.js";
 import { renderCNC } from "../tabs/cnc.js";

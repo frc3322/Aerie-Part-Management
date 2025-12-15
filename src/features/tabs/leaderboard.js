@@ -2,7 +2,7 @@
 // Handles the leaderboard tab display and functionality
 
 import { appState } from "../state/state.js";
-import { getLeaderboard } from "../../core/api/partsApi.js";
+import { getLeaderboard } from "../../core/api/router.js";
 import { setState } from "../../core/state/reactiveState.js";
 
 /**

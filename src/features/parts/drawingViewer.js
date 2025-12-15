@@ -1,5 +1,5 @@
 import { appState } from "../state/state.js";
-import { getPartDrawingBlobUrl } from "../../core/api/partsApi.js";
+import { getPartDrawingBlobUrl } from "../../core/api/router.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import { showInfoNotification } from "../../core/dom/notificationManager.js";
 
@@ -105,7 +105,10 @@ export function closeDrawingModal() {
 async function loadDrawing(partId, useRefresh) {
     const elements = getViewerElements();
     if (!elements) {
-        showInfoNotification("Drawing Viewer", "Drawing viewer is unavailable.");
+        showInfoNotification(
+            "Drawing Viewer",
+            "Drawing viewer is unavailable."
+        );
         return;
     }
 
@@ -158,7 +161,10 @@ export async function viewHandDrawing(index) {
 
     const elements = getViewerElements();
     if (!elements) {
-        showInfoNotification("Drawing Viewer", "Drawing viewer is unavailable.");
+        showInfoNotification(
+            "Drawing Viewer",
+            "Drawing viewer is unavailable."
+        );
         return;
     }
 

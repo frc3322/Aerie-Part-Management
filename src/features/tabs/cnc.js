@@ -14,7 +14,7 @@ import {
     getPartModelBlobUrl,
     getPartFileBlobUrl,
     downloadPartFile,
-} from "../../core/api/partsApi.js";
+} from "../../core/api/router.js";
 
 /**
  * Render loading state for CNC tab
@@ -163,7 +163,10 @@ function renderPartCard(part, index, container) {
 
     const header = buildHeaderSection(part, statusClass);
     const is3JSPreviewDisabled = getState("disable3JSPreview");
-    const modelPlaceholder = buildModelPlaceholder(fileExt, is3JSPreviewDisabled);
+    const modelPlaceholder = buildModelPlaceholder(
+        fileExt,
+        is3JSPreviewDisabled
+    );
     const notesSection = buildNotesSection(part);
     const actions = buildActionButtons(part, index, showInfoEditButtons);
 
@@ -206,7 +209,10 @@ function loadPartModel(part, index) {
             }
 
             // Check if 3JS previews are disabled
-            if (is3JSPreviewDisabled && (fileExt === "step" || fileExt === "stp")) {
+            if (
+                is3JSPreviewDisabled &&
+                (fileExt === "step" || fileExt === "stp")
+            ) {
                 const container = document.getElementById(containerId);
                 if (container) {
                     container.innerHTML = `
@@ -286,7 +292,10 @@ export async function downloadStepFile(partId, filename) {
         await downloadPartFile(partId, filename);
     } catch (error) {
         console.error("Failed to download file:", error);
-        showErrorNotification("Download Failed", "Failed to download file. Please try again.");
+        showErrorNotification(
+            "Download Failed",
+            "Failed to download file. Please try again."
+        );
     }
 }
 

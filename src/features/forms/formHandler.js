@@ -8,13 +8,16 @@ import { renderHandFab } from "../tabs/handFab.js";
 import { renderCompleted } from "../tabs/completed.js";
 import { closeModal } from "../modals/modals.js";
 import { switchTab } from "../navigation/tabs.js";
-import { showErrorNotification, showWarningNotification } from "../../core/dom/notificationManager.js";
+import {
+    showErrorNotification,
+    showWarningNotification,
+} from "../../core/dom/notificationManager.js";
 import {
     createPart as apiCreatePart,
     updatePart as apiUpdatePart,
     uploadPartFile,
     getPart,
-} from "../../core/api/partsApi.js";
+} from "../../core/api/router.js";
 
 function getMaterialInputValue() {
     const materialSelect = document.getElementById("input-material-select");
@@ -145,7 +148,10 @@ async function handleFileUpload(partId, file) {
     } catch (error) {
         console.error("Failed to upload file:", error);
         setUploadStatus("error");
-        showErrorNotification("Upload Failed", "Part saved but file upload failed. Please try uploading again.");
+        showErrorNotification(
+            "Upload Failed",
+            "Part saved but file upload failed. Please try uploading again."
+        );
         return null;
     }
 }
@@ -222,7 +228,10 @@ export async function handleFormSubmit(e) {
         const trimmedMaterial = formData.material.trim();
         const trimmedSubsystem = formData.subsystem.trim();
         if (trimmedName.length === 0) {
-            showWarningNotification("Validation Error", "Part name is required.");
+            showWarningNotification(
+                "Validation Error",
+                "Part name is required."
+            );
             return;
         }
         if (trimmedPartId.length === 0) {
@@ -230,15 +239,24 @@ export async function handleFormSubmit(e) {
             return;
         }
         if (trimmedMaterial.length === 0) {
-            showWarningNotification("Validation Error", "Material is required.");
+            showWarningNotification(
+                "Validation Error",
+                "Material is required."
+            );
             return;
         }
         if (trimmedSubsystem.length === 0) {
-            showWarningNotification("Validation Error", "Subsystem is required.");
+            showWarningNotification(
+                "Validation Error",
+                "Subsystem is required."
+            );
             return;
         }
         if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
-            showWarningNotification("Validation Error", "Amount must be at least 1.");
+            showWarningNotification(
+                "Validation Error",
+                "Amount must be at least 1."
+            );
             return;
         }
         formData.name = trimmedName;
@@ -256,7 +274,10 @@ export async function handleFormSubmit(e) {
         performPostSubmitActions();
     } catch (error) {
         console.error("Failed to save part:", error);
-        showErrorNotification("Save Failed", "Failed to save part. Please try again.");
+        showErrorNotification(
+            "Save Failed",
+            "Failed to save part. Please try again."
+        );
     } finally {
         setUploadStatus("idle");
         if (submitButton) submitButton.disabled = false;
