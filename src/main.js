@@ -14,11 +14,16 @@ if (document.readyState === "loading") {
 }
 
 import "./style.css";
-import meowImageUrl from "./Meow.png";
+import meowImageUrl from "./Meow.webp";
 
 // Tailwind config (moved from script tag)
 globalThis.tailwind = {
     config: {
+        content: [
+            "./index.html",
+            "./src/**/*.{js,html,css}",
+            "./src/templates/**/*.{html}",
+        ],
         theme: {
             extend: {
                 colors: {

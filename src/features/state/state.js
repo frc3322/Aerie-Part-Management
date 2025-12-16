@@ -4,8 +4,13 @@
 import { getParts, getStats } from "../../core/api/router.js";
 import { showErrorNotification } from "../../core/dom/notificationManager.js";
 import { renderReview } from "../tabs/review.js";
-import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
+
+// Dynamically import renderCNC when needed
+const loadRenderCNC = async () => {
+    const { renderCNC } = await import("../tabs/cnc.js");
+    return renderCNC;
+};
 import { renderCompleted } from "../tabs/completed.js";
 import { renderLeaderboard } from "../tabs/leaderboard.js";
 import {
@@ -149,7 +154,7 @@ async function reRenderCurrentTab() {
             break;
         }
         case "cnc": {
-            renderCNC();
+            (await loadRenderCNC())();
             break;
         }
         case "hand": {

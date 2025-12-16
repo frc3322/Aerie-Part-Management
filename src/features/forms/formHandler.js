@@ -3,8 +3,13 @@
 
 import { appState, updatePartInState, addPartToState } from "../state/state.js";
 import { renderReview } from "../tabs/review.js";
-import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
+
+// Dynamically import renderCNC when needed
+const loadRenderCNC = async () => {
+    const { renderCNC } = await import("../tabs/cnc.js");
+    return renderCNC;
+};
 import { renderCompleted } from "../tabs/completed.js";
 import { closeModal } from "../modals/modals.js";
 import { switchTab } from "../navigation/tabs.js";
@@ -191,9 +196,9 @@ async function handleCreatePart(formData, apiData) {
 /**
  * Perform post-submit actions like re-rendering tabs
  */
-function performPostSubmitActions() {
+async function performPostSubmitActions() {
     renderReview();
-    renderCNC();
+    (await loadRenderCNC())();
     renderHandFab();
     renderCompleted();
     closeModal();
@@ -271,7 +276,7 @@ export async function handleFormSubmit(e) {
             await handleCreatePart(formData, apiData);
         }
 
-        performPostSubmitActions();
+        await performPostSubmitActions();
     } catch (error) {
         console.error("Failed to save part:", error);
         showErrorNotification(

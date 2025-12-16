@@ -8,8 +8,13 @@ import {
     setSearchQuery,
 } from "../state/state.js";
 import { renderReview } from "../tabs/review.js";
-import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
+
+// Dynamically import renderCNC when needed
+const loadRenderCNC = async () => {
+    const { renderCNC } = await import("../tabs/cnc.js");
+    return renderCNC;
+};
 import { renderCompleted } from "../tabs/completed.js";
 import { renderLeaderboard, loadLeaderboard } from "../tabs/leaderboard.js";
 import { saveCurrentTab } from "../state/persistence.js";
@@ -214,7 +219,7 @@ export function handleSearch(eventOrQuery) {
         if (currentTab === "review") {
             renderReview();
         } else if (currentTab === "cnc") {
-            renderCNC();
+            (await loadRenderCNC())();
         } else if (currentTab === "hand") {
             renderHandFab();
         } else if (currentTab === "completed") {
@@ -327,8 +332,8 @@ subscribe("parts.review", () => {
     renderReview();
 });
 
-subscribe("parts.cnc", () => {
-    renderCNC();
+subscribe("parts.cnc", async () => {
+    (await loadRenderCNC())();
 });
 
 subscribe("parts.hand", () => {

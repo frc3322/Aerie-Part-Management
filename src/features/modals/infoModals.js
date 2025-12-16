@@ -3,8 +3,13 @@
 // and displaying misc info for any part.
 
 import { renderReview } from "../tabs/review.js";
-import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
+
+// Dynamically import renderCNC when needed
+const loadRenderCNC = async () => {
+    const { renderCNC } = await import("../tabs/cnc.js");
+    return renderCNC;
+};
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import { appState } from "../state/state.js";
 import { showErrorNotification } from "../../core/dom/notificationManager.js";
@@ -166,7 +171,7 @@ async function handleReviewSubmit(event) {
             appState.parts.review.length
         );
         renderReview();
-        renderCNC();
+        (await loadRenderCNC())();
         renderHandFab();
         console.log("[handleReviewSubmit] Done rendering");
     } catch (error) {

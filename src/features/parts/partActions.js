@@ -7,8 +7,13 @@ import {
     removePartFromState,
 } from "../state/state.js";
 import { renderReview } from "../tabs/review.js";
-import { renderCNC } from "../tabs/cnc.js";
 import { renderHandFab } from "../tabs/handFab.js";
+
+// Dynamically import renderCNC when needed
+const loadRenderCNC = async () => {
+    const { renderCNC } = await import("../tabs/cnc.js");
+    return renderCNC;
+};
 import { renderCompleted } from "../tabs/completed.js";
 import {
     openAddModal,
@@ -181,7 +186,7 @@ async function handleStorageSubmit(event) {
             if (mode === "complete") {
                 const completedPart = await apiCompletePart(part.id, payload);
                 updatePartInState(part.id, completedPart);
-                if (fromTab === "cnc") renderCNC();
+                if (fromTab === "cnc") (await loadRenderCNC())();
                 else renderHandFab();
                 renderCompleted();
 
@@ -244,7 +249,7 @@ export async function markUncompleted(index, event) {
             const updatedPart = await apiRevertPart(part.id);
             updatePartInState(part.id, updatedPart);
             renderCompleted();
-            renderCNC();
+            (await loadRenderCNC())();
             renderHandFab();
         },
         {
@@ -358,7 +363,7 @@ export async function deletePart(tab, index, event) {
                 await apiDeletePart(part.id);
                 removePartFromState(part.id);
                 renderReview();
-                renderCNC();
+                (await loadRenderCNC())();
                 renderHandFab();
                 renderCompleted();
             },
@@ -403,7 +408,7 @@ export async function markInProgress(tab, index, event) {
             const updateData = { status: "In Progress" };
             const updatedPart = await apiUpdatePart(part.id, updateData);
             updatePartInState(part.id, updatedPart);
-            if (tab === "cnc") renderCNC();
+            if (tab === "cnc") (await loadRenderCNC())();
             else renderHandFab();
         },
         {
