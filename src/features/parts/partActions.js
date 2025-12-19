@@ -158,6 +158,11 @@ async function handleStorageSubmit(event) {
         mode = "complete",
         onContinue,
     } = pendingStorageContext;
+
+    // Guard against multiple submissions while processing
+    const modal = document.getElementById("storage-modal");
+    if (modal && modal.dataset.loading === "true") return;
+
     const input = document.getElementById("storage-location-input");
     if (!input) {
         closeStorageModal();
@@ -511,24 +516,24 @@ function closeAssignModalInternal(skipShowActionIcon) {
 }
 
 /**
- * Handle Enter key press in assign input
- * @param {Event} event - Keyup event from event delegation
- */
-export function handleAssignKeyup(event) {
-    if (event.key === "Enter") {
-        confirmAssignment(event);
-    }
-}
-
-/**
  * Confirm assignment and mark part as in progress
  * @param {Event} event - The form submit event
  */
 export async function confirmAssignment(event) {
-    event.preventDefault();
-    const name = document.getElementById("assign-input").value;
+    if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
+    }
+
+    const input = document.getElementById("assign-input");
+    if (!input) return;
+
+    const name = input.value;
     if (name && name.trim() !== "") {
+        // Guard against double trigger or missing context
+        if (pendingAssignmentIndex === null) return;
+
         const part = appState.parts.hand[pendingAssignmentIndex];
+        if (!part) return;
 
         await withErrorHandling(
             async () => {

@@ -18,7 +18,7 @@
             </p>
         </div>
 
-        <form id="auth-form">
+        <form id="auth-form" data-action="handleAuthSubmit">
             <div class="mb-6">
                 <label class="block text-sm font-bold mb-2 text-gray-400"
                     >API Key</label
@@ -34,7 +34,6 @@
                         class="neumorphic-input w-full p-3 pl-10 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
                         required
                         autocomplete="off"
-                        data-action="handleAuthKeyup"
                     />
                 </div>
             </div>
@@ -46,7 +45,6 @@
             <button
                 type="submit"
                 id="auth-submit-btn"
-                data-action="handleAuthSubmit"
                 class="neumorphic-btn w-full px-8 py-3 rounded-lg text-blue-400 font-bold flex items-center justify-center gap-2"
             >
                 <i class="fa-solid fa-sign-in-alt"></i>

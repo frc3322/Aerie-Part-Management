@@ -10,6 +10,11 @@ const loadRenderCNC = async () => {
     const { renderCNC } = await import("../tabs/cnc.js");
     return renderCNC;
 };
+import {
+    openModal as openManagedModal,
+    closeModal as closeManagedModal,
+    setModalLoading,
+} from "../../core/dom/modalManager.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import { appState } from "../state/state.js";
 import { showErrorNotification } from "../../core/dom/notificationManager.js";
@@ -146,6 +151,7 @@ async function handleReviewSubmit(event) {
         closeReviewModal();
         return;
     }
+
     const reviewer = document.getElementById("reviewer-input")?.value?.trim();
     const misc = collectMiscInfo();
     const payload = {};
@@ -155,31 +161,21 @@ async function handleReviewSubmit(event) {
         payload.miscInfo.reviewer = reviewer;
     }
 
+    setModalLoading(MODAL_IDS.review, true);
     try {
-        console.log(
-            "[handleReviewSubmit] Before onSubmit - review count:",
-            reviewContext.part ? "N/A" : "N/A"
-        );
         await reviewContext.onSubmit(payload);
-        console.log(
-            "[handleReviewSubmit] After onSubmit - review count:",
-            appState.parts.review.length
-        );
         closeReviewModal();
-        console.log(
-            "[handleReviewSubmit] Rendering tabs - review count:",
-            appState.parts.review.length
-        );
         renderReview();
         (await loadRenderCNC())();
         renderHandFab();
-        console.log("[handleReviewSubmit] Done rendering");
     } catch (error) {
         console.error("Failed to submit review details", error);
         showErrorNotification(
             "Save Failed",
             "Failed to save review details. Please try again."
         );
+    } finally {
+        setModalLoading(MODAL_IDS.review, false);
     }
 }
 

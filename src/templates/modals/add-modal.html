@@ -17,7 +17,7 @@
             Add New Part
         </h2>
 
-        <form id="part-form">
+        <form id="part-form" data-action="handleFormSubmit">
             <input type="hidden" id="edit-mode" value="false" />
             <input type="hidden" id="edit-index" value="" />
             <input type="hidden" id="edit-origin-tab" value="" />
@@ -45,7 +45,6 @@
                 <input
                     type="text"
                     id="input-name"
-                    data-action="handleFormKeyup"
                     class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
                     required
                 />
@@ -58,7 +57,6 @@
                 <input
                     type="text"
                     id="input-part-id"
-                    data-action="handleFormKeyup"
                     class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
                     required
                 />
@@ -221,7 +219,6 @@
                 </button>
                 <button
                     type="submit"
-                    data-action="handleFormSubmit"
                     class="neumorphic-btn px-8 py-2 rounded-lg text-blue-400 font-bold"
                 >
                     Save Part
