@@ -121,3 +121,22 @@
     font-size: 12px;
     font-weight: bold;
 }
+
+/* Modal Scrollbar Fixes */
+.neumorphic-card {
+    scrollbar-gutter: auto;
+    overflow-y: auto;
+}
+
+.neumorphic-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.neumorphic-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.neumorphic-card::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 10px;
+}
