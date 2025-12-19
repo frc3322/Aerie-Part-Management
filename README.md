@@ -16,6 +16,8 @@ A clean, modern, and efficient part management system designed specifically for 
 - **Secure & Simple**: API key-based authentication ensures your data is protected while remaining easy to set up.
 - **Responsive Design**: Manage your shop floor from any device—desktop, tablet, or mobile.
 
+<img width="1512" height="787" alt="image" src="https://github.com/user-attachments/assets/59d875b9-5d47-4d15-bca8-f0971c61bddc" />
+
 ## Tech Stack
 
 ### Frontend
