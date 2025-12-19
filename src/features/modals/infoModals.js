@@ -29,7 +29,7 @@ function ensureReviewModal() {
     wrapper.className =
         "fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md";
     wrapper.innerHTML = `
-    <div class="neumorphic-card p-6 w-full max-w-lg relative animate-fade-in max-h-[90vh] overflow-y-auto">
+    <div class="neumorphic-card p-6 w-full max-w-lg relative animate-scale-in max-h-[90vh] overflow-y-auto">
       <button id="review-misc-close" class="absolute top-4 right-4 text-gray-400 hover:text-red-400">
         <i class="fa-solid fa-times text-xl"></i>
       </button>
@@ -190,7 +190,7 @@ function ensureInfoModal() {
     wrapper.className =
         "fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md";
     wrapper.innerHTML = `
-    <div class="neumorphic-card p-6 w-full max-w-lg relative animate-fade-in max-h-[80vh] overflow-y-auto">
+    <div class="neumorphic-card p-6 w-full max-w-lg relative animate-scale-in max-h-[80vh] overflow-y-auto">
       <button id="info-close" class="absolute top-4 right-4 text-gray-400 hover:text-red-400">
         <i class="fa-solid fa-times text-xl"></i>
       </button>

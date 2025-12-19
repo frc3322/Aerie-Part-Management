@@ -44,8 +44,16 @@ export function openModal(id, options = {}) {
         console.warn(`Modal "${id}" not found`);
         return;
     }
+
+    // Remove any previous exit animation classes
+    modal.classList.remove("animate-fade-out");
+    const content = modal.querySelector(".neumorphic-card");
+    if (content) content.classList.remove("animate-scale-out");
+
     modal.classList.remove("hidden");
     modal.classList.add("flex");
+    modal.classList.add("animate-fade-in");
+
     openStack.push(id);
     ensureKeyListener();
     if (typeof options.onOpen === "function") {
@@ -57,15 +65,26 @@ export function openModal(id, options = {}) {
 export function closeModal(id, options = {}) {
     const modal = getModal(id);
     if (!modal) return;
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-    const idx = openStack.lastIndexOf(id);
-    if (idx !== -1) {
-        openStack.splice(idx, 1);
-    }
-    if (typeof options.onClose === "function") {
-        options.onClose(modal);
-    }
+
+    modal.classList.add("animate-fade-out");
+    const content = modal.querySelector(".neumorphic-card");
+    if (content) content.classList.add("animate-scale-out");
+
+    // Wait for animation to finish before hiding
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        modal.classList.remove("animate-fade-out");
+        if (content) content.classList.remove("animate-scale-out");
+
+        const idx = openStack.lastIndexOf(id);
+        if (idx !== -1) {
+            openStack.splice(idx, 1);
+        }
+        if (typeof options.onClose === "function") {
+            options.onClose(modal);
+        }
+    }, 200); // Matches .animate-fade-out duration
 }
 
 export function setModalLoading(id, isLoading) {
