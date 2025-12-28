@@ -142,6 +142,15 @@ export async function getLeaderboard() {
 }
 
 /**
+ * Wipe all parts from the system
+ * @param {string} password - The system password for confirmation
+ * @returns {Promise<Object>} Success message
+ */
+export async function wipeAllParts(password) {
+    return await apiPost("/parts/wipe", { password });
+}
+
+/**
  * Upload a STEP or PDF file for a part
  * @param {number} partId - Part ID
  * @param {File} file - STEP or PDF file to upload

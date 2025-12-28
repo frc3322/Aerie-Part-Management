@@ -88,6 +88,10 @@ import {
     confirmCompleteAmount,
     viewPartInfo,
 } from "./features/parts/partActions.js";
+import {
+    startWipeProcess,
+    closeWipeModal,
+} from "./features/parts/wipeActions.js";
 import { handleFormSubmit } from "./features/forms/formHandler.js";
 import {
     initializeAuthModal,
@@ -384,6 +388,8 @@ const actionExports = {
     confirmUnclaim,
     closeCompleteAmountModal,
     confirmCompleteAmount,
+    startWipeProcess,
+    closeWipeModal,
     sortTable,
     viewHandDrawing,
     closeDrawingModal,

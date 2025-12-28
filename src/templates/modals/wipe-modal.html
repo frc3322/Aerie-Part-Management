@@ -1,0 +1,61 @@
+<!-- Wipe All Parts Confirmation Modal -->
+<div
+    id="wipe-modal"
+    class="fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md"
+>
+    <div
+        class="neumorphic-card p-8 w-full max-w-md relative animate-scale-in text-center"
+    >
+        <div
+            id="wipe-modal-icon-container"
+            class="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 shadow-3d-inset"
+        >
+            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+        </div>
+        
+        <h2 id="wipe-modal-title" class="text-2xl font-bold text-red-500 mb-2">
+            Wipe All Data?
+        </h2>
+        
+        <p id="wipe-modal-description" class="text-gray-400 mb-6">
+            This action will permanently delete all parts and files. This cannot be undone.
+        </p>
+
+        <div id="wipe-modal-input-container" class="mb-6 hidden">
+            <div class="space-y-4">
+                <input 
+                    type="text" 
+                    id="wipe-modal-confirm-input" 
+                    placeholder='Type "DELETE" to confirm'
+                    class="w-full neumorphic-input p-4 rounded-lg bg-gray-900/50 text-white text-center font-bold tracking-widest outline-none border border-red-500/30 focus:border-red-500"
+                    autocomplete="off"
+                >
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="wipe-modal-password-input" 
+                        placeholder="Enter system password"
+                        class="w-full neumorphic-input p-4 rounded-lg bg-gray-900/50 text-white text-center outline-none border border-red-500/30 focus:border-red-500"
+                        autocomplete="current-password"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center gap-4">
+            <button
+                data-action="closeWipeModal"
+                id="wipe-modal-cancel"
+                class="text-gray-400 hover:text-white px-4 py-2"
+            >
+                Cancel
+            </button>
+            <button
+                id="wipe-modal-next"
+                class="neumorphic-btn px-8 py-2 rounded-lg text-red-500 font-bold"
+            >
+                Continue
+            </button>
+        </div>
+    </div>
+</div>

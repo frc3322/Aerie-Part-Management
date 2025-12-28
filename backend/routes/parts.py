@@ -677,6 +677,48 @@ def get_leaderboard():
         return jsonify({"error": "Failed to retrieve leaderboard"}), 500
 
 
+@parts_bp.route("/wipe", methods=["POST"])
+@require_secret_key
+def wipe_all_parts():
+    """Wipe all parts from the database and delete all uploaded files.
+    Requires the system password to be provided again in the body for safety.
+
+    Returns:
+        JSON: Success message
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        password = data.get("password")
+
+        if not password or password != current_app.config["SECRET_KEY"]:
+            return jsonify({"error": "Incorrect password"}), 403
+
+        # Delete all parts from database
+        num_deleted = Part.query.delete()
+        db.session.commit()
+
+        # Clear uploads directory
+        upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
+        upload_path = Path(upload_folder)
+        if upload_path.exists():
+            import shutil
+
+            for item in upload_path.iterdir():
+                if item.is_dir():
+                    shutil.rmtree(item)
+                else:
+                    item.unlink()
+
+        return jsonify(
+            {"message": "All parts and files wiped successfully", "count": num_deleted}
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error wiping all parts: {str(e)}")
+        return jsonify({"error": "Failed to wipe parts"}), 500
+
+
 @parts_bp.route("/auth/check", methods=["GET"])
 @require_secret_key
 def check_auth():
