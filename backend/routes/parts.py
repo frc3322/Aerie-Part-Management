@@ -627,6 +627,7 @@ def get_leaderboard():
     """Get leaderboard data with user scores based on completed parts.
 
     Scoring: 1 point for current assignee, 0.5 points for each previous assignee.
+    Penalty: -2 points for parts marked as completed incorrectly.
 
     Returns:
         JSON: Leaderboard data sorted by total score
@@ -639,12 +640,19 @@ def get_leaderboard():
         scores = {}
 
         for part in completed_parts:
-            # Current assignee gets 1 point
+            misc_info = part.misc_info or {}
+
+            # Check if part was completed incorrectly
+            completed_incorrectly = misc_info.get("completedIncorrectly", False)
+
+            # Current assignee gets 1 point, minus 2 if completed incorrectly
             if part.assigned:
-                scores[part.assigned] = scores.get(part.assigned, 0) + 1
+                base_points = 1
+                if completed_incorrectly:
+                    base_points -= 2
+                scores[part.assigned] = scores.get(part.assigned, 0) + base_points
 
             # Previous assignees get 0.5 points each
-            misc_info = part.misc_info or {}
             hand_workers = (
                 misc_info.get("handWorkers") or misc_info.get("hand_workers") or []
             )
