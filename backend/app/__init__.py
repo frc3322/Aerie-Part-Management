@@ -92,8 +92,16 @@ def create_app(config_name: str = "default") -> Flask:
         _ensure_schema(db)
 
         # Create uploads directory if it doesn't exist
-        upload_folder = app.config.get("UPLOAD_FOLDER", "uploads")
-        os.makedirs(upload_folder, exist_ok=True)
+        # UPLOAD_FOLDER is now an absolute path from config.py
+        upload_folder = app.config.get("UPLOAD_FOLDER")
+        if upload_folder:
+            # Ensure the directory exists
+            os.makedirs(upload_folder, exist_ok=True)
+        else:
+            # Fallback to backend directory + uploads
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            upload_folder = os.path.join(backend_dir, "uploads")
+            os.makedirs(upload_folder, exist_ok=True)
 
         # Sample data initialization removed for production
 
