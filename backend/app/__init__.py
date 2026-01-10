@@ -2,7 +2,7 @@
 
 import os
 import logging
-from flask import Flask, request, send_from_directory  # type: ignore
+from flask import Flask, send_from_directory  # type: ignore
 from flask_cors import CORS  # type: ignore
 from sqlalchemy import inspect, text  # type: ignore
 from sqlalchemy.exc import OperationalError  # type: ignore
@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from config import config  # type: ignore
 from models import db  # type: ignore
 from routes import parts_bp  # type: ignore
+from utils.logging import setup_flask_logging  # type: ignore
 
 
 def create_app(config_name: str = "default") -> Flask:
@@ -30,14 +31,14 @@ def create_app(config_name: str = "default") -> Flask:
     db.init_app(app)
     CORS(app, origins=app.config["CORS_ORIGINS"])
 
-    # Configure logging
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    @app.before_request
-    def log_request_info() -> None:
-        """Log details of each incoming request."""
-        logger.info(f"{request.method} {request.url} - {request.remote_addr}")
+    # Configure non-blocking logging for Flask with request/response logging
+    setup_flask_logging(
+        app,
+        log_dir="logs",
+        log_filename="flask_app.log",
+        enable_console=True,
+        level=logging.INFO,
+    )
 
     # Get base path from environment or config for subpath deployments (e.g., /part-management-system)
     base_path = os.getenv("BASE_PATH", "").rstrip("/")

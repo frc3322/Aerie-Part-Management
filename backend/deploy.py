@@ -8,11 +8,15 @@ import subprocess
 import argparse
 import json
 from typing import Optional, Any
+from utils.logging import setup_deployment_logging
 
 # Constants for repeated values
 DEFAULT_DATABASE_URL = "sqlite:///parts_prod.db"
 DEFAULT_CORS_ORIGINS = ["http://localhost:5000"]
 SECRET_KEY_WARNING = "   WARNING: Using auto-generated SECRET_KEY. Set SECRET_KEY environment variable in production!"
+
+# Initialize logger
+logger = setup_deployment_logging()
 
 
 def load_config() -> dict:
@@ -26,12 +30,15 @@ def load_config() -> dict:
         try:
             with open(config_path, "r") as f:
                 config = json.load(f)
+                logger.info(f"Loaded configuration from {config_path}")
                 print(f"[DEPLOY] Loaded configuration from {config_path}")
                 return config
         except (json.JSONDecodeError, IOError) as e:
+            logger.warning(f"Failed to load {config_path}: {e}")
             print(f"[DEPLOY] Warning: Failed to load {config_path}: {e}")
             return {}
     else:
+        logger.info("No config.json found, using defaults")
         print("[DEPLOY] No config.json found, using defaults")
         return {}
 
@@ -154,20 +161,25 @@ def run_command(command: str, description: str, env: Optional[dict] = None) -> b
     Returns:
         bool: True if command succeeded, False otherwise
     """
+    logger.info(f"{description}")
+    logger.debug(f"Command: {command}")
     print(f"[DEPLOY] {description}")
     print(f"   Command: {command}")
 
     try:
         subprocess.run(command, shell=True, check=True, env=env)
+        logger.info(f"{description} - SUCCESS")
         print("   SUCCESS")
         return True
     except subprocess.CalledProcessError as e:
+        logger.error(f"{description} - FAILED with exit code {e.returncode}")
         print(f"   FAILED with exit code {e.returncode}")
         return False
 
 
 def check_uv() -> bool:
     """Check if uv is installed."""
+    logger.info("Checking uv installation")
     return run_command("uv --version", "Checking uv installation")
 
 
@@ -234,7 +246,6 @@ def run_production_multiworker(
     flask_env = get_config_value(config, "FLASK_ENV", "production")
     env["FLASK_ENV"] = flask_env
 
-
     cors_origins = get_cors_origins(config)
     env["CORS_ORIGINS"] = json.dumps(cors_origins)
 
@@ -269,7 +280,6 @@ def run_production_eventlet(config: dict, port: int = 8000) -> bool:
     flask_env = get_config_value(config, "FLASK_ENV", "production")
     env["FLASK_ENV"] = flask_env
 
-
     cors_origins = get_cors_origins(config)
     env["CORS_ORIGINS"] = json.dumps(cors_origins)
 
@@ -303,7 +313,6 @@ def run_production_gevent(config: dict, workers: int = 4, port: int = 8000) -> b
 
     flask_env = get_config_value(config, "FLASK_ENV", "production")
     env["FLASK_ENV"] = flask_env
-
 
     cors_origins = get_cors_origins(config)
     env["CORS_ORIGINS"] = json.dumps(cors_origins)
@@ -343,7 +352,6 @@ def run_production_waitress(config: dict, port: int = 8000) -> bool:
     flask_env = get_config_value(config, "FLASK_ENV", "production")
     env["FLASK_ENV"] = flask_env
 
-
     cors_origins = get_cors_origins(config)
     env["CORS_ORIGINS"] = json.dumps(cors_origins)
 
@@ -360,6 +368,8 @@ def run_production_waitress(config: dict, port: int = 8000) -> bool:
 
 def main():
     """Main deployment script entry point."""
+    logger.info("Starting deployment script")
+
     parser = argparse.ArgumentParser(
         description="Deploy Part Management System backend"
     )
@@ -399,11 +409,17 @@ def main():
 
     # Fail fast if the port is already in use
     if not is_port_available(resolved_port):
-        print(
-            f"ERROR: Port {resolved_port} is already in use. "
+        error_msg = (
+            f"Port {resolved_port} is already in use. "
             "Stop the existing process or choose a different port with --port or PORT."
         )
+        logger.error(error_msg)
+        print(f"ERROR: {error_msg}")
         sys.exit(1)
+
+    logger.info(
+        f"Part Management System Deployment - Mode: {args.mode}, Port: {resolved_port}"
+    )
     print("DEPLOY: Part Management System Deployment")
     print(f"   Mode: {args.mode}")
     if args.mode.startswith("prod"):
@@ -415,17 +431,21 @@ def main():
 
     # Check uv installation
     if not check_uv():
-        print("ERROR: uv package manager is required but not installed.")
+        error_msg = "uv package manager is required but not installed."
+        logger.error(error_msg)
+        print(f"ERROR: {error_msg}")
         print("   Install uv from: https://github.com/astral-sh/uv")
         sys.exit(1)
 
     # Install dependencies for all modes except dev (if already running)
     if args.mode != "dev" and not install_dependencies():
+        logger.error("Failed to install dependencies")
         print("ERROR: Failed to install dependencies")
         sys.exit(1)
 
     # Build frontend for production modes
     if args.mode != "dev" and not build_frontend(config):
+        logger.error("Failed to build frontend")
         print("ERROR: Failed to build frontend")
         sys.exit(1)
 
@@ -435,19 +455,32 @@ def main():
     if args.mode == "install":
         success = install_dependencies()
     elif args.mode == "dev":
+        logger.info("Starting development server")
         success = run_development()
     elif args.mode == "prod-multi":
+        logger.info(
+            f"Starting production server (multi-worker, {args.workers} workers)"
+        )
         success = run_production_multiworker(config, args.workers, resolved_port)
     elif args.mode == "prod-waitress":
+        logger.info("Starting production server (Waitress - cross-platform)")
         success = run_production_waitress(config, resolved_port)
     elif args.mode == "prod-eventlet":
+        logger.info("Starting production server (eventlet - Unix only)")
         success = run_production_eventlet(config, resolved_port)
     elif args.mode == "prod-gevent":
+        logger.info(
+            f"Starting production server (gevent, {args.workers} workers - Unix only)"
+        )
         success = run_production_gevent(config, args.workers, resolved_port)
 
     if success:
+        logger.info("Deployment completed successfully!")
         print("SUCCESS: Deployment completed successfully!")
     else:
+        logger.error("Deployment failed!")
+        print("FAILED: Deployment failed!")
+        sys.exit(1)
         print("FAILED: Deployment failed!")
         sys.exit(1)
 
