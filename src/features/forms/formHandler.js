@@ -218,6 +218,11 @@ async function performPostSubmitActions() {
  * @param {Event} e - The form submission event
  */
 export async function handleFormSubmit(e) {
+    // Only process form submission events, not click events that bubble up
+    if (!e || e.type !== "submit") {
+        return;
+    }
+
     if (e && typeof e.preventDefault === "function") {
         e.preventDefault();
     }
