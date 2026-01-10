@@ -106,13 +106,13 @@ def setup_flask_logging(
         level: Logging level (default: logging.INFO)
     """
     import os as os_module
-    
+
     # Get current process ID
     pid = os_module.getpid()
-    
+
     # Check if we already have a queue listener for this process
     global _queue_listeners
-    
+
     # Always clear any existing handlers to prevent duplicates
     for handler in app.logger.handlers[:]:
         handler.close()
@@ -122,9 +122,7 @@ def setup_flask_logging(
     if log_dir.startswith("/"):
         abs_log_dir = log_dir
     else:
-        backend_dir = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))
-        )
+        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         project_root = os.path.dirname(backend_dir)
         abs_log_dir = os.path.join(project_root, log_dir)
 
@@ -151,32 +149,30 @@ def setup_flask_logging(
         # Create queue and listener for non-blocking logging
         log_queue = Queue()
         queue_listener = logging.handlers.QueueListener(
-            log_queue,
-            file_handler,
-            respect_handler_level=True
+            log_queue, file_handler, respect_handler_level=True
         )
-        
+
         # Start the listener
         queue_listener.start()
-        
+
         # Store in global registry
         _queue_listeners[pid] = {
-            'listener': queue_listener,
-            'queue': log_queue,
-            'formatter': formatter,
-            'level': level
+            "listener": queue_listener,
+            "queue": log_queue,
+            "formatter": formatter,
+            "level": level,
         }
-        
+
         # Register cleanup on exit
         atexit.register(_cleanup_listener, pid)
 
     # Get the queue for this process
-    log_queue = _queue_listeners[pid]['queue']
-    formatter = _queue_listeners[pid]['formatter']
-    
+    log_queue = _queue_listeners[pid]["queue"]
+    formatter = _queue_listeners[pid]["formatter"]
+
     # Setup queue handler (non-blocking)
     queue_handler = logging.handlers.QueueHandler(log_queue)
-    
+
     # Configure Flask app logger
     app.logger.setLevel(level)
     app.logger.addHandler(queue_handler)
@@ -196,12 +192,15 @@ def setup_flask_logging(
     # Setup request/response logging
     setup_request_response_logging(app)
 
+    # Log successful initialization
+    app.logger.info("Logging initialized successfully")
+
 
 def _cleanup_listener(pid):
     """Clean up queue listener on process exit."""
     global _queue_listeners
     if pid in _queue_listeners:
-        listener = _queue_listeners[pid]['listener']
+        listener = _queue_listeners[pid]["listener"]
         listener.stop()
         del _queue_listeners[pid]
 
@@ -236,10 +235,22 @@ def setup_request_response_logging(app) -> None:
         """Log response details."""
         from flask import request
 
+        # Try to get response size, but handle passthrough mode (e.g., static files)
+        try:
+            size = (
+                response.content_length
+                if response.content_length is not None
+                else "unknown"
+            )
+        except Exception:
+            size = "unknown"
+
         app.logger.info(
             f"RESPONSE: {request.method} {request.path} | "
             f"Status: {response.status_code} | "
-            f"Size: {len(response.get_data())} bytes"
+            f"Size: {size} bytes"
+            if size != "unknown"
+            else f"Status: {response.status_code}"
         )
 
         return response
