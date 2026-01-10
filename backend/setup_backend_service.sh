@@ -65,8 +65,8 @@ Type=simple
 User=root
 Group=root
 Environment="PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-WorkingDirectory=/root/part-management-system/backend
-ExecStart=/root/.local/bin/uv run python /root/part-management-system/backend/deploy.py prod-multi --port 5000
+WorkingDirectory=/root/Aerie-Part-Management/backend
+ExecStart=/root/.local/bin/uv run python /root/Aerie-Part-Management/backend/deploy.py prod-multi --port 5000
 Restart=always
 RestartSec=5
 
