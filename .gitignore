@@ -41,3 +41,5 @@ config.json
 uv.lock
 
 package-lock.json
+
+/logs
