@@ -8,9 +8,11 @@ def require_secret_key(f):
     """Decorator to require a valid secret key for API access.
 
     The secret key can be provided in:
-    - X-API-Key header
+    - X-API-Key header (recommended)
     - api_key query parameter
-    - api_key in JSON request body (for POST/PUT requests)
+
+    Note: The api_key in request body is deprecated and not recommended.
+    Use X-API-Key header for all requests.
 
     Returns:
         JSON error response if key is missing or invalid

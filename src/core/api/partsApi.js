@@ -10,12 +10,76 @@ import {
     apiDownloadFile,
 } from "./apiClient.js";
 import { getApiKeyFromCookie } from "../auth/auth.js";
+import { ENDPOINTS } from "./endpoints.js";
 
-// Simple cache for CAD model blob URLs
-const cadModelCache = new Map();
+// Blob URL cache with automatic cleanup and size limits
+const MAX_CACHE_SIZE = 50; // Maximum number of cached blob URLs
+const CACHE_EXPIRY_MS = 1800000; // 30 minutes
+
+class BlobUrlCache {
+    constructor(maxSize = MAX_CACHE_SIZE, expiryMs = CACHE_EXPIRY_MS) {
+        this.cache = new Map();
+        this.maxSize = maxSize;
+        this.expiryMs = expiryMs;
+    }
+
+    set(key, blobUrl) {
+        // Evict oldest entries if cache is full
+        if (this.cache.size >= this.maxSize) {
+            const firstKey = this.cache.keys().next().value;
+            this.revoke(firstKey);
+        }
+
+        this.cache.set(key, {
+            url: blobUrl,
+            timestamp: Date.now(),
+        });
+    }
+
+    get(key) {
+        const entry = this.cache.get(key);
+        if (!entry) return null;
+
+        // Check if entry has expired
+        if (Date.now() - entry.timestamp > this.expiryMs) {
+            this.revoke(key);
+            return null;
+        }
+
+        return entry.url;
+    }
+
+    has(key) {
+        return this.get(key) !== null;
+    }
+
+    revoke(key) {
+        const entry = this.cache.get(key);
+        if (entry?.url) {
+            URL.revokeObjectURL(entry.url);
+        }
+        this.cache.delete(key);
+    }
+
+    clear() {
+        for (const key of this.cache.keys()) {
+            this.revoke(key);
+        }
+    }
+}
+
+// Initialize caches
+const cadModelCache = new BlobUrlCache();
 const pendingModelRequests = new Map();
 const pendingViewRequests = new Map();
 const pendingManifestRequests = new Map();
+
+// Clean up blob URLs when page unloads
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => {
+        cadModelCache.clear();
+    });
+}
 
 /**
  * Get all parts with optional filtering and pagination
@@ -29,7 +93,7 @@ const pendingManifestRequests = new Map();
  * @returns {Promise<Object>} Parts data with pagination info
  */
 export async function getParts(options = {}) {
-    return await apiGet("/parts/", options);
+    return await apiGet(ENDPOINTS.PARTS.LIST, options);
 }
 
 /**
@@ -38,7 +102,7 @@ export async function getParts(options = {}) {
  * @returns {Promise<Object>} Part data
  */
 export async function getPart(partId) {
-    return await apiGet(`/parts/${partId}`);
+    return await apiGet(ENDPOINTS.PARTS.GET(partId));
 }
 
 /**
@@ -47,7 +111,7 @@ export async function getPart(partId) {
  * @returns {Promise<Object>} Created part data
  */
 export async function createPart(partData) {
-    return await apiPost("/parts/", partData);
+    return await apiPost(ENDPOINTS.PARTS.CREATE, partData);
 }
 
 /**
@@ -57,7 +121,7 @@ export async function createPart(partData) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function updatePart(partId, partData) {
-    return await apiPut(`/parts/${partId}`, partData);
+    return await apiPut(ENDPOINTS.PARTS.UPDATE(partId), partData);
 }
 
 /**
@@ -66,7 +130,7 @@ export async function updatePart(partId, partData) {
  * @returns {Promise<Object>} Success message
  */
 export async function deletePart(partId) {
-    return await apiDelete(`/parts/${partId}`);
+    return await apiDelete(ENDPOINTS.PARTS.DELETE(partId));
 }
 
 /**
@@ -75,7 +139,7 @@ export async function deletePart(partId) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function approvePart(partId, payload = {}) {
-    return await apiPost(`/parts/${partId}/approve`, payload);
+    return await apiPost(ENDPOINTS.PARTS.APPROVE(partId), payload);
 }
 
 /**
@@ -85,7 +149,9 @@ export async function approvePart(partId, payload = {}) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function assignPart(partId, assignedUser) {
-    return await apiPost(`/parts/${partId}/assign`, { assigned: assignedUser });
+    return await apiPost(ENDPOINTS.PARTS.ASSIGN(partId), {
+        assigned: assignedUser,
+    });
 }
 
 /**
@@ -94,7 +160,7 @@ export async function assignPart(partId, assignedUser) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function unclaimPart(partId) {
-    return await apiPost(`/parts/${partId}/unclaim`);
+    return await apiPost(ENDPOINTS.PARTS.UNCLAIM(partId));
 }
 
 /**
@@ -103,7 +169,7 @@ export async function unclaimPart(partId) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function completePart(partId, payload = {}) {
-    return await apiPost(`/parts/${partId}/complete`, payload);
+    return await apiPost(ENDPOINTS.PARTS.COMPLETE(partId), payload);
 }
 
 /**
@@ -112,7 +178,7 @@ export async function completePart(partId, payload = {}) {
  * @returns {Promise<Object>} Updated part data
  */
 export async function revertPart(partId) {
-    return await apiPost(`/parts/${partId}/revert`);
+    return await apiPost(ENDPOINTS.PARTS.REVERT(partId));
 }
 
 /**
@@ -122,7 +188,7 @@ export async function revertPart(partId) {
  * @returns {Promise<Object>} Parts data
  */
 export async function getPartsByCategory(category, options = {}) {
-    return await apiGet(`/parts/categories/${category}`, options);
+    return await apiGet(ENDPOINTS.PARTS.BY_CATEGORY(category), options);
 }
 
 /**
@@ -130,7 +196,7 @@ export async function getPartsByCategory(category, options = {}) {
  * @returns {Promise<Object>} Statistics data
  */
 export async function getStats() {
-    return await apiGet("/parts/stats");
+    return await apiGet(ENDPOINTS.PARTS.STATS);
 }
 
 /**
@@ -138,7 +204,7 @@ export async function getStats() {
  * @returns {Promise<Object>} Leaderboard data
  */
 export async function getLeaderboard() {
-    return await apiGet("/parts/leaderboard");
+    return await apiGet(ENDPOINTS.PARTS.LEADERBOARD);
 }
 
 /**
@@ -147,7 +213,7 @@ export async function getLeaderboard() {
  * @returns {Promise<Object>} Success message
  */
 export async function wipeAllParts(password) {
-    return await apiPost("/parts/wipe", { password });
+    return await apiPost(ENDPOINTS.PARTS.WIPE, { password });
 }
 
 /**
@@ -159,7 +225,7 @@ export async function wipeAllParts(password) {
 export async function uploadPartFile(partId, file) {
     const formData = new FormData();
     formData.append("file", file);
-    return await apiPostMultipart(`/parts/${partId}/upload`, formData);
+    return await apiPostMultipart(ENDPOINTS.PARTS.UPLOAD(partId), formData);
 }
 
 /**
@@ -169,7 +235,15 @@ export async function uploadPartFile(partId, file) {
  * @returns {Promise<Blob>} File blob
  */
 export async function downloadPartFile(partId, filename) {
-    return await apiDownloadFile(`/parts/${partId}/download`, filename);
+    return await apiDownloadFile(ENDPOINTS.PARTS.DOWNLOAD(partId), filename);
+}
+
+/**
+ * Check authentication status
+ * @returns {Promise<Object>} Authentication status
+ */
+export async function checkAuth() {
+    return await apiGet(ENDPOINTS.PARTS.AUTH_CHECK);
 }
 
 /**
@@ -180,7 +254,7 @@ export async function downloadPartFile(partId, filename) {
 export async function getPartFileBlobUrl(partId) {
     const base = import.meta.env.BASE_URL || "/";
     const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-    const url = basePath + `/api/parts/${partId}/file`;
+    const url = basePath + "/api" + ENDPOINTS.PARTS.FILE(partId);
 
     const headers = {};
     const apiKey = getApiKeyFromCookie();
@@ -205,8 +279,9 @@ export async function getPartFileBlobUrl(partId) {
  */
 export async function getPartModelBlobUrl(partId) {
     // Check cache first
-    if (cadModelCache.has(partId)) {
-        return cadModelCache.get(partId);
+    const cachedUrl = cadModelCache.get(partId);
+    if (cachedUrl) {
+        return cachedUrl;
     }
 
     // Check if there is already a pending request for this part
@@ -219,7 +294,7 @@ export async function getPartModelBlobUrl(partId) {
             // Use Vite's BASE_URL which respects the subpath configured during build
             const base = import.meta.env.BASE_URL || "/";
             const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-            const url = basePath + `/api/parts/${partId}/model`;
+            const url = basePath + "/api" + ENDPOINTS.PARTS.MODEL(partId);
 
             const headers = {};
             const apiKey = getApiKeyFromCookie();
@@ -236,7 +311,7 @@ export async function getPartModelBlobUrl(partId) {
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
 
-            // Cache the blob URL
+            // Cache the blob URL with automatic expiry
             cadModelCache.set(partId, blobUrl);
 
             return blobUrl;
@@ -264,7 +339,7 @@ export async function getPartDrawingBlobUrl(partId, options = {}) {
     const base = import.meta.env.BASE_URL || "/";
     const basePath = base === "/" ? "" : base.replace(/\/$/, "");
     const query = refresh ? "?refresh=true" : "";
-    const url = basePath + `/api/parts/${partId}/drawing${query}`;
+    const url = basePath + "/api" + ENDPOINTS.PARTS.DRAWING(partId) + query;
 
     const headers = {};
     const apiKey = getApiKeyFromCookie();
@@ -289,7 +364,7 @@ export async function getPartDrawingBlobUrl(partId, options = {}) {
  * @returns {Promise<Object>} Upload result
  */
 export async function uploadPartViews(partId, formData) {
-    return await apiPostMultipart(`/parts/${partId}/views`, formData);
+    return await apiPostMultipart(ENDPOINTS.PARTS.UPLOAD_VIEWS(partId), formData);
 }
 
 /**
@@ -304,7 +379,7 @@ export async function getPartViewsManifest(partId) {
 
     const request = (async () => {
         try {
-            return await apiGet(`/parts/${partId}/views`);
+            return await apiGet(ENDPOINTS.PARTS.VIEWS_MANIFEST(partId));
         } finally {
             pendingManifestRequests.delete(partId);
         }
@@ -330,7 +405,7 @@ export async function getPartViewBlobUrl(partId, viewIndex) {
         try {
             const base = import.meta.env.BASE_URL || "/";
             const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-            const url = basePath + `/api/parts/${partId}/views/${viewIndex}`;
+            const url = basePath + "/api" + ENDPOINTS.PARTS.VIEW_IMAGE(partId, viewIndex);
 
             const headers = {};
             const apiKey = getApiKeyFromCookie();

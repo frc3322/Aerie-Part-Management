@@ -23,6 +23,7 @@ import {
     uploadPartFile,
     getPart,
 } from "../../core/api/router.js";
+import { validateFile } from "../../core/utils/fileValidation.js";
 
 function getMaterialInputValue() {
     const materialSelect = document.getElementById("input-material-select");
@@ -143,6 +144,14 @@ function prepareApiData(formData) {
  * @returns {Object|null} Updated part data or null if upload failed
  */
 async function handleFileUpload(partId, file) {
+    // Validate file before uploading
+    const validation = validateFile(file);
+    if (!validation.valid) {
+        setUploadStatus("error");
+        showErrorNotification("Invalid File", validation.error);
+        return null;
+    }
+
     try {
         setUploadStatus("uploading");
         await uploadPartFile(partId, file);

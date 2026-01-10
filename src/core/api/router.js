@@ -33,6 +33,7 @@ import {
     uploadPartViews,
     getPartViewsManifest,
     getPartViewBlobUrl,
+    checkAuth,
 } from "./partsApi.js";
 
 import { withErrorHandling } from "./apiErrorHandler.js";
@@ -70,6 +71,7 @@ export {
     uploadPartViews,
     getPartViewsManifest,
     getPartViewBlobUrl,
+    checkAuth,
 };
 
 // Export error handling utility

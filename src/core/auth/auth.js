@@ -1,6 +1,9 @@
 // Authentication Utility Functions
 // Handles API key storage in cookies with 24-hour expiration
 
+import { apiGet } from "../api/apiClient.js";
+import { ENDPOINTS } from "../api/endpoints.js";
+
 const API_KEY_COOKIE_NAME = "part_mgmt_api_key";
 const COOKIE_EXPIRY_HOURS = 24;
 
@@ -48,7 +51,7 @@ const AUTH_CHECK_COOLDOWN = 2000; // 2 seconds
 
 /**
  * Check authentication status with rate limiting
- * @param {string} apiKey - The API key to validate
+ * @param {string} apiKey - The API key to validate (not used directly, passed via cookie)
  * @returns {Promise<boolean>} True if API key is valid, false otherwise
  */
 export async function checkAuthStatus(apiKey) {
@@ -63,28 +66,11 @@ export async function checkAuthStatus(apiKey) {
     lastAuthCheckTime = Date.now();
 
     try {
-        // Use Vite's BASE_URL which is set via VITE_BASE_PATH env var during build
-        // This respects the base path configured for subpath deployments
-        const base = import.meta.env.BASE_URL || "/";
-        const basePath = base === "/" ? "" : base.replace(/\/$/, "");
-
-        // Always use relative URL with base path - works for both dev and prod when frontend/backend are same server
-        const authUrl = basePath + "/api/parts/auth/check";
-
-        const response = await fetch(authUrl, {
-            method: "GET",
-            headers: {
-                "X-API-Key": apiKey,
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                Pragma: "no-cache",
-            },
-            // Prevent browser from using cached responses
-            cache: "no-store",
-        });
-
-        return response.ok && response.status === 200;
+        // Use centralized API client which handles base path, headers, and error handling
+        await apiGet(ENDPOINTS.PARTS.AUTH_CHECK);
+        return true;
     } catch (error) {
+        // Authentication failed or network error
         console.error("Error checking auth status:", error);
         return false;
     }

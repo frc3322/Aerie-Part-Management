@@ -12,6 +12,9 @@ from utils.auth import require_secret_key  # type: ignore
 from utils.onshape_drawing import build_onshape_client  # type: ignore
 from utils.step_converter import convert_step_to_gltf  # type: ignore
 from utils.validation import validate_misc_info, ValidationError  # type: ignore
+from utils.error_responses import (
+    validation_error_response,
+)  # type: ignore
 
 # Status constants
 STATUS_IN_PROGRESS = "In Progress"
@@ -182,16 +185,16 @@ def create_part():
 
         part_id = data.get("partId") or data.get("part_id")
         if part_id is None or str(part_id).strip() == "":
-            return jsonify({"error": "Part ID is required"}), 400
+            return validation_error_response("Part ID is required", field="partId")
         data["part_id"] = str(part_id).strip()
 
         material = data.get("material")
         if material is None or str(material).strip() == "":
-            return jsonify({"error": "Material is required"}), 400
+            return validation_error_response("Material is required", field="material")
 
         subsystem = data.get("subsystem")
         if subsystem is None or str(subsystem).strip() == "":
-            return jsonify({"error": "Subsystem is required"}), 400
+            return validation_error_response("Subsystem is required", field="subsystem")
 
         amount = data.get("amount")
         if amount is None or str(amount).strip() == "":
@@ -200,10 +203,14 @@ def create_part():
             try:
                 parsed_amount = int(amount)
                 if parsed_amount <= 0:
-                    return jsonify({"error": "Amount must be greater than 0"}), 400
+                    return validation_error_response(
+                        "Amount must be greater than 0", field="amount"
+                    )
                 data["amount"] = parsed_amount
             except (TypeError, ValueError):
-                return jsonify({"error": "Amount must be a number"}), 400
+                return validation_error_response(
+                    "Amount must be a number", field="amount"
+                )
 
         # Normalize misc_info if provided
         try:
@@ -212,7 +219,7 @@ def create_part():
                     data.get("misc_info", data.get("miscInfo"))
                 )
         except ValidationError as exc:
-            return jsonify({"error": exc.message, "field": exc.field}), 400
+            return validation_error_response(exc.message, field=exc.field)
 
         # Create new part
         part = Part()
