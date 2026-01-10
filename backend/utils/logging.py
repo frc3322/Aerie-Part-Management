@@ -8,6 +8,10 @@ import logging
 import logging.handlers
 import os
 from queue import Queue
+import atexit
+
+# Global registry to track queue listeners by process ID
+_queue_listeners = {}
 
 
 class MaxSizeRotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -91,8 +95,8 @@ def setup_flask_logging(
     """
     Setup non-blocking logging for Flask application.
 
-    Uses QueueHandler/QueueListener for non-blocking file writes to prevent
-    Flask request handling from being blocked by I/O operations.
+    Uses QueueHandler/QueueListener for non-blocking I/O. Only creates one
+    queue listener per process to prevent duplicates in multiprocessing scenarios.
 
     Args:
         app: Flask application instance
@@ -101,65 +105,105 @@ def setup_flask_logging(
         enable_console: Whether to also log to console
         level: Logging level (default: logging.INFO)
     """
+    import os as os_module
+    
+    # Get current process ID
+    pid = os_module.getpid()
+    
+    # Check if we already have a queue listener for this process
+    global _queue_listeners
+    
+    # Always clear any existing handlers to prevent duplicates
+    for handler in app.logger.handlers[:]:
+        handler.close()
+        app.logger.removeHandler(handler)
+
     # Determine absolute log directory path based on project root
-    # backend/app or backend/utils -> backend -> project_root
     if log_dir.startswith("/"):
-        # Already absolute path
         abs_log_dir = log_dir
     else:
-        # Get the project root (parent of backend directory)
         backend_dir = os.path.dirname(
             os.path.dirname(os.path.abspath(__file__))
-        )  # backend/
-        project_root = os.path.dirname(backend_dir)  # project root
+        )
+        project_root = os.path.dirname(backend_dir)
         abs_log_dir = os.path.join(project_root, log_dir)
 
-    # Create logs directory if it doesn't exist
     os.makedirs(abs_log_dir, exist_ok=True)
-
     log_path = os.path.join(abs_log_dir, log_filename)
 
-    # Create formatter for detailed logging
+    # Create formatter
     formatter = logging.Formatter(
         fmt="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Setup file handler with size-based rotation
-    file_handler = MaxSizeRotatingFileHandler(
-        filename=log_path,
-        maxBytes=MaxSizeRotatingFileHandler.MAX_BYTES,
-        backupCount=0,  # We don't want backup files, just truncate
-    )
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(level)
+    # Check if we need to create a new queue listener for this process
+    if pid not in _queue_listeners:
+        # Setup file handler with size-based rotation
+        file_handler = MaxSizeRotatingFileHandler(
+            filename=log_path,
+            maxBytes=MaxSizeRotatingFileHandler.MAX_BYTES,
+            backupCount=0,
+        )
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(level)
 
-    # Setup queue and listener for non-blocking logging
-    log_queue = Queue()
+        # Create queue and listener for non-blocking logging
+        log_queue = Queue()
+        queue_listener = logging.handlers.QueueListener(
+            log_queue,
+            file_handler,
+            respect_handler_level=True
+        )
+        
+        # Start the listener
+        queue_listener.start()
+        
+        # Store in global registry
+        _queue_listeners[pid] = {
+            'listener': queue_listener,
+            'queue': log_queue,
+            'formatter': formatter,
+            'level': level
+        }
+        
+        # Register cleanup on exit
+        atexit.register(_cleanup_listener, pid)
+
+    # Get the queue for this process
+    log_queue = _queue_listeners[pid]['queue']
+    formatter = _queue_listeners[pid]['formatter']
+    
+    # Setup queue handler (non-blocking)
     queue_handler = logging.handlers.QueueHandler(log_queue)
-    queue_listener = logging.handlers.QueueListener(
-        log_queue, file_handler, respect_handler_level=True
-    )
-
-    # Start the listener in a daemon thread
-    queue_listener.start()
-
+    
     # Configure Flask app logger
     app.logger.setLevel(level)
     app.logger.addHandler(queue_handler)
     app.logger.propagate = False
 
-    # Optionally add console handler for console output
+    # Optionally add console handler
     if enable_console:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
         console_handler.setLevel(level)
         app.logger.addHandler(console_handler)
 
-    # Setup request/response logging by adding a before/after request handler
+    # Suppress werkzeug logger to avoid duplicate messages
+    logging.getLogger("werkzeug").propagate = False
+    logging.getLogger("werkzeug").handlers = []
+
+    # Setup request/response logging
     setup_request_response_logging(app)
 
-    app.logger.info("Logging initialized successfully")
+
+def _cleanup_listener(pid):
+    """Clean up queue listener on process exit."""
+    global _queue_listeners
+    if pid in _queue_listeners:
+        listener = _queue_listeners[pid]['listener']
+        listener.stop()
+        del _queue_listeners[pid]
 
 
 def setup_request_response_logging(app) -> None:
@@ -167,7 +211,14 @@ def setup_request_response_logging(app) -> None:
     Setup Flask request/response logging.
 
     Logs incoming requests and responses with relevant details.
+    Only registers handlers once to prevent duplicates in multiprocessing.
     """
+
+    # Check if request/response handlers are already registered
+    if hasattr(app, "_request_logging_configured"):
+        return
+
+    app._request_logging_configured = True
 
     @app.before_request
     def log_request():
@@ -277,7 +328,9 @@ def setup_deployment_logging(
 
     # File handler with size-based rotation
     file_handler = MaxSizeRotatingFileHandler(
-        filename=log_path, maxBytes=MaxSizeRotatingFileHandler.MAX_BYTES, backupCount=0
+        filename=log_path,
+        maxBytes=MaxSizeRotatingFileHandler.MAX_BYTES,
+        backupCount=0,
     )
     file_handler.setFormatter(formatter)
     file_handler.setLevel(level)
