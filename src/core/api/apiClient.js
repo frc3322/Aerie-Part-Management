@@ -21,17 +21,18 @@ function getBaseUrl() {
 /**
  * Get common headers for API requests including authentication
  * @param {boolean} includeContentType - Whether to include Content-Type header (false for multipart)
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Object} Headers object
  */
-function getHeaders(includeContentType = true) {
+function getHeaders(includeContentType = true, overrideApiKey = null) {
     const headers = {};
 
     if (includeContentType) {
         headers["Content-Type"] = "application/json";
     }
 
-    // Add API key if available
-    const apiKey = getApiKeyFromCookie();
+    // Add API key - use override if provided, otherwise get from cookie
+    const apiKey = overrideApiKey || getApiKeyFromCookie();
     if (apiKey) {
         headers["X-API-Key"] = apiKey;
     }
@@ -43,14 +44,38 @@ function getHeaders(includeContentType = true) {
  * Make an authenticated API request
  * @param {string} endpoint - API endpoint (without base URL)
  * @param {Object} options - Fetch options
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Promise} Fetch response promise
  */
-async function apiRequest(endpoint, options = {}) {
+async function apiRequest(endpoint, options = {}, overrideApiKey = null) {
     const url = getBaseUrl() + endpoint;
-    const defaultOptions = {
-        headers: getHeaders(),
-        ...options,
+
+    // Properly merge headers - don't let options.headers completely overwrite auth headers
+    const defaultHeaders = getHeaders(true, overrideApiKey);
+    const mergedHeaders = {
+        ...defaultHeaders,
+        ...(options.headers || {}),
     };
+
+    const defaultOptions = {
+        ...options,
+        headers: mergedHeaders,
+    };
+
+    // Debug logging
+    console.log("[DEBUG] apiRequest:", {
+        endpoint,
+        url,
+        overrideApiKey: overrideApiKey
+            ? "***" + overrideApiKey.slice(-4)
+            : "null",
+        headers: {
+            ...mergedHeaders,
+            "X-API-Key": mergedHeaders["X-API-Key"]
+                ? "***" + mergedHeaders["X-API-Key"].slice(-4)
+                : "null",
+        },
+    });
 
     try {
         const response = await fetch(url, defaultOptions);
@@ -76,14 +101,15 @@ async function apiRequest(endpoint, options = {}) {
  * GET request wrapper
  * @param {string} endpoint - API endpoint
  * @param {Object} params - Query parameters
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Promise} Response data
  */
-export async function apiGet(endpoint, params = {}) {
+export async function apiGet(endpoint, params = {}, overrideApiKey = null) {
     // Build query string from params
     const queryString = new URLSearchParams(params).toString();
     const url = queryString ? `${endpoint}?${queryString}` : endpoint;
 
-    const response = await apiRequest(url);
+    const response = await apiRequest(url, {}, overrideApiKey);
     return await handleResponse(response);
 }
 
@@ -91,13 +117,18 @@ export async function apiGet(endpoint, params = {}) {
  * POST request wrapper
  * @param {string} endpoint - API endpoint
  * @param {Object} data - Request body data
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Promise} Response data
  */
-export async function apiPost(endpoint, data = {}) {
-    const response = await apiRequest(endpoint, {
-        method: "POST",
-        body: JSON.stringify(data),
-    });
+export async function apiPost(endpoint, data = {}, overrideApiKey = null) {
+    const response = await apiRequest(
+        endpoint,
+        {
+            method: "POST",
+            body: JSON.stringify(data),
+        },
+        overrideApiKey
+    );
     return await handleResponse(response);
 }
 
@@ -105,25 +136,35 @@ export async function apiPost(endpoint, data = {}) {
  * PUT request wrapper
  * @param {string} endpoint - API endpoint
  * @param {Object} data - Request body data
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Promise} Response data
  */
-export async function apiPut(endpoint, data = {}) {
-    const response = await apiRequest(endpoint, {
-        method: "PUT",
-        body: JSON.stringify(data),
-    });
+export async function apiPut(endpoint, data = {}, overrideApiKey = null) {
+    const response = await apiRequest(
+        endpoint,
+        {
+            method: "PUT",
+            body: JSON.stringify(data),
+        },
+        overrideApiKey
+    );
     return await handleResponse(response);
 }
 
 /**
  * DELETE request wrapper
  * @param {string} endpoint - API endpoint
+ * @param {string} overrideApiKey - Optional API key to use instead of cookie value
  * @returns {Promise} Response data
  */
-export async function apiDelete(endpoint) {
-    const response = await apiRequest(endpoint, {
-        method: "DELETE",
-    });
+export async function apiDelete(endpoint, overrideApiKey = null) {
+    const response = await apiRequest(
+        endpoint,
+        {
+            method: "DELETE",
+        },
+        overrideApiKey
+    );
     return await handleResponse(response);
 }
 

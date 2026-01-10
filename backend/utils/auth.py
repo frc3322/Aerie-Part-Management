@@ -23,6 +23,13 @@ def require_secret_key(f):
         secret_key = current_app.config["SECRET_KEY"]
         provided_key = _get_api_key_from_request()
 
+        # Print and log the provided key and correct password for debugging
+        print(f"[AUTH_CHECK] Provided API Key: {provided_key}")
+        print(f"[AUTH_CHECK] Correct Password: {secret_key}")
+        current_app.logger.info(
+            f"Auth check - Provided Key: {provided_key}, Correct Key: {secret_key}"
+        )
+
         if not provided_key:
             return jsonify(
                 {

@@ -51,7 +51,7 @@ const AUTH_CHECK_COOLDOWN = 2000; // 2 seconds
 
 /**
  * Check authentication status with rate limiting
- * @param {string} apiKey - The API key to validate (not used directly, passed via cookie)
+ * @param {string} apiKey - The API key to validate
  * @returns {Promise<boolean>} True if API key is valid, false otherwise
  */
 export async function checkAuthStatus(apiKey) {
@@ -66,8 +66,12 @@ export async function checkAuthStatus(apiKey) {
     lastAuthCheckTime = Date.now();
 
     try {
+        // Debug logging
+        console.log("[DEBUG] checkAuthStatus called with apiKey:", apiKey ? "***" + apiKey.slice(-4) : "null");
+        
         // Use centralized API client which handles base path, headers, and error handling
-        await apiGet(ENDPOINTS.PARTS.AUTH_CHECK);
+        // Pass the apiKey as an override to validate it (not the cookie value)
+        await apiGet(ENDPOINTS.PARTS.AUTH_CHECK, {}, apiKey);
         return true;
     } catch (error) {
         // Authentication failed or network error
