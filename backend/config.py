@@ -83,11 +83,11 @@ def _resolve_database_url() -> str:
     """
     # Try to get from environment or config first
     db_url = get_config_value("DATABASE_URL", None)
-    
+
     # Handle external databases (PostgreSQL, MySQL) - return as-is
     if db_url and db_url.startswith(("postgresql", "mysql", "postgres")):
         return db_url
-    
+
     # Handle SQLite - ensure absolute path
     if db_url and db_url.startswith("sqlite://"):
         # Check if it's already an absolute path
@@ -102,7 +102,7 @@ def _resolve_database_url() -> str:
             db_filename = db_url.replace("sqlite:///", "")
             db_path = os.path.join(backend_dir, db_filename)
             return f"sqlite:///{db_path}"
-    
+
     # Default to SQLite in backend directory
     backend_dir = _resolve_backend_directory()
 
@@ -152,6 +152,9 @@ class Config:
 
     # Deployment settings
     BASE_PATH = get_config_value("BASE_PATH", "")
+
+    # Logging settings
+    LOG_LEVEL = get_config_value("LOG_LEVEL", "WARNING")
 
     # Onshape settings
     ONSHAPE_ACCESS_KEY = get_config_value("ONSHAPE_ACCESS_KEY", "")

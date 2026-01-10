@@ -1,7 +1,6 @@
 """Flask application factory and initialization."""
 
 import os
-import logging
 from flask import Flask, send_from_directory  # type: ignore
 from flask_cors import CORS  # type: ignore
 from sqlalchemy import inspect, text  # type: ignore
@@ -32,12 +31,14 @@ def create_app(config_name: str = "default") -> Flask:
     CORS(app, origins=app.config["CORS_ORIGINS"])
 
     # Configure non-blocking logging for Flask with request/response logging
+    # Get log level from config (defaults to WARNING)
+    log_level_str = app.config.get("LOG_LEVEL", "WARNING")
     setup_flask_logging(
         app,
         log_dir="logs",
         log_filename="flask_app.log",
         enable_console=True,
-        level=logging.INFO,
+        level=log_level_str,
     )
 
     # Get base path from environment or config for subpath deployments (e.g., /part-management-system)

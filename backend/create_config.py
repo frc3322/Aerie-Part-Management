@@ -27,6 +27,8 @@ def create_default_config() -> Dict[str, Any]:
         "ALLOWED_EXTENSIONS": ["step", "stp", "pdf"],
         # Deployment settings
         "BASE_PATH": "",
+        # Logging settings
+        "LOG_LEVEL": "WARNING",  # Default to only log startup and errors
         # Onshape settings
         "ONSHAPE_ACCESS_KEY": "",
         "ONSHAPE_SECRET_KEY": "",
@@ -247,6 +249,12 @@ def main():
             "FLASK_ENV",
             config["FLASK_ENV"],
             "Flask environment (production, development)",
+        )
+
+        config["LOG_LEVEL"] = prompt_for_value(
+            "LOG_LEVEL",
+            config.get("LOG_LEVEL", "WARNING"),
+            "Logging level (DEBUG, INFO, WARNING, ERROR). WARNING logs only startup and errors, INFO logs all requests/responses to file",
         )
 
         config["CORS_ORIGINS"] = prompt_for_cors_origins(

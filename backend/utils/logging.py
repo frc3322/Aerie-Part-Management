@@ -14,6 +14,25 @@ import atexit
 _queue_listeners = {}
 
 
+def parse_log_level(level: str) -> int:
+    """Convert string log level to logging level integer.
+
+    Args:
+        level: Log level as string (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+
+    Returns:
+        int: Logging level integer, defaults to WARNING if invalid
+    """
+    level_map = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+    return level_map.get(level.upper(), logging.WARNING)
+
+
 class MaxSizeRotatingFileHandler(logging.handlers.RotatingFileHandler):
     """
     Custom rotating file handler that maintains a maximum file size.
@@ -90,7 +109,7 @@ def setup_flask_logging(
     log_dir: str = "logs",
     log_filename: str = "flask_app.log",
     enable_console: bool = True,
-    level: int = logging.INFO,
+    level: str = "WARNING",
 ) -> None:
     """
     Setup non-blocking logging for Flask application.
@@ -103,8 +122,19 @@ def setup_flask_logging(
         log_dir: Directory to store log files (relative to project root)
         log_filename: Name of the log file
         enable_console: Whether to also log to console
-        level: Logging level (default: logging.INFO)
+        level: Logging level as string (DEBUG, INFO, WARNING, ERROR) or int. Default: WARNING
+               WARNING: Only log startup and errors (not requests/responses)
+               INFO: Log all requests, responses, and errors
     """
+    # Convert string level to logging level if needed
+    if isinstance(level, str):
+        numeric_level = parse_log_level(level)
+        app.logger._config_log_level = (
+            level  # Store original string for request logging
+        )
+    else:
+        numeric_level = level
+        app.logger._config_log_level = logging.getLevelName(level)
     import os as os_module
 
     # Get current process ID
@@ -138,13 +168,14 @@ def setup_flask_logging(
     # Check if we need to create a new queue listener for this process
     if pid not in _queue_listeners:
         # Setup file handler with size-based rotation
+        # Use numeric_level for file handler
         file_handler = MaxSizeRotatingFileHandler(
             filename=log_path,
             maxBytes=MaxSizeRotatingFileHandler.MAX_BYTES,
             backupCount=0,
         )
         file_handler.setFormatter(formatter)
-        file_handler.setLevel(level)
+        file_handler.setLevel(numeric_level)
 
         # Create queue and listener for non-blocking logging
         log_queue = Queue()
@@ -160,7 +191,7 @@ def setup_flask_logging(
             "listener": queue_listener,
             "queue": log_queue,
             "formatter": formatter,
-            "level": level,
+            "level": numeric_level,
         }
 
         # Register cleanup on exit
@@ -174,23 +205,28 @@ def setup_flask_logging(
     queue_handler = logging.handlers.QueueHandler(log_queue)
 
     # Configure Flask app logger
-    app.logger.setLevel(level)
+    app.logger.setLevel(numeric_level)
     app.logger.addHandler(queue_handler)
     app.logger.propagate = False
 
     # Optionally add console handler
+    # Console always shows INFO and above, while file respects configured level
     if enable_console:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
-        console_handler.setLevel(level)
+        # Console handler always logs INFO and above (so we see startup and requests)
+        console_handler.setLevel(logging.INFO)
         app.logger.addHandler(console_handler)
 
     # Suppress werkzeug logger to avoid duplicate messages
     logging.getLogger("werkzeug").propagate = False
     logging.getLogger("werkzeug").handlers = []
 
-    # Setup request/response logging
-    setup_request_response_logging(app)
+    # Setup request/response logging with config level info
+    setup_request_response_logging(app, numeric_level)
+    # Note: Request/response logging will:
+    # - Print to console (always shows at INFO level)
+    # - Only save to file if log level is INFO or DEBUG
 
     # Log successful initialization
     app.logger.info("Logging initialized successfully")
@@ -205,12 +241,18 @@ def _cleanup_listener(pid):
         del _queue_listeners[pid]
 
 
-def setup_request_response_logging(app) -> None:
+def setup_request_response_logging(app, log_level: int = logging.INFO) -> None:
     """
     Setup Flask request/response logging.
 
     Logs incoming requests and responses with relevant details.
     Only registers handlers once to prevent duplicates in multiprocessing.
+
+    Args:
+        app: Flask application instance
+        log_level: Logging level (default: logging.INFO)
+                  - If INFO or DEBUG: log all requests/responses to file and console
+                  - If WARNING or higher: only print to console, don't save requests/responses
     """
 
     # Check if request/response handlers are already registered
@@ -223,17 +265,26 @@ def setup_request_response_logging(app) -> None:
     def log_request():
         """Log incoming request details."""
         from flask import request
+        import sys
 
-        app.logger.info(
+        request_msg = (
             f"REQUEST: {request.method} {request.path} | "
             f"Remote: {request.remote_addr} | "
             f"User-Agent: {request.user_agent}"
         )
+        
+        # Always print to console
+        print(request_msg, file=sys.stdout)
+        
+        # Only save to file if log level is INFO or DEBUG
+        if log_level <= logging.INFO:
+            app.logger.info(request_msg)
 
     @app.after_request
     def log_response(response):
         """Log response details."""
         from flask import request
+        import sys
 
         # Try to get response size, but handle passthrough mode (e.g., static files)
         try:
@@ -245,13 +296,21 @@ def setup_request_response_logging(app) -> None:
         except Exception:
             size = "unknown"
 
-        app.logger.info(
+        response_msg = (
             f"RESPONSE: {request.method} {request.path} | "
             f"Status: {response.status_code} | "
             f"Size: {size} bytes"
             if size != "unknown"
-            else f"Status: {response.status_code}"
+            else f"RESPONSE: {request.method} {request.path} | "
+                 f"Status: {response.status_code}"
         )
+        
+        # Always print to console
+        print(response_msg, file=sys.stdout)
+        
+        # Only save to file if log level is INFO or DEBUG
+        if log_level <= logging.INFO:
+            app.logger.info(response_msg)
 
         return response
 
