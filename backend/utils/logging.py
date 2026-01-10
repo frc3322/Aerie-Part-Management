@@ -205,17 +205,19 @@ def setup_flask_logging(
     queue_handler = logging.handlers.QueueHandler(log_queue)
 
     # Configure Flask app logger
-    app.logger.setLevel(numeric_level)
+    # Set logger to DEBUG to allow all messages through
+    # Handlers will filter based on their own levels
+    app.logger.setLevel(logging.DEBUG)
     app.logger.addHandler(queue_handler)
     app.logger.propagate = False
 
     # Optionally add console handler
-    # Console always shows INFO and above, while file respects configured level
+    # Console prints ALL messages, while file respects configured level
     if enable_console:
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
-        # Console handler always logs INFO and above (so we see startup and requests)
-        console_handler.setLevel(logging.INFO)
+        # Console handler prints all messages (DEBUG and above)
+        console_handler.setLevel(logging.DEBUG)
         app.logger.addHandler(console_handler)
 
     # Suppress werkzeug logger to avoid duplicate messages
@@ -225,7 +227,7 @@ def setup_flask_logging(
     # Setup request/response logging with config level info
     setup_request_response_logging(app, numeric_level)
     # Note: Request/response logging will:
-    # - Print to console (always shows at INFO level)
+    # - Always print to console (all levels)
     # - Only save to file if log level is INFO or DEBUG
 
     # Log successful initialization
@@ -251,8 +253,9 @@ def setup_request_response_logging(app, log_level: int = logging.INFO) -> None:
     Args:
         app: Flask application instance
         log_level: Logging level (default: logging.INFO)
-                  - If INFO or DEBUG: log all requests/responses to file and console
-                  - If WARNING or higher: only print to console, don't save requests/responses
+                  - All requests/responses are ALWAYS printed to console
+                  - If INFO or DEBUG: also save requests/responses to file
+                  - If WARNING or higher: only print to console, don't save to file
     """
 
     # Check if request/response handlers are already registered
@@ -272,10 +275,10 @@ def setup_request_response_logging(app, log_level: int = logging.INFO) -> None:
             f"Remote: {request.remote_addr} | "
             f"User-Agent: {request.user_agent}"
         )
-        
+
         # Always print to console
         print(request_msg, file=sys.stdout)
-        
+
         # Only save to file if log level is INFO or DEBUG
         if log_level <= logging.INFO:
             app.logger.info(request_msg)
@@ -302,12 +305,12 @@ def setup_request_response_logging(app, log_level: int = logging.INFO) -> None:
             f"Size: {size} bytes"
             if size != "unknown"
             else f"RESPONSE: {request.method} {request.path} | "
-                 f"Status: {response.status_code}"
+            f"Status: {response.status_code}"
         )
-        
+
         # Always print to console
         print(response_msg, file=sys.stdout)
-        
+
         # Only save to file if log level is INFO or DEBUG
         if log_level <= logging.INFO:
             app.logger.info(response_msg)
@@ -318,21 +321,28 @@ def setup_request_response_logging(app, log_level: int = logging.INFO) -> None:
     def log_error(error):
         """Log unhandled errors."""
         from flask import request, has_request_context
+        import sys
 
         if has_request_context():
-            app.logger.error(
+            error_msg = (
                 f"ERROR: {request.method} {request.path} | "
                 f"Exception: {type(error).__name__} | "
-                f"Message: {str(error)}",
-                exc_info=True,
+                f"Message: {str(error)}"
             )
+            # Always print to console
+            print(error_msg, file=sys.stderr)
+            # Always save to file
+            app.logger.error(error_msg, exc_info=True)
         else:
-            app.logger.error(
+            error_msg = (
                 f"ERROR: Exception occurred (no request context) | "
                 f"Exception: {type(error).__name__} | "
-                f"Message: {str(error)}",
-                exc_info=True,
+                f"Message: {str(error)}"
             )
+            # Always print to console
+            print(error_msg, file=sys.stderr)
+            # Always save to file
+            app.logger.error(error_msg, exc_info=True)
 
         # Return a 500 error response only if in request context
         if has_request_context():
