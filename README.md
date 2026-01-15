@@ -85,9 +85,27 @@ Comprehensive documentation is available in the [Wiki](../../wiki):
 
 ## 🔧 Configuration
 
+### Quick Configuration Setup
+
+Use the interactive configuration helper to set up your `config.json`:
+
+```bash
+cd backend
+uv run python create_config.py
+```
+
+This interactive script will guide you through setting up:
+- Secret keys and API credentials
+- Database configuration
+- CORS origins
+- Onshape integration
+- File upload settings
+
+### Configuration Methods
+
 The system can be configured using:
 
--   `config.json` file in the backend directory
+-   `config.json` file in the backend directory (recommended - use `create_config.py`)
 -   Environment variables
 -   Command-line arguments
 
