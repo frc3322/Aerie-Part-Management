@@ -45,6 +45,20 @@ See the demo here! [https://aeriedemo.scytheengineering.com/](https://aeriedemo.
 
 ### Production Deployment
 
+Run the config creation script to generate a `config.json` file:
+
+```bash
+uv run python backend/create_config.py
+```
+
+This interactive script will guide you through setting up:
+
+-   Secret keys and API credentials
+-   Database configuration
+-   CORS origins
+-   Onshape integration
+-   File upload settings
+
 Run the complete application (backend + built frontend) on port 5000:
 
 ```bash
@@ -84,22 +98,6 @@ Comprehensive documentation is available in the [Wiki](../../wiki):
 -   **[API Reference](../../wiki/API-Reference)** - Complete API documentation
 
 ## 🔧 Configuration
-
-### Quick Configuration Setup
-
-Use the interactive configuration helper to set up your `config.json`:
-
-```bash
-cd backend
-uv run python create_config.py
-```
-
-This interactive script will guide you through setting up:
-- Secret keys and API credentials
-- Database configuration
-- CORS origins
-- Onshape integration
-- File upload settings
 
 ### Configuration Methods
 
