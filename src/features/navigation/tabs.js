@@ -66,12 +66,6 @@ function toggleDesktopTabsVisibility() {
     desktopRow.classList.toggle("hidden", appState.isMobile);
 }
 
-function toggleActionKeyVisibility() {
-    const actionKey = document.getElementById("action-key");
-    if (!actionKey) return;
-    actionKey.classList.toggle("hidden", appState.isMobile);
-}
-
 function toggleAddButtonVisibility() {
     const addBtn = document.getElementById("add-part-btn");
     if (!addBtn) return;
@@ -126,7 +120,6 @@ function attachSwipeHandlers() {
 export function configureMobileUI() {
     toggleMobileNavVisibility();
     toggleDesktopTabsVisibility();
-    toggleActionKeyVisibility();
     toggleAddButtonVisibility();
     toggleSettingsButtonVisibility();
     if (appState.isMobile) {
