@@ -926,16 +926,18 @@ def download_part_file(part_id):
             return jsonify({"error": "No file associated with this part"}), 404
 
         upload_dir = get_upload_path(part_id)
-        file_path = upload_dir / part.file
+        # Sanitize filename to prevent path traversal
+        safe_filename = secure_filename(part.file)
+        file_path = upload_dir / safe_filename
 
         if not file_path.exists():
             return jsonify({"error": "File not found on server"}), 404
 
-        mimetype = get_file_mimetype(part.file)
+        mimetype = get_file_mimetype(safe_filename)
         return send_file(
             str(file_path),
             as_attachment=True,
-            download_name=part.file,
+            download_name=safe_filename,
             mimetype=mimetype,
         )
 
@@ -964,12 +966,14 @@ def get_part_file(part_id):
             return jsonify({"error": "No file associated with this part"}), 404
 
         upload_dir = get_upload_path(part_id)
-        file_path = upload_dir / part.file
+        # Sanitize filename to prevent path traversal
+        safe_filename = secure_filename(part.file)
+        file_path = upload_dir / safe_filename
 
         if not file_path.exists():
             return jsonify({"error": "File not found on server"}), 404
 
-        mimetype = get_file_mimetype(part.file)
+        mimetype = get_file_mimetype(safe_filename)
         return send_file(str(file_path), mimetype=mimetype, as_attachment=False)
 
     except Exception as e:
@@ -1001,21 +1005,35 @@ def download_part_drawing(part_id):
                 400,
             )
 
-        if not part.onshape_url:
-            return (
-                jsonify({"error": "No Onshape URL is set for this part"}),
-                404,
-            )
-
-        drawing_path = get_drawing_path(
-            part_id, part.part_id or part.name or str(part.id)
-        )
         refresh_requested = request.args.get("refresh", "false").lower() == "true"
+        upload_dir = get_upload_path(part_id)
+        drawing_path = None
 
-        if refresh_requested or not drawing_path.exists():
+        # If refresh requested or no manual file exists, try Onshape
+        if refresh_requested or not part.file:
+            if not part.onshape_url:
+                if refresh_requested:
+                    return jsonify({"error": "No Onshape URL to refresh from"}), 400
+                return jsonify({"error": "No drawing available for this part"}), 404
+
+            drawing_path = get_drawing_path(
+                part_id, part.part_id or part.name or str(part.id)
+            )
             client = build_onshape_client()
             drawing_path.parent.mkdir(parents=True, exist_ok=True)
             client.download_pdf(part.onshape_url, drawing_path)
+
+            # Update part file reference if it's new or refreshed
+            part.file = drawing_path.name
+            db.session.commit()
+        else:
+            # Use existing uploaded file
+            # Sanitize to prevent path traversal even if already sanitized at storage time
+            safe_filename = secure_filename(part.file)
+            drawing_path = upload_dir / safe_filename
+
+        if not drawing_path or not drawing_path.exists():
+            return jsonify({"error": "Drawing file not found"}), 404
 
         return send_file(
             str(drawing_path),
@@ -1049,11 +1067,13 @@ def get_part_model(part_id):
             return jsonify({"error": "No file associated with this part"}), 404
 
         upload_dir = get_upload_path(part_id)
-        filename_stem = Path(part.file).stem
+        # Sanitize filename to prevent path traversal
+        safe_filename = secure_filename(part.file)
+        filename_stem = Path(safe_filename).stem
         glb_path = upload_dir / f"{filename_stem}.glb"
 
         if not glb_path.exists():
-            step_path = upload_dir / part.file
+            step_path = upload_dir / safe_filename
             if not step_path.exists():
                 return jsonify({"error": "Original file not found"}), 404
 

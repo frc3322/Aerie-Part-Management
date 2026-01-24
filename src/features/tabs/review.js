@@ -55,6 +55,52 @@ export function generateReviewFileHTML(part) {
     return `<span class="text-gray-500">No file</span>`;
 }
 
+function createReviewCard(part, index) {
+    const isCNC = part.type === "cnc";
+    const displayName = part.name || "Unnamed";
+    const displayPartId = part.partId || part.name || part.id || "N/A";
+    const cadLink = part.onshapeUrl
+        ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')" title="View CAD">
+             <i class="fa-solid fa-cube text-lg"></i>
+           </div>`
+        : "";
+
+    const card = document.createElement("div");
+    card.className = "mobile-card";
+    card.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex gap-3">
+        ${cadLink}
+        <div>
+          <div class="text-sm font-semibold text-blue-100">${displayName}</div>
+          <div class="text-[11px] text-gray-500">${displayPartId}</div>
+        </div>
+      </div>
+      <div class="flex flex-col items-end gap-2">
+        <span class="mobile-type-pill ${isCNC ? "type-cnc" : "type-hand"}">
+          ${isCNC ? "CNC" : "HAND FAB"}
+        </span>
+      </div>
+    </div>
+    <div class="text-[11px] text-gray-400 mt-1">${part.subsystem || ""}</div>
+    <div class="mobile-card-actions mt-3">
+      <button data-action="approvePart" data-index="${index}" class="mobile-icon-btn text-green-400" aria-label="Approve">
+        <i class="fa-solid fa-check"></i>
+      </button>
+      <button data-action="viewPartInfo" data-tab="review" data-index="${index}" class="mobile-icon-btn text-gray-300" aria-label="Info">
+        <i class="fa-solid fa-circle-info"></i>
+      </button>
+      <button data-action="editPart" data-tab="review" data-index="${index}" class="mobile-icon-btn text-blue-200" aria-label="Edit">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+      <button data-action="deletePart" data-tab="review" data-index="${index}" class="mobile-icon-btn text-red-300" aria-label="Delete">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  `;
+    return card;
+}
+
 /**
  * Create a review table row
  * @param {Object} part - The part object
@@ -178,50 +224,54 @@ export function renderReview() {
 
     const tbody = document.getElementById("review-tbody");
     const emptyMsg = document.getElementById("review-empty");
+    const mobileList = document.getElementById("review-mobile-list");
+    const table = document.querySelector("#content-review table");
 
-    console.log(
-        "[renderReview] DOM elements found - tbody:",
-        !!tbody,
-        "emptyMsg:",
-        !!emptyMsg
-    );
-    console.log(
-        "[renderReview] tbody children before:",
-        tbody ? tbody.children.length : "N/A"
-    );
-    console.log(
-        "[renderReview] emptyMsg classes before:",
-        emptyMsg ? emptyMsg.className : "N/A"
-    );
+    if (appState.isMobile) {
+        if (table) table.classList.add("hidden");
+        if (mobileList) mobileList.classList.remove("hidden");
+    } else {
+        if (table) table.classList.remove("hidden");
+        if (mobileList) {
+            mobileList.classList.add("hidden");
+            mobileList.innerHTML = "";
+        }
+    }
 
     // Show loading state if data is being loaded
     if (
         appState.loadingTab === "review" ||
         (appState.isLoading && appState.parts.review.length === 0)
     ) {
-        tbody.innerHTML = "";
-        emptyMsg.classList.remove("hidden");
-        emptyMsg.innerHTML =
-            '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-2"></i> Loading parts...</div>';
+        if (appState.isMobile && mobileList) {
+            mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-2"></i> Loading parts...</div>`;
+        } else {
+            tbody.innerHTML = "";
+            emptyMsg.classList.remove("hidden");
+            emptyMsg.innerHTML =
+                '<div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-blue-400 mr-2"></i> Loading parts...</div>';
+        }
         return;
     }
 
     const filtered = filterParts(appState.parts.review, appState.searchQuery);
-    console.log(
-        "[renderReview] Filtered count:",
-        filtered.length,
-        "searchQuery:",
-        appState.searchQuery
-    );
 
-    if (filtered.length === 0) {
-        console.log("[renderReview] Showing empty message");
+    if (appState.isMobile && mobileList) {
+        mobileList.innerHTML = "";
+        if (filtered.length === 0) {
+            mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400">${generateEmptyMessageReview()}</div>`;
+        } else {
+            for (const part of filtered) {
+                const index = appState.parts.review.indexOf(part);
+                const card = createReviewCard(part, index);
+                mobileList.appendChild(card);
+            }
+        }
+    } else if (filtered.length === 0) {
         emptyMsg.classList.remove("hidden");
         emptyMsg.innerHTML = generateEmptyMessageReview();
         tbody.innerHTML = "";
-        console.log("[renderReview] Cleared tbody, set empty message");
     } else {
-        console.log("[renderReview] Rendering", filtered.length, "parts");
         emptyMsg.classList.add("hidden");
         renderList(tbody, filtered, (part) => {
             const index = appState.parts.review.indexOf(part);

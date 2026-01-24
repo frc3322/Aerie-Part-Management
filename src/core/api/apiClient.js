@@ -51,10 +51,15 @@ async function apiRequest(endpoint, options = {}, overrideApiKey = null) {
     const url = getBaseUrl() + endpoint;
 
     // Properly merge headers - don't let options.headers completely overwrite auth headers
-    const defaultHeaders = getHeaders(true, overrideApiKey);
+    // Don't include default Content-Type if it's already provided or if we're sending FormData
+    const shouldIncludeContentType =
+        !options.headers?.["Content-Type"] &&
+        !(options.body instanceof FormData);
+
+    const defaultHeaders = getHeaders(shouldIncludeContentType, overrideApiKey);
     const mergedHeaders = {
         ...defaultHeaders,
-        ...(options.headers || {}),
+        ...options.headers,
     };
 
     const defaultOptions = {
@@ -247,14 +252,14 @@ export async function apiDownloadFile(endpoint, filename = null) {
         const blob = await response.blob();
 
         if (filename) {
-            const url = window.URL.createObjectURL(blob);
+            const url = globalThis.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
             a.download = filename;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            globalThis.URL.revokeObjectURL(url);
+            a.remove();
         }
 
         return blob;

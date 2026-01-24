@@ -56,11 +56,13 @@ export function createHandFabRow(part, index) {
         part.status === "Reviewed" || part.status === "Already Started";
     const showCompleteButton =
         part.status === "In Progress" || part.status === "Already Started";
-    const hasDrawing = Boolean(part.onshapeUrl);
+    const hasDrawing =
+        Boolean(part.onshapeUrl) ||
+        (part.file && part.file.toLowerCase().endsWith(".pdf"));
 
     const cadPreview = `<div class="w-12 h-12 bg-gray-800 rounded border border-gray-700 flex items-center justify-center text-purple-400 cursor-pointer hover:border-purple-400 transition overflow-hidden relative group" onclick="window.open('${
         part.onshapeUrl || "#"
-    }', '_blank')" title="View CAD">
+    }', '_blank')" title="${part.onshapeUrl ? "View CAD" : "No CAD URL"}">
                                     <i class="fa-solid fa-cube text-lg group-hover:scale-110 transition-transform"></i>
                             </div>`;
 
@@ -127,7 +129,7 @@ export function createHandFabRow(part, index) {
             ? "text-purple-300 hover:text-purple-200"
             : "text-gray-500 cursor-not-allowed opacity-50"
     } mr-2" title="${
-        hasDrawing ? "View/Print Drawing" : "No drawing URL provided"
+        hasDrawing ? "View/Print Drawing" : "No drawing available"
     }">
                 <i class="fa-solid fa-print"></i>
             </button>
@@ -144,20 +146,32 @@ function createHandFabCard(part, index) {
         part.status === "Reviewed" || part.status === "Already Started";
     const showCompleteButton =
         part.status === "In Progress" || part.status === "Already Started";
-    const hasDrawing = Boolean(part.onshapeUrl);
-    const showInfoButton = !appState.isMobile;
-    const showPrintButton = !appState.isMobile && hasDrawing;
-    const showEditButton = !appState.isMobile;
+    const hasDrawing =
+        Boolean(part.onshapeUrl) ||
+        (part.file && part.file.toLowerCase().endsWith(".pdf"));
+    const showInfoButton = true;
+    const showPrintButton = hasDrawing;
+    const showEditButton = true;
+    const showCadLink = Boolean(part.onshapeUrl);
     const card = document.createElement("div");
     card.className = "mobile-card";
     card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
-      <div>
-        <div class="text-sm font-semibold text-blue-100">
-          ${part.name || "Unnamed"}
-        </div>
-        <div class="text-[11px] text-gray-500">
-          ${part.partId || part.id || "N/A"}
+      <div class="flex gap-3">
+        ${
+            showCadLink
+                ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')">
+             <i class="fa-solid fa-cube text-lg"></i>
+           </div>`
+                : ""
+        }
+        <div>
+          <div class="text-sm font-semibold text-blue-100">
+            ${part.name || "Unnamed"}
+          </div>
+          <div class="text-[11px] text-gray-500">
+            ${part.partId || part.id || "N/A"}
+          </div>
         </div>
       </div>
       <span class="mobile-status-pill ${statusClass}">${part.status}</span>

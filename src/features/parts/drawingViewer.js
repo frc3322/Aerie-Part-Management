@@ -154,8 +154,11 @@ export async function viewHandDrawing(index) {
         showInfoNotification("Drawing Viewer", "Part not found.");
         return;
     }
-    if (!part.onshapeUrl) {
-        showInfoNotification("Drawing Viewer", "No drawing URL for this part.");
+    const hasDrawing =
+        Boolean(part.onshapeUrl) ||
+        (part.file && part.file.toLowerCase().endsWith(".pdf"));
+    if (!hasDrawing) {
+        showInfoNotification("Drawing Viewer", "No drawing for this part.");
         return;
     }
 
@@ -168,11 +171,18 @@ export async function viewHandDrawing(index) {
         return;
     }
 
-    const { modal, title, subtitle } = elements;
+    const { modal, title, subtitle, refreshButton } = elements;
     openModal(modal);
     currentPartId = part.id;
     title.textContent = part.name || "Drawing";
     subtitle.textContent = `ID: ${part.partId || part.id || "N/A"}`;
+
+    if (part.onshapeUrl) {
+        showElement(refreshButton);
+    } else {
+        hideElement(refreshButton);
+    }
+
     await loadDrawing(part.id, false);
 }
 
@@ -184,6 +194,13 @@ export async function refreshDrawing() {
     const part = findHandPartById(currentPartId);
     if (!part) {
         showInfoNotification("Drawing Viewer", "Part not found.");
+        return;
+    }
+    if (!part.onshapeUrl) {
+        showInfoNotification(
+            "Drawing Viewer",
+            "No Onshape URL to refresh from."
+        );
         return;
     }
     await loadDrawing(part.id, true);

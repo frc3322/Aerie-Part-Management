@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from typing import Optional
+from werkzeug.utils import secure_filename
 
 db = SQLAlchemy()
 
@@ -141,6 +142,9 @@ class Part(db.Model):
                         self.amount = parsed_amount if parsed_amount > 0 else 1
                     except (TypeError, ValueError):
                         self.amount = 1
+                elif mapped_key == "file" and value is not None:
+                    # Sanitize filename to prevent path traversal
+                    self.file = secure_filename(str(value))
                 else:
                     setattr(self, mapped_key, value)
 
