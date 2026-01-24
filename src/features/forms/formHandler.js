@@ -28,7 +28,7 @@ import { validateFile } from "../../core/utils/fileValidation.js";
 function getMaterialInputValue() {
     const materialSelect = document.getElementById("input-material-select");
     const customMaterialInput = document.getElementById(
-        "input-material-custom"
+        "input-material-custom",
     );
     if (!materialSelect || !customMaterialInput) return "";
     return materialSelect.value === "custom"
@@ -44,7 +44,7 @@ function setUploadStatus(state) {
         "hidden",
         "text-blue-300",
         "text-green-300",
-        "text-red-300"
+        "text-red-300",
     );
 
     if (state === "uploading") {
@@ -86,7 +86,7 @@ export function extractFormData() {
         material: getMaterialInputValue(),
         amount: Number.parseInt(
             document.getElementById("input-amount").value,
-            10
+            10,
         ),
         subsystem: document.getElementById("input-subsystem").value,
         assigned: document.getElementById("input-assigned").value,
@@ -125,12 +125,14 @@ function prepareApiData(formData) {
     // Handle type-specific fields
     apiData.name = formData.name;
 
-    if (formData.type === "cnc") {
+    if (formData.type === "cnc" || formData.type === "hand") {
         // Handle file if uploaded
         if (formData.fileInput.files.length > 0) {
             apiData.file = formData.fileInput.files[0].name;
         }
-    } else {
+    }
+
+    if (formData.type === "hand") {
         apiData.assigned = formData.assigned;
     }
 
@@ -164,7 +166,7 @@ async function handleFileUpload(partId, file) {
         setUploadStatus("error");
         showErrorNotification(
             "Upload Failed",
-            "Part saved but file upload failed. Please try uploading again."
+            "Part saved but file upload failed. Please try uploading again.",
         );
         return null;
     }
@@ -180,7 +182,10 @@ async function handleEditPart(formData, apiData) {
     const result = await apiUpdatePart(existingPart.id, apiData);
     updatePartInState(existingPart.id, result);
 
-    if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
+    if (
+        (formData.type === "cnc" || formData.type === "hand") &&
+        formData.fileInput.files.length > 0
+    ) {
         await handleFileUpload(existingPart.id, formData.fileInput.files[0]);
     }
 }
@@ -194,7 +199,10 @@ async function handleCreatePart(formData, apiData) {
     const result = await apiCreatePart(apiData);
     addPartToState(result);
 
-    if (formData.type === "cnc" && formData.fileInput.files.length > 0) {
+    if (
+        (formData.type === "cnc" || formData.type === "hand") &&
+        formData.fileInput.files.length > 0
+    ) {
         await handleFileUpload(result.id, formData.fileInput.files[0]);
     }
 
@@ -219,7 +227,7 @@ async function performPostSubmitActions() {
  */
 export async function handleFormSubmit(e) {
     // Only process form submission events, not click events that bubble up
-    if (!e || e.type !== "submit") {
+    if (e?.type !== "submit") {
         return;
     }
 
@@ -241,7 +249,7 @@ export async function handleFormSubmit(e) {
         if (trimmedName.length === 0) {
             showWarningNotification(
                 "Validation Error",
-                "Part name is required."
+                "Part name is required.",
             );
             return;
         }
@@ -252,21 +260,21 @@ export async function handleFormSubmit(e) {
         if (trimmedMaterial.length === 0) {
             showWarningNotification(
                 "Validation Error",
-                "Material is required."
+                "Material is required.",
             );
             return;
         }
         if (trimmedSubsystem.length === 0) {
             showWarningNotification(
                 "Validation Error",
-                "Subsystem is required."
+                "Subsystem is required.",
             );
             return;
         }
         if (!Number.isFinite(formData.amount) || formData.amount <= 0) {
             showWarningNotification(
                 "Validation Error",
-                "Amount must be at least 1."
+                "Amount must be at least 1.",
             );
             return;
         }
@@ -287,7 +295,7 @@ export async function handleFormSubmit(e) {
         console.error("Failed to save part:", error);
         showErrorNotification(
             "Save Failed",
-            "Failed to save part. Please try again."
+            "Failed to save part. Please try again.",
         );
     } finally {
         setUploadStatus("idle");

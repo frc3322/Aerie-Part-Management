@@ -38,18 +38,26 @@ function renderEmptyState(container) {
 }
 
 function buildHeaderSection(part, statusClass) {
+    const cadLink = part.onshapeUrl
+        ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')" title="View CAD">
+             <i class="fa-solid fa-cube text-lg"></i>
+           </div>`
+        : "";
     return `
     <div class="flex justify-between items-start">
-      <div>
-        <h3 class="text-xl font-bold text-blue-300">${
-            part.name || "Unnamed"
-        }</h3>
-        <div class="text-sm text-blue-200 font-semibold mt-1">Amount: ${
-            part.amount
-        }</div>
-        <div class="text-xs text-gray-500 mt-1">ID: ${
-            part.partId || part.id || "N/A"
-        }</div>
+      <div class="flex gap-3">
+        ${cadLink}
+        <div>
+          <h3 class="text-xl font-bold text-blue-300">${
+              part.name || "Unnamed"
+          }</h3>
+          <div class="text-sm text-blue-200 font-semibold mt-1">Amount: ${
+              part.amount
+          }</div>
+          <div class="text-xs text-gray-500 mt-1">ID: ${
+              part.partId || part.id || "N/A"
+          }</div>
+        </div>
       </div>
       <div class="flex flex-col items-end gap-2">
         <span class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 ${statusClass} shadow-3d-inset status-indicator">
@@ -150,7 +158,7 @@ function buildActionButtons(part, index, showInfoEditButtons) {
  */
 function renderPartCard(part, index, container) {
     const statusClass = getStatusClass(part.status);
-    const showInfoEditButtons = !appState.isMobile;
+    const showInfoEditButtons = true;
     const card = document.createElement("div");
     card.className =
         "cnc-card p-5 flex flex-col gap-3 transform transition hover:scale-[1.02] duration-300";

@@ -112,7 +112,6 @@ export function toggleDisable3JS() {
  * @param {boolean} isNew - Whether this is a new part (true) or editing existing (false)
  */
 export function openAddModal(isNew = false) {
-    const modal = document.getElementById("modal");
     const form = document.getElementById("part-form");
 
     openManagedModal("modal", {
@@ -182,6 +181,19 @@ export function handleCategoryChange(eventOrType) {
         if (fileInput) {
             fileInput.setAttribute("accept", ".step,.stp,.pdf");
         }
+    } else if (type === "hand") {
+        fileField.classList.remove("hidden");
+        fileLabel.innerText = "Drawing (PDF)";
+        const fileInput = document.getElementById("input-file");
+        if (fileInput) {
+            fileInput.setAttribute("accept", ".pdf");
+        }
+        if (isEdit && originTab !== "review" && originTab !== "completed") {
+            assignField.classList.remove("hidden");
+        } else {
+            assignField.classList.add("hidden");
+            document.getElementById("input-assigned").value = "";
+        }
     } else {
         fileField.classList.add("hidden");
         if (isEdit && originTab !== "review" && originTab !== "completed") {
@@ -189,9 +201,6 @@ export function handleCategoryChange(eventOrType) {
         } else {
             assignField.classList.add("hidden");
             document.getElementById("input-assigned").value = "";
-        }
-        if (fileField) {
-            fileField.classList.add("hidden");
         }
     }
 }

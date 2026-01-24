@@ -25,19 +25,27 @@ function isCompletedIncorrectly(part) {
 
 function createCompletedCard(part, index) {
     const isCNC = part.type === "cnc";
-    const showInfoButton = !appState.isMobile;
+    const showInfoButton = true;
+    const cadLink = part.onshapeUrl
+        ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')" title="View CAD">
+             <i class="fa-solid fa-cube text-lg"></i>
+           </div>`
+        : "";
     const completedIncorrectly = isCompletedIncorrectly(part);
     const card = document.createElement("div");
     card.className = "mobile-card";
     card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
-      <div>
-        <div class="text-sm font-semibold text-blue-100">${
-            part.name || "Unnamed"
-        }</div>
-        <div class="text-[11px] text-gray-500">${
-            part.partId || part.id || "N/A"
-        }</div>
+      <div class="flex gap-3">
+        ${cadLink}
+        <div>
+          <div class="text-sm font-semibold text-blue-100">${
+              part.name || "Unnamed"
+          }</div>
+          <div class="text-[11px] text-gray-500">${
+              part.partId || part.id || "N/A"
+          }</div>
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <span class="mobile-type-pill ${isCNC ? "type-cnc" : "type-hand"}">
