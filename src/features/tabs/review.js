@@ -26,7 +26,8 @@ export function generateEmptyMessageReview() {
  */
 export function generateReviewPreviewHTML(part) {
     const isCNC = part.type === "cnc";
-    if (isCNC) {
+    const isMisc = part.type === "misc";
+    if (isCNC || isMisc) {
         return `<div class="w-12 h-12 bg-gray-800 rounded border border-gray-700 flex items-center justify-center text-blue-500 cursor-pointer hover:border-blue-400 transition" onclick="window.open('${
             part.onshapeUrl || "#"
         }', '_blank')" title="View CAD">
@@ -47,7 +48,8 @@ export function generateReviewPreviewHTML(part) {
  */
 export function generateReviewFileHTML(part) {
     const isCNC = part.type === "cnc";
-    if (isCNC) {
+    const isMisc = part.type === "misc";
+    if (isCNC || isMisc) {
         return `<span><i class="fa-solid fa-cube text-gray-500 mr-1"></i> ${
             part.file || "None"
         }</span>`;
@@ -57,6 +59,7 @@ export function generateReviewFileHTML(part) {
 
 function createReviewCard(part, index) {
     const isCNC = part.type === "cnc";
+    const isMisc = part.type === "misc";
     const displayName = part.name || "Unnamed";
     const displayPartId = part.partId || part.name || part.id || "N/A";
     const cadLink = part.onshapeUrl
@@ -67,6 +70,17 @@ function createReviewCard(part, index) {
 
     const card = document.createElement("div");
     card.className = "mobile-card";
+    
+    let typeClass = "type-hand";
+    let typeText = "HAND FAB";
+    if (isCNC) {
+        typeClass = "type-cnc";
+        typeText = "CNC";
+    } else if (isMisc) {
+        typeClass = "type-misc";
+        typeText = "MISC";
+    }
+
     card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
       <div class="flex gap-3">
@@ -77,8 +91,8 @@ function createReviewCard(part, index) {
         </div>
       </div>
       <div class="flex flex-col items-end gap-2">
-        <span class="mobile-type-pill ${isCNC ? "type-cnc" : "type-hand"}">
-          ${isCNC ? "CNC" : "HAND FAB"}
+        <span class="mobile-type-pill ${typeClass}">
+          ${typeText}
         </span>
       </div>
     </div>
@@ -109,6 +123,7 @@ function createReviewCard(part, index) {
  */
 export function createReviewRow(part, index) {
     const isCNC = part.type === "cnc";
+    const isMisc = part.type === "misc";
     const displayName = part.name || "Unnamed";
     const displayPartId = part.partId || part.name || part.id || "N/A";
     const subDisplay = part.subsystem || "";
@@ -122,13 +137,20 @@ export function createReviewRow(part, index) {
     const typeCell = createElement("td", {
         className: "p-3 align-middle",
     });
+
+    let typeBadgeClass = "bg-purple-900 text-purple-200";
+    let typeText = "HAND FAB";
+    if (isCNC) {
+        typeBadgeClass = "bg-blue-900 text-blue-200";
+        typeText = "CNC";
+    } else if (isMisc) {
+        typeBadgeClass = "bg-teal-900 text-teal-200";
+        typeText = "MISC";
+    }
+
     const typeBadge = createElement("span", {
-        className: `px-2 py-1 rounded text-xs font-bold ${
-            isCNC
-                ? "bg-blue-900 text-blue-200"
-                : "bg-purple-900 text-purple-200"
-        } border border-white/10 status-indicator`,
-        text: isCNC ? "CNC" : "HAND FAB",
+        className: `px-2 py-1 rounded text-xs font-bold ${typeBadgeClass} border border-white/10 status-indicator`,
+        text: typeText,
     });
     typeCell.appendChild(typeBadge);
 

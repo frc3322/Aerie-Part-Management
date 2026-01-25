@@ -73,6 +73,7 @@ import {
 } from "./features/modals/modals.js";
 import {
     markCompleted,
+    markMiscCompleted,
     markUncompleted,
     markCompletedIncorrectly,
     approvePart,
@@ -147,8 +148,8 @@ function triggerNeumorphicAnimations() {
  * Apply persisted tab visibility settings to the UI
  */
 function applyTabVisibilitySettings() {
-    const tabs = ["review", "cnc", "hand", "completed", "leaderboard"];
-    const forcedHidden = appState.isMobile ? ["review", "cnc"] : [];
+    const tabs = ["review", "cnc", "hand", "misc", "completed", "leaderboard"];
+    const forcedHidden = appState.isMobile ? ["review", "cnc", "misc"] : [];
 
     tabs.forEach((tab) => {
         const btn = document.getElementById(`tab-${tab}`);
@@ -300,7 +301,6 @@ globalThis.addEventListener("authenticated", () => {
 
 globalThis.addEventListener("resize", () => {
     const wasMobile = appState.isMobile;
-    const oldTab = appState.currentTab;
     detectMobileDevice();
     const modeChanged = wasMobile !== appState.isMobile;
     applyTabVisibilitySettings();
@@ -310,7 +310,7 @@ globalThis.addEventListener("resize", () => {
     if (
         modeChanged &&
         !appState.isMobile &&
-        !["review", "cnc", "hand", "completed", "leaderboard"].includes(
+        !["review", "cnc", "hand", "misc", "completed", "leaderboard"].includes(
             appState.currentTab
         )
     ) {
@@ -341,6 +341,7 @@ const actionExports = {
     updateFileName,
     handleFormSubmit,
     markCompleted,
+    markMiscCompleted,
     markUncompleted,
     markCompletedIncorrectly,
     approvePart,
@@ -373,7 +374,12 @@ const actionExports = {
  * Update scrollbar edge effects for all tab content areas
  */
 function updateAllScrollbarEdgeEffects() {
-    const tabContents = ["content-review", "content-hand", "content-completed"];
+    const tabContents = [
+        "content-review",
+        "content-hand",
+        "content-misc",
+        "content-completed",
+    ];
 
     // Clean up orphaned overlays
     const allOverlays = document.querySelectorAll(".scrollbar-blur-overlay");

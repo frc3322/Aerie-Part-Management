@@ -2,6 +2,51 @@
 // Common helper functions used throughout the application
 
 /**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} str - String to escape
+ * @returns {string} Escaped string
+ */
+export function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/**
+ * Escape attribute values for use in HTML
+ * @param {string} str - Attribute value to escape
+ * @returns {string} Escaped attribute value
+ */
+export function escapeAttr(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+/**
+ * Validate if a string is a valid URL
+ * @param {string} urlString - URL string to validate
+ * @returns {boolean} True if valid, false otherwise
+ */
+export function isValidUrl(urlString) {
+    if (!urlString) return false;
+    try {
+        const url = new URL(urlString);
+        return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Filter parts based on search query
  * @param {Array} list - The list of parts to filter
  * @param {string} searchQuery - The search query

@@ -15,6 +15,7 @@ const loadRenderCNC = async () => {
     return renderCNC;
 };
 import { renderCompleted } from "../tabs/completed.js";
+import { renderMisc } from "../tabs/misc.js";
 import {
     openAddModal,
     handleCategoryChange,
@@ -192,6 +193,7 @@ async function handleStorageSubmit(event) {
                 const completedPart = await apiCompletePart(part.id, payload);
                 updatePartInState(part.id, completedPart);
                 if (fromTab === "cnc") (await loadRenderCNC())();
+                else if (fromTab === "misc") renderMisc();
                 else renderHandFab();
                 renderCompleted();
 
@@ -241,6 +243,35 @@ export async function markCompleted(fromTab, index, event) {
 }
 
 /**
+ * Mark a Miscellaneous part as completed
+ * @param {string} fromTab - The tab the part is currently in (should be 'misc')
+ * @param {number} index - The index of the part
+ * @param {Event} event - The click event
+ */
+export async function markMiscCompleted(fromTab, index, event) {
+    const part = appState.parts[fromTab][index];
+    const button = event?.target.closest("button") || event?.target;
+
+    await withErrorHandling(
+        async () => {
+            const updateData = { status: "Completed" };
+            const updatedPart = await apiUpdatePart(part.id, updateData);
+            updatePartInState(part.id, updatedPart);
+            renderMisc();
+            celebrateCompletion();
+        },
+        {
+            loadingTargets: button,
+            onError: () =>
+                showErrorNotification(
+                    "Update Failed",
+                    "Failed to mark part as completed. Please try again."
+                ),
+        }
+    );
+}
+
+/**
  * Mark a completed part as uncompleted
  * @param {number} index - The index of the part in completed
  * @param {Event} event - The click event
@@ -256,6 +287,7 @@ export async function markUncompleted(index, event) {
             renderCompleted();
             (await loadRenderCNC())();
             renderHandFab();
+            renderMisc();
         },
         {
             loadingTargets: button,
@@ -355,7 +387,12 @@ export async function approvePart(index, event) {
  */
 export function editPart(tab, index) {
     const part = appState.parts[tab][index];
-    const type = part.type || (tab === "cnc" ? "cnc" : "hand");
+    let type = part.type;
+    if (!type) {
+        if (tab === "cnc") type = "cnc";
+        else if (tab === "misc") type = "misc";
+        else type = "hand";
+    }
 
     openAddModal();
     document.getElementById("modal-title").innerText = `Edit Part`;
@@ -383,6 +420,10 @@ export function editPart(tab, index) {
     if (type === "hand") {
         document.getElementById("input-assigned").value = part.assigned || "";
     }
+    if (type === "misc") {
+        document.getElementById("input-service-method").value = 
+            part.miscInfo?.serviceMethod || part.misc_info?.serviceMethod || "";
+    }
     document.getElementById("file-name-display").innerText =
         part.file || "No file";
 }
@@ -405,6 +446,7 @@ export async function deletePart(tab, index, event) {
                 renderReview();
                 (await loadRenderCNC())();
                 renderHandFab();
+                renderMisc();
                 renderCompleted();
             },
             {

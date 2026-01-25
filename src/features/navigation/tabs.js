@@ -27,7 +27,7 @@ import {
 
 // Debounce timer for search
 let searchDebounceTimer = null;
-const DESKTOP_TABS = ["review", "cnc", "hand", "completed", "leaderboard"];
+const DESKTOP_TABS = ["review", "cnc", "hand", "misc", "completed", "leaderboard"];
 const MOBILE_TABS = ["hand", "completed"];
 let mobileGesturesAttached = false;
 let swipeStartX = 0;
@@ -153,8 +153,8 @@ export async function switchTab(tab) {
             btn.classList.add("active-tab", "text-blue-400");
             btn.classList.remove("text-gray-400");
             content.classList.remove("hidden");
-            if (t === "cnc") content.classList.add("grid");
-            else content.classList.remove("grid"); // ensuring grid is only on CNC
+            if (t === "cnc" || t === "misc") content.classList.add("grid");
+            else content.classList.remove("grid"); // ensuring grid is only on CNC and Misc
         } else {
             btn.classList.remove("active-tab", "text-blue-400");
             btn.classList.add("text-gray-400");
@@ -336,6 +336,11 @@ subscribe("parts.cnc", async () => {
 
 subscribe("parts.hand", () => {
     renderHandFab();
+});
+
+subscribe("parts.misc", async () => {
+    const { renderMisc } = await import("../tabs/misc.js");
+    renderMisc();
 });
 
 subscribe("parts.completed", () => {

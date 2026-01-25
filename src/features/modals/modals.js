@@ -25,7 +25,7 @@ export function openSettingsModal() {
 
     // Initialize tab visibility checkboxes
     const tabVisibility = getState("tabVisibility");
-    const tabs = ["review", "cnc", "hand", "completed", "leaderboard"];
+    const tabs = ["review", "cnc", "hand", "misc", "completed", "leaderboard"];
     tabs.forEach((tab) => {
         const checkbox = document.getElementById(`check-${tab}`);
         if (checkbox) {
@@ -78,7 +78,7 @@ export function toggleTabVisibility(eventOrTab) {
         // If we just hid the active tab, switch to another
         const currentTab = getCurrentTab();
         if (currentTab === tab) {
-            const tabs = ["review", "cnc", "hand", "completed", "leaderboard"];
+            const tabs = ["review", "cnc", "hand", "misc", "completed", "leaderboard"];
             const nextVisible = tabs.find(
                 (t) => document.getElementById(`check-${t}`).checked
             );
@@ -131,6 +131,7 @@ export function openAddModal(isNew = false) {
             .parentElement.classList.add("hidden");
         document.getElementById("input-category").disabled = false;
         document.getElementById("input-category").value = "cnc";
+        document.getElementById("input-service-method").value = "";
         document.getElementById("file-name-display").innerText =
             "No file chosen";
         document.getElementById("input-onshape").value = "";
@@ -167,14 +168,17 @@ export function handleCategoryChange(eventOrType) {
     const subField = document.getElementById("field-subsystem");
     const assignField = document.getElementById("field-assigned");
     const fileField = document.getElementById("field-file");
+    const serviceMethodField = document.getElementById("field-service-method");
     const fileLabel = document.getElementById("label-file");
     const isEdit = document.getElementById("edit-mode").value === "true";
     const originTab = document.getElementById("edit-origin-tab").value;
 
     subField.classList.remove("hidden");
+    const isMisc = type === "misc";
 
     if (type === "cnc") {
         assignField.classList.add("hidden");
+        serviceMethodField?.classList.add("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "File (STEP or PDF)";
         const fileInput = document.getElementById("input-file");
@@ -182,6 +186,8 @@ export function handleCategoryChange(eventOrType) {
             fileInput.setAttribute("accept", ".step,.stp,.pdf");
         }
     } else if (type === "hand") {
+        assignField.classList.add("hidden");
+        serviceMethodField?.classList.add("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "Drawing (PDF)";
         const fileInput = document.getElementById("input-file");
@@ -194,7 +200,18 @@ export function handleCategoryChange(eventOrType) {
             assignField.classList.add("hidden");
             document.getElementById("input-assigned").value = "";
         }
+    } else if (isMisc) {
+        assignField.classList.add("hidden");
+        serviceMethodField?.classList.remove("hidden");
+        fileField.classList.remove("hidden");
+        fileLabel.innerText = "File (STEP or PDF)";
+        const fileInput = document.getElementById("input-file");
+        if (fileInput) {
+            fileInput.setAttribute("accept", ".step,.stp,.pdf");
+        }
     } else {
+        assignField.classList.add("hidden");
+        serviceMethodField?.classList.add("hidden");
         fileField.classList.add("hidden");
         if (isEdit && originTab !== "review" && originTab !== "completed") {
             assignField.classList.remove("hidden");

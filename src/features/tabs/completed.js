@@ -25,6 +25,7 @@ function isCompletedIncorrectly(part) {
 
 function createCompletedCard(part, index) {
     const isCNC = part.type === "cnc";
+    const isMisc = part.type === "misc";
     const showInfoButton = true;
     const cadLink = part.onshapeUrl
         ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')" title="View CAD">
@@ -34,6 +35,17 @@ function createCompletedCard(part, index) {
     const completedIncorrectly = isCompletedIncorrectly(part);
     const card = document.createElement("div");
     card.className = "mobile-card";
+
+    let typeClass = "type-hand";
+    let typeText = "HAND FAB";
+    if (isCNC) {
+        typeClass = "type-cnc";
+        typeText = "CNC";
+    } else if (isMisc) {
+        typeClass = "type-misc";
+        typeText = "MISC";
+    }
+
     card.innerHTML = `
     <div class="flex items-start justify-between gap-3">
       <div class="flex gap-3">
@@ -48,8 +60,8 @@ function createCompletedCard(part, index) {
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span class="mobile-type-pill ${isCNC ? "type-cnc" : "type-hand"}">
-          ${isCNC ? "CNC" : "HAND FAB"}
+        <span class="mobile-type-pill ${typeClass}">
+          ${typeText}
         </span>
         <span class="mobile-status-pill status-completed ${
             completedIncorrectly ? "bg-red-900 text-red-200" : ""
@@ -95,18 +107,25 @@ function createCompletedCard(part, index) {
  */
 export function createCompletedRow(part, index) {
     const isCNC = part.type === "cnc";
+    const isMisc = part.type === "misc";
     const completedIncorrectly = isCompletedIncorrectly(part);
     const row = document.createElement("tr");
     row.className = "part-row opacity-75 hover:opacity-100";
 
+    let typeBadgeClass = "bg-purple-900 text-purple-200";
+    let typeText = "HAND FAB";
+    if (isCNC) {
+        typeBadgeClass = "bg-blue-900 text-blue-200";
+        typeText = "CNC";
+    } else if (isMisc) {
+        typeBadgeClass = "bg-teal-900 text-teal-200";
+        typeText = "MISC";
+    }
+
     row.innerHTML = `
         <td class="p-3">
-             <span class="px-2 py-1 rounded text-xs font-bold ${
-                 isCNC
-                     ? "bg-blue-900 text-blue-200"
-                     : "bg-purple-900 text-purple-200"
-             } border border-white/10 status-indicator">
-                ${isCNC ? "CNC" : "HAND FAB"}
+             <span class="px-2 py-1 rounded text-xs font-bold ${typeBadgeClass} border border-white/10 status-indicator">
+                ${typeText}
             </span>
         </td>
         <td class="p-3">

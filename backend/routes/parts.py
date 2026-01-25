@@ -4,17 +4,17 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
-from werkzeug.utils import secure_filename  # type: ignore
-from flask import Blueprint, request, jsonify, current_app, send_file  # type: ignore
-from sqlalchemy import or_, desc, asc  # type: ignore
-from models.part import Part, db  # type: ignore
-from utils.auth import require_secret_key  # type: ignore
-from utils.onshape_drawing import build_onshape_client  # type: ignore
-from utils.step_converter import convert_step_to_gltf  # type: ignore
-from utils.validation import validate_misc_info, ValidationError  # type: ignore
+from werkzeug.utils import secure_filename
+from flask import Blueprint, request, jsonify, current_app, send_file
+from sqlalchemy import or_, desc, asc
+from models.part import Part, db
+from utils.auth import require_secret_key
+from utils.onshape_drawing import build_onshape_client
+from utils.step_converter import convert_step_to_gltf
+from utils.validation import validate_misc_info, ValidationError
 from utils.error_responses import (
     validation_error_response,
-)  # type: ignore
+)
 
 # Status constants
 STATUS_IN_PROGRESS = "In Progress"
@@ -387,6 +387,8 @@ def approve_part(part_id):
             part.category = "cnc"
         elif part.type == "hand":
             part.category = "hand"
+        elif part.type == "misc":
+            part.category = "misc"
         else:
             # Default to hand if type not specified
             part.category = "hand"
@@ -529,6 +531,9 @@ def revert_part(part_id):
         if part.type == "cnc":
             part.category = "cnc"
             part.status = STATUS_IN_PROGRESS
+        elif part.type == "misc":
+            part.category = "misc"
+            part.status = "Reviewed"
         else:
             part.category = "hand"
             part.status = STATUS_IN_PROGRESS
@@ -591,6 +596,7 @@ def get_stats():
         review_count = Part.query.filter_by(category="review").count()
         cnc_count = Part.query.filter_by(category="cnc").count()
         hand_count = Part.query.filter_by(category="hand").count()
+        misc_count = Part.query.filter_by(category="misc").count()
         completed_count = Part.query.filter_by(category="completed").count()
 
         # Get counts by status
@@ -608,6 +614,7 @@ def get_stats():
                     "review": review_count,
                     "cnc": cnc_count,
                     "hand": hand_count,
+                    "misc": misc_count,
                     "completed": completed_count,
                 },
                 "by_status": {
@@ -619,7 +626,11 @@ def get_stats():
                     "assigned": assigned_count,
                     "unassigned": unassigned_count,
                 },
-                "total": review_count + cnc_count + hand_count + completed_count,
+                "total": review_count
+                + cnc_count
+                + hand_count
+                + misc_count
+                + completed_count,
             }
         )
 

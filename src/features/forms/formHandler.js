@@ -93,6 +93,8 @@ export function extractFormData() {
         status: document.getElementById("input-status").value,
         notes: document.getElementById("input-notes").value,
         onshapeUrl: document.getElementById("input-onshape").value,
+        serviceMethod:
+            document.getElementById("input-service-method")?.value || "",
         fileInput: document.getElementById("input-file"),
     };
 }
@@ -125,7 +127,7 @@ function prepareApiData(formData) {
     // Handle type-specific fields
     apiData.name = formData.name;
 
-    if (formData.type === "cnc" || formData.type === "hand") {
+    if (formData.type === "cnc" || formData.type === "hand" || formData.type === "misc") {
         // Handle file if uploaded
         if (formData.fileInput.files.length > 0) {
             apiData.file = formData.fileInput.files[0].name;
@@ -134,6 +136,11 @@ function prepareApiData(formData) {
 
     if (formData.type === "hand") {
         apiData.assigned = formData.assigned;
+    }
+
+    if (formData.type === "misc" && formData.serviceMethod) {
+        apiData.miscInfo = apiData.miscInfo || {};
+        apiData.miscInfo.serviceMethod = formData.serviceMethod;
     }
 
     return apiData;
@@ -207,7 +214,7 @@ async function handleCreatePart(formData, apiData) {
     addPartToState(result);
 
     if (
-        (formData.type === "cnc" || formData.type === "hand") &&
+        (formData.type === "cnc" || formData.type === "hand" || formData.type === "misc") &&
         formData.fileInput.files.length > 0
     ) {
         await handleFileUpload(result.id, formData.fileInput.files[0]);
@@ -224,6 +231,8 @@ async function performPostSubmitActions() {
     renderReview();
     (await loadRenderCNC())();
     renderHandFab();
+    const { renderMisc } = await import("../tabs/misc.js");
+    renderMisc();
     renderCompleted();
     closeModal();
 }

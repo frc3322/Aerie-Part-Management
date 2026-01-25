@@ -55,6 +55,7 @@ export const appState = {
         review: [],
         cnc: [],
         hand: [],
+        misc: [],
         completed: [],
     },
     // Statistics
@@ -66,6 +67,7 @@ export const appState = {
         review: true,
         cnc: true,
         hand: true,
+        misc: true,
         completed: true,
         leaderboard: true,
     },
@@ -84,7 +86,7 @@ function loadPersistedState() {
     const savedTab = loadCurrentTab();
     if (
         savedTab &&
-        ["review", "cnc", "hand", "completed", "leaderboard"].includes(savedTab)
+        ["review", "cnc", "hand", "misc", "completed", "leaderboard"].includes(savedTab)
     ) {
         setState("currentTab", savedTab);
     }
@@ -135,7 +137,7 @@ export function detectMobileDevice() {
     }
     if (
         !isMobile &&
-        !["review", "cnc", "hand", "completed", "leaderboard"].includes(
+        !["review", "cnc", "hand", "misc", "completed", "leaderboard"].includes(
             getState("currentTab")
         )
     ) {
@@ -159,6 +161,11 @@ async function reRenderCurrentTab() {
         }
         case "hand": {
             renderHandFab();
+            break;
+        }
+        case "misc": {
+            const { renderMisc } = await import("../tabs/misc.js");
+            renderMisc();
             break;
         }
         case "completed": {
@@ -213,6 +220,7 @@ export async function loadAllParts() {
             review: [],
             cnc: [],
             hand: [],
+            misc: [],
             completed: [],
         };
 
@@ -411,7 +419,7 @@ export function updatePartInState(partId, updatedPart) {
     const nextParts = { ...appState.parts };
     let foundInCategory = null;
 
-    for (const category of ["review", "cnc", "hand", "completed"]) {
+    for (const category of ["review", "cnc", "hand", "misc", "completed"]) {
         const parts = nextParts[category];
         const index = parts.findIndex((part) => part.id === partId);
         if (index !== -1) {
@@ -515,7 +523,7 @@ export function addPartToState(part) {
  */
 export function removePartFromState(partId) {
     const nextParts = { ...appState.parts };
-    for (const category of ["review", "cnc", "hand", "completed"]) {
+    for (const category of ["review", "cnc", "hand", "misc", "completed"]) {
         const parts = nextParts[category];
         const index = parts.findIndex((part) => part.id === partId);
         if (index !== -1) {

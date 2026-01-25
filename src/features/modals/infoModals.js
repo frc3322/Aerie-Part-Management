@@ -269,13 +269,13 @@ function renderMiscItems(miscInfo) {
         return '<div class="text-sm text-gray-500">No misc info saved.</div>';
     }
     return Object.entries(miscInfo)
-        .map(
-            ([key, value]) =>
-                `<div class="flex justify-between text-sm">
-          <span class="text-gray-400">${key}</span>
+        .map(([key, value]) => {
+            const label = key === "serviceMethod" ? "Service Method" : key;
+            return `<div class="flex justify-between text-sm">
+          <span class="text-gray-400">${label}</span>
           <span class="text-blue-300 font-semibold">${value}</span>
-        </div>`
-        )
+        </div>`;
+        })
         .join("");
 }
 
