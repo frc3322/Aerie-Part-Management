@@ -153,13 +153,10 @@ export async function switchTab(tab) {
             btn.classList.add("active-tab", "text-blue-400");
             btn.classList.remove("text-gray-400");
             content.classList.remove("hidden");
-            if (t === "cnc" || t === "misc") content.classList.add("grid");
-            else content.classList.remove("grid"); // ensuring grid is only on CNC and Misc
         } else {
             btn.classList.remove("active-tab", "text-blue-400");
             btn.classList.add("text-gray-400");
             content.classList.add("hidden");
-            content.classList.remove("grid");
         }
     }
     updateMobileNavActive(targetTab);
@@ -220,6 +217,9 @@ export function handleSearch(eventOrQuery) {
             (await loadRenderCNC())();
         } else if (currentTab === "hand") {
             renderHandFab();
+        } else if (currentTab === "misc") {
+            const { renderMisc } = await import("../tabs/misc.js");
+            renderMisc();
         } else if (currentTab === "completed") {
             renderCompleted();
         }
@@ -258,29 +258,71 @@ function updateSortState(category, key) {
         key: null,
         direction: 1,
     };
-    const direction = current.key === key ? current.direction * -1 : 1;
-    appState.sortState[category] = { key, direction };
-    appState.sortDirection = direction;
-    return direction;
+    
+    // Three-state cycle: ascending (1) -> descending (-1) -> no sort (null)
+    let newKey = key;
+    let newDirection = 1;
+    
+    if (current.key === key) {
+        if (current.direction === 1) {
+            // Currently ascending, switch to descending
+            newDirection = -1;
+        } else if (current.direction === -1) {
+            // Currently descending, turn off sorting
+            newKey = null;
+            newDirection = 1;
+        }
+    } else {
+        // Different key, start with ascending
+        newKey = key;
+        newDirection = 1;
+    }
+    
+    appState.sortState[category] = { key: newKey, direction: newDirection };
+    appState.sortDirection = newDirection;
+    return { key: newKey, direction: newDirection };
 }
 
 function updateSortIndicators(category, activeKey, direction) {
-    const indicators = document.querySelectorAll(
-        `[data-sort-category="${category}"] .sort-icon`
-    );
-    indicators.forEach((icon) => {
-        const iconKey = icon.dataset.sortKey;
-        icon.classList.remove("fa-sort-up", "fa-sort-down", "text-blue-300");
-        icon.classList.add("fa-sort");
-        if (iconKey === activeKey) {
-            icon.classList.remove("fa-sort");
-            icon.classList.add(direction === 1 ? "fa-sort-up" : "fa-sort-down");
-            icon.classList.add("text-blue-300");
+    const actionName = `sort${category.toUpperCase()}`;
+    const buttons = document.querySelectorAll(`[data-action="${actionName}"]`);
+    
+    buttons.forEach((button) => {
+        const buttonKey = button.dataset.sortKey;
+        const icon = button.querySelector('.sort-icon');
+        
+        if (!icon) return;
+        
+        // Reset icon classes using classList
+        icon.classList.remove("fa-sort", "fa-sort-up", "fa-sort-down");
+        
+        // Reset button classes - remove blue styling
+        button.classList.remove("text-blue-400");
+        button.classList.add("text-gray-300");
+        
+        if (buttonKey === activeKey && activeKey !== null) {
+            // Active sorting - make button blue and show appropriate arrow
+            button.classList.remove("text-gray-300");
+            button.classList.add("text-blue-400");
+            
+            if (direction === 1) {
+                icon.classList.add("fa-sort-up");
+            } else {
+                icon.classList.add("fa-sort-down");
+            }
+        } else {
+            // Not sorting - show default sort icon
+            icon.classList.add("fa-sort");
         }
     });
 }
 
 function sortParts(category, key, direction) {
+    // If key is null, don't sort (maintain original order)
+    if (key === null) {
+        return;
+    }
+    
     const parts = appState.parts[category] || [];
     parts.sort((a, b) => {
         const valA = getSortValue(a, key);
@@ -296,13 +338,18 @@ function sortParts(category, key, direction) {
     });
 }
 
-function renderSortedCategory(category) {
+async function renderSortedCategory(category) {
     if (category === "hand") {
         renderHandFab();
     } else if (category === "review") {
         renderReview();
     } else if (category === "completed") {
         renderCompleted();
+    } else if (category === "cnc") {
+        (await loadRenderCNC())();
+    } else if (category === "misc") {
+        const { renderMisc } = await import("../tabs/misc.js");
+        renderMisc();
     }
 }
 
@@ -312,10 +359,29 @@ function renderSortedCategory(category) {
  * @param {string} key - The key to sort by
  */
 export async function sortTable(category, key) {
-    const direction = updateSortState(category, key);
-    sortParts(category, key, direction);
-    updateSortIndicators(category, key, direction);
-    renderSortedCategory(category);
+    const { key: newKey, direction } = updateSortState(category, key);
+    sortParts(category, newKey, direction);
+    await renderSortedCategory(category);
+    // Update indicators after render completes
+    setTimeout(() => updateSortIndicators(category, newKey, direction), 0);
+}
+
+/**
+ * Sort CNC parts by a specific key
+ * @param {string|Object} keyOrPayload - The key to sort by or event payload
+ */
+export async function sortCNC(keyOrPayload) {
+    const key = typeof keyOrPayload === 'string' ? keyOrPayload : keyOrPayload.sortKey;
+    await sortTable("cnc", key);
+}
+
+/**
+ * Sort MISC parts by a specific key
+ * @param {string|Object} keyOrPayload - The key to sort by or event payload
+ */
+export async function sortMISC(keyOrPayload) {
+    const key = typeof keyOrPayload === 'string' ? keyOrPayload : keyOrPayload.sortKey;
+    await sortTable("misc", key);
 }
 
 subscribe("currentTab", (tab) => {

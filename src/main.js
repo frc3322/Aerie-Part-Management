@@ -58,6 +58,8 @@ import {
     switchTab,
     handleSearch,
     sortTable,
+    sortCNC,
+    sortMISC,
     configureMobileUI,
 } from "./features/navigation/tabs.js";
 import {
@@ -358,6 +360,8 @@ const actionExports = {
     startWipeProcess,
     closeWipeModal,
     sortTable,
+    sortCNC,
+    sortMISC,
     viewHandDrawing,
     closeDrawingModal,
     printDrawing,

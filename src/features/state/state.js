@@ -43,6 +43,8 @@ export const appState = {
         hand: { key: null, direction: 1 },
         review: { key: null, direction: 1 },
         completed: { key: null, direction: 1 },
+        cnc: { key: null, direction: 1 },
+        misc: { key: null, direction: 1 },
     },
     // Authentication state
     apiKey: null,

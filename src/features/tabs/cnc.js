@@ -8,6 +8,7 @@ import {
     filterParts,
     getStatusClass,
     getFileExtension,
+    sortArrayByKey,
 } from "../../core/utils/helpers.js";
 import { loadPartStaticViews } from "../../components/threeDViewer.js";
 import { getPartFileBlobUrl, downloadPartFile } from "../../core/api/router.js";
@@ -255,7 +256,8 @@ function loadPartModel(part, index) {
  * Render the CNC tab
  */
 export function renderCNC() {
-    const container = document.getElementById("content-cnc");
+    const container = document.getElementById("cnc-cards-grid");
+    if (!container) return;
     container.innerHTML = "";
 
     if (
@@ -268,14 +270,15 @@ export function renderCNC() {
 
     const prioritized = prioritizeParts(appState.parts.cnc);
     const filtered = filterParts(prioritized, appState.searchQuery);
+    const sorted = applySorting(filtered);
     const is3JSPreviewDisabled = getState("disable3JSPreview");
 
-    if (filtered.length === 0) {
+    if (sorted.length === 0) {
         renderEmptyState(container);
         return;
     }
 
-    for (const part of filtered) {
+    for (const part of sorted) {
         const index = appState.parts.cnc.indexOf(part);
         renderPartCard(part, index, container);
         const fileExt = getFileExtension(part.file);
@@ -285,6 +288,9 @@ export function renderCNC() {
             loadPartModel(part, index);
         }
     }
+    
+    // Update sort button states after render
+    setTimeout(() => updateSortIcons(), 0);
 }
 
 /**
@@ -317,4 +323,59 @@ function prioritizeParts(parts) {
         return 3;
     };
     return cloned.sort((a, b) => getPriority(a.status) - getPriority(b.status));
+}
+
+/**
+ * Apply sorting to parts based on current sort state
+ * @param {Array} parts - Array of parts to sort
+ * @returns {Array} Sorted array
+ */
+function applySorting(parts) {
+    const sortState = appState.sortState.cnc;
+    // If no sort key (null state), return parts as-is
+    if (!sortState || !sortState.key || sortState.key === null) {
+        return parts;
+    }
+    
+    const cloned = [...parts];
+    return sortArrayByKey(cloned, sortState.key, sortState.direction);
+}
+
+/**
+ * Update sort icons to show active sort state
+ */
+function updateSortIcons() {
+    const sortState = appState.sortState.cnc;
+    const activeKey = sortState?.key;
+    const direction = sortState?.direction || 1;
+    const buttons = document.querySelectorAll('[data-action="sortCNC"]');
+    
+    buttons.forEach((button) => {
+        const buttonKey = button.dataset.sortKey;
+        const icon = button.querySelector('.sort-icon');
+        
+        if (!icon) return;
+        
+        // Reset icon classes using classList
+        icon.classList.remove("fa-sort", "fa-sort-up", "fa-sort-down");
+        
+        // Reset button classes - remove blue styling
+        button.classList.remove("text-blue-400");
+        button.classList.add("text-gray-300");
+        
+        if (buttonKey === activeKey && activeKey !== null) {
+            // Active sorting - make button blue and show appropriate arrow
+            button.classList.remove("text-gray-300");
+            button.classList.add("text-blue-400");
+            
+            if (direction === 1) {
+                icon.classList.add("fa-sort-up");
+            } else {
+                icon.classList.add("fa-sort-down");
+            }
+        } else {
+            // Not sorting - show default sort icon
+            icon.classList.add("fa-sort");
+        }
+    });
 }

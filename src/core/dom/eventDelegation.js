@@ -33,6 +33,8 @@ function dispatchAction(handler, payload) {
             Object.prototype.hasOwnProperty.call(payload, "key")
         ) {
             handler(payload.category, payload.key, payload.event);
+        } else if (Object.prototype.hasOwnProperty.call(payload, "sortKey")) {
+            handler(payload);
         } else if (Object.prototype.hasOwnProperty.call(payload, "tab")) {
             handler(payload.tab, payload.event);
         } else if (Object.prototype.hasOwnProperty.call(payload, "index")) {

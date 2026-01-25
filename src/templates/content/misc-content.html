@@ -1,7 +1,54 @@
 <!-- Miscellaneous Section -->
-<div
-    id="content-misc"
-    class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-visible py-4"
->
-    <!-- Miscellaneous Cards will be injected here -->
+<div id="content-misc" class="hidden overflow-visible py-4">
+    <!-- Sort Controls -->
+    <div class="neumorphic-card p-3 mb-4 inline-flex gap-2 items-center flex-wrap" style="border-radius: 9999px;">
+        <span class="text-sm text-gray-400 ml-1 mr-1">Sort by:</span>
+        <button
+            data-action="sortMISC"
+            data-sort-key="material"
+            class="neumorphic-btn px-3 py-1.5 text-sm text-gray-300 hover:text-blue-300 transition"
+        >
+            <i class="fa-solid fa-layer-group text-xs mr-1"></i>
+            Material
+            <i
+                class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                data-sort-category="misc"
+                data-sort-key="material"
+            ></i>
+        </button>
+        <button
+            data-action="sortMISC"
+            data-sort-key="subsystem"
+            class="neumorphic-btn px-3 py-1.5 text-sm text-gray-300 hover:text-blue-300 transition"
+        >
+            <i class="fa-solid fa-diagram-project text-xs mr-1"></i>
+            Subsystem
+            <i
+                class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                data-sort-category="misc"
+                data-sort-key="subsystem"
+            ></i>
+        </button>
+        <button
+            data-action="sortMISC"
+            data-sort-key="status"
+            class="neumorphic-btn px-3 py-1.5 text-sm text-gray-300 hover:text-blue-300 transition"
+        >
+            <i class="fa-solid fa-signal text-xs mr-1"></i>
+            Status
+            <i
+                class="fa-solid fa-sort text-xs ml-1 sort-icon"
+                data-sort-category="misc"
+                data-sort-key="status"
+            ></i>
+        </button>
+    </div>
+    
+    <!-- Miscellaneous Cards Grid -->
+    <div
+        id="misc-cards-grid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
+        <!-- Miscellaneous Cards will be injected here -->
+    </div>
 </div>

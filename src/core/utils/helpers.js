@@ -99,12 +99,31 @@ export function getStatusClass(status) {
  */
 export function sortArrayByKey(array, key, direction = 1) {
     return array.sort((a, b) => {
-        let valA = a[key] || "";
-        let valB = b[key] || "";
-        valA = valA.toString().toLowerCase();
-        valB = valB.toString().toLowerCase();
-        if (valA < valB) return -1 * direction;
-        if (valA > valB) return 1 * direction;
+        let valA = a[key];
+        let valB = b[key];
+        
+        // Handle amount as numeric
+        if (key === "amount") {
+            valA = Number(valA);
+            valB = Number(valB);
+            valA = Number.isFinite(valA) ? valA : 0;
+            valB = Number.isFinite(valB) ? valB : 0;
+        }
+        
+        // Default to empty string if undefined
+        if (valA === undefined || valA === null) valA = "";
+        if (valB === undefined || valB === null) valB = "";
+        
+        // Numeric comparison for numbers
+        if (typeof valA === "number" && typeof valB === "number") {
+            return (valA - valB) * direction;
+        }
+        
+        // String comparison for everything else
+        const normalizedA = valA.toString().toLowerCase();
+        const normalizedB = valB.toString().toLowerCase();
+        if (normalizedA < normalizedB) return -1 * direction;
+        if (normalizedA > normalizedB) return 1 * direction;
         return 0;
     });
 }
