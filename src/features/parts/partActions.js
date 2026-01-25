@@ -382,11 +382,9 @@ export function editPart(tab, index) {
 
     if (type === "hand") {
         document.getElementById("input-assigned").value = part.assigned || "";
-        document.getElementById("file-name-display").innerText = "No file";
-    } else {
-        document.getElementById("file-name-display").innerText =
-            part.file || "No file";
     }
+    document.getElementById("file-name-display").innerText =
+        part.file || "No file";
 }
 
 /**

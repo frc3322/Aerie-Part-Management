@@ -179,6 +179,13 @@ async function handleFileUpload(partId, file) {
  */
 async function handleEditPart(formData, apiData) {
     const existingPart = appState.parts[formData.originTab][formData.index];
+    if (
+        formData.type === "hand" &&
+        !apiData.file &&
+        existingPart?.file
+    ) {
+        apiData.file = existingPart.file;
+    }
     const result = await apiUpdatePart(existingPart.id, apiData);
     updatePartInState(existingPart.id, result);
 
