@@ -9,14 +9,14 @@ import {
 } from "../core/api/router.js";
 
 const VIEW_CONFIGS = [
-    { name: "front", position: [0, 0, 5], lookAt: [0, 0, 0] },
-    { name: "front-right", position: [3.5, 0, 3.5], lookAt: [0, 0, 0] },
-    { name: "right", position: [5, 0, 0], lookAt: [0, 0, 0] },
-    { name: "back-right", position: [3.5, 0, -3.5], lookAt: [0, 0, 0] },
-    { name: "back", position: [0, 0, -5], lookAt: [0, 0, 0] },
-    { name: "back-left", position: [-3.5, 0, -3.5], lookAt: [0, 0, 0] },
-    { name: "left", position: [-5, 0, 0], lookAt: [0, 0, 0] },
-    { name: "front-left", position: [-3.5, 0, 3.5], lookAt: [0, 0, 0] },
+    { name: "front", position: [0, 5, 5], lookAt: [0, 0, 0] },
+    { name: "front-right", position: [3.5, 4.95, 3.5], lookAt: [0, 0, 0] },
+    { name: "right", position: [5, 5, 0], lookAt: [0, 0, 0] },
+    { name: "back-right", position: [3.5, 4.95, -3.5], lookAt: [0, 0, 0] },
+    { name: "back", position: [0, 5, -5], lookAt: [0, 0, 0] },
+    { name: "back-left", position: [-3.5, 4.95, -3.5], lookAt: [0, 0, 0] },
+    { name: "left", position: [-5, 5, 0], lookAt: [0, 0, 0] },
+    { name: "front-left", position: [-3.5, 4.95, 3.5], lookAt: [0, 0, 0] },
 ];
 
 // View storage: Stores blob URLs for each part's views

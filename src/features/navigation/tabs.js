@@ -246,6 +246,7 @@ function getSortValue(part, key) {
     if (key === "type") return part.type || "";
     if (key === "file") return part.file || "";
     if (key === "notes") return part.notes || "";
+    if (key === "serviceMethod") return part.miscInfo?.serviceMethod || part.misc_info?.serviceMethod || "";
     if (key === "amount") {
         const amount = Number(part.amount);
         return Number.isFinite(amount) ? amount : 0;

@@ -102,6 +102,12 @@ export function sortArrayByKey(array, key, direction = 1) {
         let valA = a[key];
         let valB = b[key];
         
+        // Handle serviceMethod from miscInfo
+        if (key === "serviceMethod") {
+            valA = a.miscInfo?.serviceMethod || a.misc_info?.serviceMethod;
+            valB = b.miscInfo?.serviceMethod || b.misc_info?.serviceMethod;
+        }
+        
         // Handle amount as numeric
         if (key === "amount") {
             valA = Number(valA);
