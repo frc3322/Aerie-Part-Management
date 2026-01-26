@@ -70,6 +70,11 @@ function buildHeaderSection(part, statusClass) {
         <div class="text-sm text-gray-400">Material: <span class="text-blue-300 font-semibold">${
             part.material || "Not set"
         }</span></div>
+        ${
+            part.materialThickness
+                ? `<div class="text-sm text-gray-400">Thickness: <span class="text-blue-300 font-semibold">${part.materialThickness}</span></div>`
+                : ""
+        }
       </div>
     </div>
   `;

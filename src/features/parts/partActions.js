@@ -417,6 +417,12 @@ export function editPart(tab, index) {
     document.getElementById("input-onshape").value = part.onshapeUrl || "";
     document.getElementById("input-subsystem").value = part.subsystem || "";
 
+    if (type === "cnc") {
+        const materialThicknessInput = document.getElementById("input-material-thickness");
+        if (materialThicknessInput) {
+            materialThicknessInput.value = part.materialThickness || "";
+        }
+    }
     if (type === "hand") {
         document.getElementById("input-assigned").value = part.assigned || "";
     }

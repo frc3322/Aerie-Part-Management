@@ -33,6 +33,7 @@ class Part(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=True)  # 'cnc' or 'hand'
     material = db.Column(db.String(200), nullable=False)
+    material_thickness = db.Column(db.String(50), nullable=True)
     part_id = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(200), nullable=True)
     subsystem = db.Column(db.String(100), nullable=True)
@@ -76,6 +77,7 @@ class Part(db.Model):
             "id": self.id,
             "type": self.type,
             "material": self.material,
+            "materialThickness": self.material_thickness,
             "name": self.name,
             "partId": self.part_id,
             "subsystem": self.subsystem,
@@ -101,6 +103,7 @@ class Part(db.Model):
         allowed_fields = {
             "type",
             "material",
+            "material_thickness",
             "name",
             "part_id",
             "subsystem",
@@ -123,6 +126,7 @@ class Part(db.Model):
             "updatedAt": "updated_at",
             "partId": "part_id",
             "miscInfo": "misc_info",
+            "materialThickness": "material_thickness",
         }
 
         for key, value in data.items():

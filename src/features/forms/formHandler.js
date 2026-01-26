@@ -84,6 +84,7 @@ export function extractFormData() {
         name: document.getElementById("input-name").value,
         partId: document.getElementById("input-part-id").value,
         material: getMaterialInputValue(),
+        materialThickness: document.getElementById("input-material-thickness")?.value || "",
         amount: Number.parseInt(
             document.getElementById("input-amount").value,
             10,
@@ -109,6 +110,7 @@ function prepareApiData(formData) {
         type: formData.type,
         partId: formData.partId,
         material: formData.material,
+        materialThickness: formData.materialThickness || null,
         subsystem: formData.subsystem,
         amount:
             Number.isFinite(formData.amount) && formData.amount > 0

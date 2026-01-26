@@ -169,6 +169,7 @@ export function handleCategoryChange(eventOrType) {
     const assignField = document.getElementById("field-assigned");
     const fileField = document.getElementById("field-file");
     const serviceMethodField = document.getElementById("field-service-method");
+    const materialThicknessField = document.getElementById("field-material-thickness");
     const fileLabel = document.getElementById("label-file");
     const isEdit = document.getElementById("edit-mode").value === "true";
     const originTab = document.getElementById("edit-origin-tab").value;
@@ -179,6 +180,7 @@ export function handleCategoryChange(eventOrType) {
     if (type === "cnc") {
         assignField.classList.add("hidden");
         serviceMethodField?.classList.add("hidden");
+        materialThicknessField?.classList.remove("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "File (STEP or PDF)";
         const fileInput = document.getElementById("input-file");
@@ -188,6 +190,7 @@ export function handleCategoryChange(eventOrType) {
     } else if (type === "hand") {
         assignField.classList.add("hidden");
         serviceMethodField?.classList.add("hidden");
+        materialThicknessField?.classList.add("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "Drawing (PDF)";
         const fileInput = document.getElementById("input-file");
@@ -203,6 +206,7 @@ export function handleCategoryChange(eventOrType) {
     } else if (isMisc) {
         assignField.classList.add("hidden");
         serviceMethodField?.classList.remove("hidden");
+        materialThicknessField?.classList.add("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "File (STEP or PDF)";
         const fileInput = document.getElementById("input-file");
@@ -212,6 +216,7 @@ export function handleCategoryChange(eventOrType) {
     } else {
         assignField.classList.add("hidden");
         serviceMethodField?.classList.add("hidden");
+        materialThicknessField?.classList.add("hidden");
         fileField.classList.add("hidden");
         if (isEdit && originTab !== "review" && originTab !== "completed") {
             assignField.classList.remove("hidden");
