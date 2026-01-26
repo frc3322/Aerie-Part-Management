@@ -9,6 +9,7 @@ import argparse
 import json
 from typing import Optional, Any
 from utils.logging import setup_deployment_logging
+from migrations import run_migrations_from_config
 
 # Constants for repeated values
 DEFAULT_DATABASE_URL = "sqlite:///parts_prod.db"
@@ -186,6 +187,45 @@ def check_uv() -> bool:
 def install_dependencies() -> bool:
     """Install project dependencies using uv."""
     return run_command("uv sync --active", "Installing dependencies with uv")
+
+
+def run_database_migrations(config: dict) -> bool:
+    """Run database migrations with backup.
+
+    Args:
+        config: Configuration dictionary
+
+    Returns:
+        bool: True if migrations succeeded, False otherwise
+    """
+    logger.info("Running database migrations")
+    print("[DEPLOY] Running database migrations...")
+
+    # Get database URL from config
+    database_url = get_config_value(config, "DATABASE_URL", DEFAULT_DATABASE_URL)
+
+    # Resolve relative SQLite paths to absolute
+    if database_url.startswith("sqlite:///") and not database_url.startswith("sqlite:////"):
+        db_filename = database_url.replace("sqlite:///", "")
+        if not os.path.isabs(db_filename):
+            backend_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(backend_dir, db_filename)
+            database_url = f"sqlite:///{db_path}"
+
+    try:
+        success = run_migrations_from_config(database_url)
+        if success:
+            logger.info("Database migrations completed successfully")
+            print("   SUCCESS")
+            return True
+        else:
+            logger.error("Database migrations failed")
+            print("   FAILED")
+            return False
+    except Exception as e:
+        logger.error(f"Database migrations failed with exception: {e}")
+        print(f"   FAILED: {e}")
+        return False
 
 
 def build_frontend(config: dict) -> bool:
@@ -442,6 +482,14 @@ def main():
         logger.error("Failed to install dependencies")
         print("ERROR: Failed to install dependencies")
         sys.exit(1)
+
+    # Run database migrations for all modes (with backup)
+    if args.mode != "install":
+        if not run_database_migrations(config):
+            logger.error("Database migrations failed")
+            print("ERROR: Database migrations failed")
+            print("   Check the backup in backend/migrations_data/ if needed")
+            sys.exit(1)
 
     # Build frontend for production modes
     if args.mode != "dev" and not build_frontend(config):

@@ -3,6 +3,20 @@
 
 import sys
 from app import create_app # type: ignore
+from migrations import run_migrations_from_config
+from config import Config
+
+# Run migrations before creating the app
+print("[PROD] Running database migrations...")
+try:
+    if run_migrations_from_config(Config.SQLALCHEMY_DATABASE_URI):
+        print("[PROD] ✓ Database migrations completed")
+    else:
+        print("[PROD] ✗ Database migrations failed")
+        sys.exit(1)
+except Exception as e:
+    print(f"[PROD] ✗ Database migrations failed: {e}")
+    sys.exit(1)
 
 # Create the Flask application for production
 app = create_app("production")

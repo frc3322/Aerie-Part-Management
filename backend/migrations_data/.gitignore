@@ -1,0 +1,6 @@
+# Ignore all database backups
+backup_*.db
+backup_*.db_*
+
+# But keep this directory in git
+!.gitignore
