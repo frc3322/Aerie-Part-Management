@@ -61,7 +61,6 @@ function createReviewCard(part, index) {
     const isCNC = part.type === "cnc";
     const isMisc = part.type === "misc";
     const displayName = part.name || "Unnamed";
-    const displayPartId = part.partId || part.name || part.id || "N/A";
     const cadLink = part.onshapeUrl
         ? `<div class="w-10 h-10 bg-gray-800 rounded-lg border border-gray-700 shrink-0 flex items-center justify-center text-purple-400 cursor-pointer active:scale-95 transition-transform" onclick="window.open('${part.onshapeUrl}', '_blank')" title="View CAD">
              <i class="fa-solid fa-cube text-lg"></i>
@@ -87,7 +86,6 @@ function createReviewCard(part, index) {
         ${cadLink}
         <div>
           <div class="text-sm font-semibold text-blue-100">${displayName}</div>
-          <div class="text-[11px] text-gray-500">${displayPartId}</div>
         </div>
       </div>
       <div class="flex flex-col items-end gap-2">
@@ -125,7 +123,6 @@ export function createReviewRow(part, index) {
     const isCNC = part.type === "cnc";
     const isMisc = part.type === "misc";
     const displayName = part.name || "Unnamed";
-    const displayPartId = part.partId || part.name || part.id || "N/A";
     const subDisplay = part.subsystem || "";
     const previewHTML = generateReviewPreviewHTML(part);
     const fileHTML = generateReviewFileHTML(part);
@@ -160,7 +157,7 @@ export function createReviewRow(part, index) {
     previewCell.innerHTML = previewHTML;
 
     const nameCell = createElement("td", { className: "p-3 align-middle" });
-    nameCell.innerHTML = `<div class="font-bold text-gray-200">${displayName}</div><div class="text-xs text-gray-500">ID: ${displayPartId}</div>`;
+    nameCell.innerHTML = `<div class="font-bold text-gray-200">${displayName}</div>`;
 
     const subsystemCell = createElement("td", {
         className: "p-3 align-middle text-sm text-gray-400",

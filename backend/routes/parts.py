@@ -183,10 +183,10 @@ def create_part():
         if not data.get("category"):
             data["category"] = "review"
 
-        part_id = data.get("partId") or data.get("part_id")
-        if part_id is None or str(part_id).strip() == "":
-            return validation_error_response("Part ID is required", field="partId")
-        data["part_id"] = str(part_id).strip()
+        # part_id is now auto-generated from UUID in the Part model
+        # Remove it from data if it was sent (for backward compatibility)
+        data.pop("partId", None)
+        data.pop("part_id", None)
 
         material = data.get("material")
         if material is None or str(material).strip() == "":

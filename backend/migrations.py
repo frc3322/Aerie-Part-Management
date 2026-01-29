@@ -7,13 +7,14 @@ Migrations are tracked in a migrations table to prevent duplicate runs.
 import os
 import sqlite3
 import shutil
+import uuid
 from datetime import datetime
 from typing import List, Tuple, Optional, Callable
-from pathlib import Path
 
 
 class MigrationError(Exception):
     """Exception raised when a migration fails."""
+
     pass
 
 
@@ -81,7 +82,7 @@ class DatabaseMigrator:
         try:
             conn.execute(
                 "INSERT INTO schema_migrations (migration_name) VALUES (?)",
-                (migration_name,)
+                (migration_name,),
             )
             conn.commit()
         finally:
@@ -97,15 +98,14 @@ class DatabaseMigrator:
             MigrationError: If backup fails
         """
         if not os.path.exists(self.db_path):
-            print(f"[MIGRATION] Database file not found at {self.db_path}, skipping backup")
+            print(
+                f"[MIGRATION] Database file not found at {self.db_path}, skipping backup"
+            )
             return ""
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         db_name = os.path.basename(self.db_path)
-        backup_path = os.path.join(
-            self.migrations_dir,
-            f"backup_{db_name}_{timestamp}"
-        )
+        backup_path = os.path.join(self.migrations_dir, f"backup_{db_name}_{timestamp}")
 
         try:
             shutil.copy2(self.db_path, backup_path)
@@ -126,6 +126,7 @@ class DatabaseMigrator:
         # Define migrations here
         migrations = [
             ("001_add_material_thickness", self._migration_001_add_material_thickness),
+            ("002_add_uuid_field", self._migration_002_add_uuid_field),
         ]
 
         for name, func in migrations:
@@ -156,6 +157,47 @@ class DatabaseMigrator:
         else:
             print("[MIGRATION] ✓ material_thickness column already exists, skipping")
 
+    def _migration_002_add_uuid_field(self, conn: sqlite3.Connection) -> None:
+        """Add uuid column to parts table and populate existing parts.
+
+        Args:
+            conn: Database connection
+        """
+        cursor = conn.cursor()
+
+        # Check if column already exists
+        cursor.execute("PRAGMA table_info(parts)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "uuid" not in columns:
+            print("[MIGRATION] Adding uuid column to parts table")
+            cursor.execute("""
+                ALTER TABLE parts
+                ADD COLUMN uuid VARCHAR(36)
+            """)
+            print("[MIGRATION] ✓ uuid column added successfully")
+
+            # Populate existing parts with UUIDs
+            print("[MIGRATION] Generating UUIDs for existing parts...")
+            cursor.execute("SELECT id FROM parts WHERE uuid IS NULL")
+            parts = cursor.fetchall()
+
+            for (part_id,) in parts:
+                part_uuid = str(uuid.uuid4())
+                cursor.execute(
+                    "UPDATE parts SET uuid = ? WHERE id = ?", (part_uuid, part_id)
+                )
+
+            print(f"[MIGRATION] ✓ Generated UUIDs for {len(parts)} existing parts")
+
+            # Note: part_id auto-generation from uuid is handled in the application model layer
+            # SQLite doesn't support ALTER COLUMN, so nullability changes require table recreation
+            print(
+                "[MIGRATION] Note: part_id auto-generation logic is handled in the model layer"
+            )
+        else:
+            print("[MIGRATION] ✓ uuid column already exists, skipping")
+
     def run_migrations(self, backup: bool = True) -> bool:
         """Run all pending migrations.
 
@@ -166,7 +208,9 @@ class DatabaseMigrator:
             bool: True if migrations ran successfully, False otherwise
         """
         if not os.path.exists(self.db_path):
-            print("[MIGRATION] Database does not exist yet, will be created on first run")
+            print(
+                "[MIGRATION] Database does not exist yet, will be created on first run"
+            )
             return True
 
         print("[MIGRATION] Checking for pending migrations...")
@@ -200,7 +244,9 @@ class DatabaseMigrator:
                 migration_func(conn)
                 conn.commit()
                 self._record_migration(migration_name)
-                print(f"[MIGRATION] ✓ Migration {migration_name} completed successfully")
+                print(
+                    f"[MIGRATION] ✓ Migration {migration_name} completed successfully"
+                )
             except Exception as e:
                 conn.rollback()
                 print(f"[MIGRATION] ✗ Migration {migration_name} failed: {e}")

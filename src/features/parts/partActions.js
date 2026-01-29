@@ -20,6 +20,7 @@ import {
     openAddModal,
     handleCategoryChange,
     setMaterialField,
+    setSubsystemField,
 } from "../modals/modals.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import {
@@ -405,9 +406,8 @@ export function editPart(tab, index) {
     handleCategoryChange(type);
 
     document.getElementById("input-name").value = part.name || "";
-    document.getElementById("input-part-id").value =
-        part.partId || part.name || part.id || "";
     setMaterialField(part.material || "");
+    setSubsystemField(part.subsystem || "");
     document.getElementById("input-amount").value = part.amount || 1;
     document.getElementById("input-status").value = part.status;
     document
@@ -415,9 +415,8 @@ export function editPart(tab, index) {
         .parentElement.classList.remove("hidden");
     document.getElementById("input-notes").value = part.notes || "";
     document.getElementById("input-onshape").value = part.onshapeUrl || "";
-    document.getElementById("input-subsystem").value = part.subsystem || "";
 
-    if (type === "cnc") {
+    if (type === "cnc" || type === "hand") {
         const materialThicknessInput = document.getElementById("input-material-thickness");
         if (materialThicknessInput) {
             materialThicknessInput.value = part.materialThickness || "";

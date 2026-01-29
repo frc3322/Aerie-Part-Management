@@ -64,18 +64,6 @@
                 />
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-bold mb-2 text-gray-400"
-                    >Part ID</label
-                >
-                <input
-                    type="text"
-                    id="input-part-id"
-                    class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                    required
-                />
-            </div>
-
             <!-- OnShape URL Input -->
             <div class="mb-4">
                 <label class="block text-sm font-bold mb-2 text-gray-400"
@@ -152,11 +140,25 @@
                     <label class="block text-sm font-bold mb-2 text-gray-400"
                         >Subsystem</label
                     >
+                    <select
+                        id="input-subsystem-select"
+                        data-action="handleSubsystemChange"
+                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    >
+                        <option value="turret">Turret</option>
+                        <option value="shooter">Shooter</option>
+                        <option value="spindexer">Spindexer</option>
+                        <option value="intake">Intake</option>
+                        <option value="climber">Climber</option>
+                        <option value="hopper">Hopper</option>
+                        <option value="custom">Custom</option>
+                    </select>
                     <input
                         type="text"
-                        id="input-subsystem"
-                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        required
+                        id="input-subsystem-custom"
+                        class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 mt-3 hidden"
+                        placeholder="Enter custom subsystem"
+                        disabled
                     />
                 </div>
 
@@ -194,24 +196,35 @@
                     id="label-file"
                     >File (STEP or PDF)</label
                 >
-                <div class="neumorphic-input rounded-lg p-1 flex items-center">
-                    <label
-                        class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
-                    >
-                        Choose File
-                        <input
-                            type="file"
-                            id="input-file"
-                            class="hidden"
-                            accept=".step,.stp,.pdf"
-                            data-action="updateFileName"
-                        />
-                    </label>
-                    <span
-                        id="file-name-display"
-                        class="ml-3 text-gray-400 text-sm truncate"
-                        >No file chosen</span
-                    >
+                <div
+                    id="file-drop-zone"
+                    class="neumorphic-input rounded-lg p-4 border-2 border-dashed border-gray-600 transition-colors duration-200"
+                >
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-500"></i>
+                        <div class="text-center">
+                            <p class="text-gray-400 text-sm mb-2">
+                                Drag and drop file here or
+                            </p>
+                            <label
+                                class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition inline-block"
+                            >
+                                Choose File
+                                <input
+                                    type="file"
+                                    id="input-file"
+                                    class="hidden"
+                                    accept=".step,.stp,.pdf"
+                                    data-action="updateFileName"
+                                />
+                            </label>
+                        </div>
+                        <span
+                            id="file-name-display"
+                            class="text-gray-400 text-sm truncate max-w-full"
+                            >No file chosen</span
+                        >
+                    </div>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">
                     STEP files (.step, .stp) convert for 3D view; PDFs preview

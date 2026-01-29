@@ -12,6 +12,10 @@ import {
 } from "../../core/dom/modalManager.js";
 
 const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
+const SUBSYSTEM_OPTIONS = ["turret", "shooter", "spindexer", "intake", "climber", "hopper"];
+
+// Track if drag and drop has been initialized to prevent duplicate listeners
+let dragDropInitialized = false;
 
 /**
  * Open the settings modal
@@ -118,6 +122,9 @@ export function openAddModal(isNew = false) {
         onOpen: hideActionIconKey,
     });
 
+    // Initialize drag and drop for file upload
+    initializeDragAndDrop();
+
     if (isNew) {
         document.getElementById("modal-title").innerText =
             "Add Part for Review";
@@ -137,6 +144,7 @@ export function openAddModal(isNew = false) {
         document.getElementById("input-onshape").value = "";
         document.getElementById("input-amount").value = "1";
         setMaterialField(MATERIAL_OPTIONS[0]);
+        setSubsystemField(SUBSYSTEM_OPTIONS[0]);
         handleCategoryChange("cnc");
     }
 
@@ -190,7 +198,7 @@ export function handleCategoryChange(eventOrType) {
     } else if (type === "hand") {
         assignField.classList.add("hidden");
         serviceMethodField?.classList.add("hidden");
-        materialThicknessField?.classList.add("hidden");
+        materialThicknessField?.classList.remove("hidden");
         fileField.classList.remove("hidden");
         fileLabel.innerText = "Drawing (PDF)";
         const fileInput = document.getElementById("input-file");
@@ -289,4 +297,122 @@ export function setMaterialField(materialValue = "") {
     materialSelect.value = MATERIAL_OPTIONS[0];
     customInput.value = "";
     handleMaterialChange(MATERIAL_OPTIONS[0]);
+}
+
+export function handleSubsystemChange(eventOrValue) {
+    let selectedValue;
+    if (typeof eventOrValue === "string") {
+        selectedValue = eventOrValue;
+    } else if (eventOrValue && eventOrValue.target) {
+        selectedValue = eventOrValue.target.value;
+    } else {
+        return;
+    }
+
+    const subsystemSelect = document.getElementById("input-subsystem-select");
+    const customInput = document.getElementById("input-subsystem-custom");
+    if (!subsystemSelect || !customInput) return;
+
+    if (selectedValue) {
+        subsystemSelect.value = selectedValue;
+    }
+
+    const isCustom = subsystemSelect.value === "custom";
+    customInput.classList.toggle("hidden", !isCustom);
+    customInput.disabled = !isCustom;
+    if (isCustom) {
+        customInput.focus();
+    }
+}
+
+export function setSubsystemField(subsystemValue = "") {
+    const normalizedSubsystem = subsystemValue?.trim().toLowerCase() || "";
+    const subsystemSelect = document.getElementById("input-subsystem-select");
+    const customInput = document.getElementById("input-subsystem-custom");
+    if (!subsystemSelect || !customInput) return;
+
+    const matchingOption = SUBSYSTEM_OPTIONS.find(
+        (option) => option.toLowerCase() === normalizedSubsystem
+    );
+
+    if (matchingOption) {
+        subsystemSelect.value = matchingOption;
+        customInput.value = "";
+        handleSubsystemChange(matchingOption);
+        return;
+    }
+
+    if (normalizedSubsystem.length > 0) {
+        subsystemSelect.value = "custom";
+        customInput.value = subsystemValue.trim();
+        handleSubsystemChange("custom");
+        return;
+    }
+
+    subsystemSelect.value = SUBSYSTEM_OPTIONS[0];
+    customInput.value = "";
+    handleSubsystemChange(SUBSYSTEM_OPTIONS[0]);
+}
+
+/**
+ * Initialize drag and drop functionality for file upload (only once)
+ */
+export function initializeDragAndDrop() {
+    // Only initialize once to prevent duplicate event listeners
+    if (dragDropInitialized) return;
+
+    const dropZone = document.getElementById("file-drop-zone");
+    const fileInput = document.getElementById("input-file");
+
+    if (!dropZone || !fileInput) return;
+
+    // Prevent default drag behaviors
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop zone when item is dragged over it
+    ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, handleDragEnter, false);
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, handleDragLeave, false);
+    });
+
+    // Handle dropped files
+    dropZone.addEventListener("drop", handleDrop, false);
+
+    dragDropInitialized = true;
+}
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function handleDragEnter() {
+    const dropZone = document.getElementById("file-drop-zone");
+    if (dropZone) {
+        dropZone.classList.add("border-blue-400", "bg-blue-400/10");
+    }
+}
+
+function handleDragLeave() {
+    const dropZone = document.getElementById("file-drop-zone");
+    if (dropZone) {
+        dropZone.classList.remove("border-blue-400", "bg-blue-400/10");
+    }
+}
+
+function handleDrop(e) {
+    const fileInput = document.getElementById("input-file");
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0 && fileInput) {
+        fileInput.files = files;
+        updateFileName();
+    }
 }

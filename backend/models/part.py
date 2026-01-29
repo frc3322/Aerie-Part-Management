@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from typing import Optional
 from werkzeug.utils import secure_filename
+import uuid as uuid_lib
 
 db = SQLAlchemy()
 
@@ -31,10 +32,11 @@ class Part(db.Model):
     __tablename__ = "parts"
 
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(36), unique=True, nullable=False)
     type = db.Column(db.String(50), nullable=True)  # 'cnc' or 'hand'
     material = db.Column(db.String(200), nullable=False)
     material_thickness = db.Column(db.String(50), nullable=True)
-    part_id = db.Column(db.String(100), nullable=False)
+    part_id = db.Column(db.String(100), nullable=True)  # Auto-generated, not user-facing
     name = db.Column(db.String(200), nullable=True)
     subsystem = db.Column(db.String(100), nullable=True)
     assigned = db.Column(db.String(100), nullable=True)
@@ -64,8 +66,11 @@ class Part(db.Model):
             self.category = "review"
         if not self.amount:
             self.amount = 1
+        if not self.uuid:
+            self.uuid = str(uuid_lib.uuid4())
         if not self.part_id:
-            self.part_id = ""
+            # Auto-generate part_id from UUID (first 8 chars for brevity)
+            self.part_id = self.uuid[:8]
 
     def to_dict(self) -> dict:
         """Convert part to dictionary representation.
@@ -75,11 +80,11 @@ class Part(db.Model):
         """
         return {
             "id": self.id,
+            "uuid": self.uuid,
             "type": self.type,
             "material": self.material,
             "materialThickness": self.material_thickness,
             "name": self.name,
-            "partId": self.part_id,
             "subsystem": self.subsystem,
             "assigned": self.assigned,
             "status": self.status,

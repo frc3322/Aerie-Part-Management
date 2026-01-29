@@ -54,9 +54,6 @@ function createCompletedCard(part, index) {
           <div class="text-sm font-semibold text-blue-100">${
               part.name || "Unnamed"
           }</div>
-          <div class="text-[11px] text-gray-500">${
-              part.partId || part.id || "N/A"
-          }</div>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -130,9 +127,6 @@ export function createCompletedRow(part, index) {
         </td>
         <td class="p-3">
             <div class="font-bold text-gray-200">${part.name || "Unnamed"}</div>
-            <div class="text-xs text-gray-500">ID: ${
-                part.partId || part.id || "N/A"
-            }</div>
         </td>
         <td class="p-3 text-sm text-gray-400">${part.subsystem || ""}</td>
         <td class="p-3 text-sm text-blue-300 font-semibold">${

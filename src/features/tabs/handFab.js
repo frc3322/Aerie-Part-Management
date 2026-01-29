@@ -77,9 +77,6 @@ export function createHandFabRow(part, index) {
             <div class="font-mono text-sm text-blue-200 font-bold">${
                 part.name || "Unnamed"
             }</div>
-            <div class="text-xs text-gray-500">ID: ${
-                part.partId || part.id || "N/A"
-            }</div>
         </td>
         <td class="p-3">${part.subsystem || "-"}</td>
         <td class="p-3 text-sm text-blue-300 font-semibold">${
@@ -168,9 +165,6 @@ function createHandFabCard(part, index) {
         <div>
           <div class="text-sm font-semibold text-blue-100">
             ${part.name || "Unnamed"}
-          </div>
-          <div class="text-[11px] text-gray-500">
-            ${part.partId || part.id || "N/A"}
           </div>
         </div>
       </div>

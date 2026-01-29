@@ -36,6 +36,17 @@ function getMaterialInputValue() {
         : materialSelect.value;
 }
 
+function getSubsystemInputValue() {
+    const subsystemSelect = document.getElementById("input-subsystem-select");
+    const customSubsystemInput = document.getElementById(
+        "input-subsystem-custom",
+    );
+    if (!subsystemSelect || !customSubsystemInput) return "";
+    return subsystemSelect.value === "custom"
+        ? customSubsystemInput.value
+        : subsystemSelect.value;
+}
+
 function setUploadStatus(state) {
     const statusEl = document.getElementById("upload-status");
     if (!statusEl) return;
@@ -82,14 +93,13 @@ export function extractFormData() {
         originTab: document.getElementById("edit-origin-tab").value,
         type: document.getElementById("input-category").value,
         name: document.getElementById("input-name").value,
-        partId: document.getElementById("input-part-id").value,
         material: getMaterialInputValue(),
         materialThickness: document.getElementById("input-material-thickness")?.value || "",
         amount: Number.parseInt(
             document.getElementById("input-amount").value,
             10,
         ),
-        subsystem: document.getElementById("input-subsystem").value,
+        subsystem: getSubsystemInputValue(),
         assigned: document.getElementById("input-assigned").value,
         status: document.getElementById("input-status").value,
         notes: document.getElementById("input-notes").value,
@@ -108,7 +118,6 @@ export function extractFormData() {
 function prepareApiData(formData) {
     const apiData = {
         type: formData.type,
-        partId: formData.partId,
         material: formData.material,
         materialThickness: formData.materialThickness || null,
         subsystem: formData.subsystem,
@@ -261,7 +270,6 @@ export async function handleFormSubmit(e) {
     try {
         const formData = extractFormData();
         const trimmedName = formData.name.trim();
-        const trimmedPartId = formData.partId.trim();
         const trimmedMaterial = formData.material.trim();
         const trimmedSubsystem = formData.subsystem.trim();
         if (trimmedName.length === 0) {
@@ -269,10 +277,6 @@ export async function handleFormSubmit(e) {
                 "Validation Error",
                 "Part name is required.",
             );
-            return;
-        }
-        if (trimmedPartId.length === 0) {
-            showWarningNotification("Validation Error", "Part ID is required.");
             return;
         }
         if (trimmedMaterial.length === 0) {
@@ -297,7 +301,6 @@ export async function handleFormSubmit(e) {
             return;
         }
         formData.name = trimmedName;
-        formData.partId = trimmedPartId;
         formData.material = trimmedMaterial;
         formData.subsystem = trimmedSubsystem;
         const apiData = prepareApiData(formData);

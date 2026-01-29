@@ -55,9 +55,6 @@ function buildHeaderSection(part, statusClass) {
           <div class="text-sm text-blue-200 font-semibold mt-1">Amount: ${
               part.amount
           }</div>
-          <div class="text-xs text-gray-500 mt-1">ID: ${
-              part.partId || part.id || "N/A"
-          }</div>
         </div>
       </div>
       <div class="flex flex-col items-end gap-2">
