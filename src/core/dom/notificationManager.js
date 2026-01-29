@@ -132,7 +132,13 @@ function createNotificationElement(id, type, title, message, options = {}) {
     // Add dismiss functionality
     if (dismissible) {
         const dismissBtn = element.querySelector(".dismiss-btn");
-        dismissBtn.addEventListener("click", () => dismissNotification(id));
+        dismissBtn.addEventListener("click", () => {
+            try {
+                dismissNotification(id);
+            } catch (error) {
+                console.error("Error dismissing notification:", error);
+            }
+        });
     }
 
     // Add progress bar animation if duration is set
@@ -149,18 +155,27 @@ function createNotificationElement(id, type, title, message, options = {}) {
 }
 
 function dismissNotification(id) {
-    const notification = notifications.get(id);
-    if (!notification) return;
+    try {
+        const notification = notifications.get(id);
+        if (!notification) return;
 
-    const element = notification.element;
-    element.style.animation = "slideOut 0.3s ease-out forwards";
+        const element = notification.element;
+        element.style.animation = "slideOut 0.3s ease-out forwards";
 
-    setTimeout(() => {
-        if (element.parentNode) {
-            element.parentNode.removeChild(element);
-        }
-        notifications.delete(id);
-    }, 300);
+        setTimeout(() => {
+            try {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+                notifications.delete(id);
+            } catch (error) {
+                console.error("Error removing notification element:", error);
+                notifications.delete(id);
+            }
+        }, 300);
+    } catch (error) {
+        console.error("Error in dismissNotification:", error);
+    }
 }
 
 function showNotification(type, title, message, options = {}) {

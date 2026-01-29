@@ -24,6 +24,7 @@ const VIEW_CONFIGS = [
 const viewBlobCache = new Map();
 const viewTimers = new Map();
 const pendingViewLoads = new Map();
+const activeCleanups = new Map(); // Track cleanup functions by container ID
 
 /**
  * Load and display 8 static views for a part
@@ -263,6 +264,12 @@ function displayEightViewInterface(containerId, partId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    // Clean up any existing listeners for this container
+    if (activeCleanups.has(containerId)) {
+        activeCleanups.get(containerId)();
+        activeCleanups.delete(containerId);
+    }
+
     container.innerHTML = "";
     const views = viewBlobCache.get(partId);
     if (!views || !views[0]) {
@@ -352,14 +359,20 @@ function displayEightViewInterface(containerId, partId) {
     };
     document.addEventListener("visibilitychange", visibilityHandler);
 
-    // Store cleanup
-    container._cleanup = () => {
+    // Store cleanup function
+    const cleanup = () => {
+        img.removeEventListener("mousedown", handleStart);
+        img.removeEventListener("touchstart", handleStart);
         window.removeEventListener("mousemove", handleMove);
         window.removeEventListener("touchmove", handleMove);
         window.removeEventListener("mouseup", handleEnd);
         window.removeEventListener("touchend", handleEnd);
         document.removeEventListener("visibilitychange", visibilityHandler);
     };
+
+    // Store cleanup in multiple places for reliability
+    container._cleanup = cleanup;
+    activeCleanups.set(containerId, cleanup);
 
     resetTimer(partId);
 }
@@ -418,4 +431,18 @@ export async function prefetchPartFrontView(partId) {
     } finally {
         pendingViewLoads.delete(partId);
     }
+}
+
+/**
+ * Clean up all active 3D viewer event listeners
+ * Call this when switching tabs or on page unload
+ */
+export function cleanupAllViewers() {
+    activeCleanups.forEach((cleanup) => cleanup());
+    activeCleanups.clear();
+}
+
+// Cleanup on page unload
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", cleanupAllViewers);
 }

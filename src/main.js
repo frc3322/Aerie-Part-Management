@@ -402,3 +402,13 @@ function updateAllScrollbarEdgeEffects() {
 
 registerActions(actionExports);
 initEventDelegation();
+
+// Cleanup on page unload
+window.addEventListener("beforeunload", () => {
+    if (tooltipObserver) {
+        tooltipObserver.disconnect();
+    }
+    if (refreshNoticeTimerId) {
+        clearTimeout(refreshNoticeTimerId);
+    }
+});

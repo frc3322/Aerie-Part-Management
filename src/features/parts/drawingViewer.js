@@ -5,6 +5,7 @@ import { showInfoNotification } from "../../core/dom/notificationManager.js";
 
 let drawingObjectUrl = null;
 let currentPartId = null;
+let currentLoadAborted = false;
 
 function getViewerElements() {
     const modal = document.getElementById("drawing-modal");
@@ -91,6 +92,7 @@ export function closeDrawingModal() {
     const elements = getViewerElements();
     if (!elements) return;
     const { modal, frame, spinner, error, status } = elements;
+    currentLoadAborted = true; // Abort any pending loads
     closeModal(modal);
     revokeDrawingUrl();
     frame.src = "about:blank";
@@ -123,10 +125,20 @@ async function loadDrawing(partId, useRefresh) {
     revokeDrawingUrl();
     setActionState(elements, true);
 
+    // Mark previous load as aborted if any
+    currentLoadAborted = false;
+
     try {
         const blobUrl = await getPartDrawingBlobUrl(partId, {
             refresh: Boolean(useRefresh),
         });
+
+        // Check if this load was aborted while waiting
+        if (currentLoadAborted) {
+            URL.revokeObjectURL(blobUrl);
+            return;
+        }
+
         drawingObjectUrl = blobUrl;
         frame.onload = () => {
             hideElement(spinner);
@@ -135,6 +147,9 @@ async function loadDrawing(partId, useRefresh) {
         };
         frame.src = buildFrameSrc(blobUrl);
     } catch (err) {
+        // Don't show error if aborted
+        if (currentLoadAborted) return;
+
         console.error("Failed to load drawing", err);
         hideElement(spinner);
         hideElement(frame);
@@ -144,7 +159,9 @@ async function loadDrawing(partId, useRefresh) {
         error.classList.add("flex", "items-center", "justify-center");
         showElement(error);
     } finally {
-        setActionState(elements, false);
+        if (!currentLoadAborted) {
+            setActionState(elements, false);
+        }
     }
 }
 
@@ -229,4 +246,9 @@ export function printDrawing() {
     } else {
         status.textContent = "Unable to open print window.";
     }
+}
+
+// Cleanup blob URLs on page unload
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", revokeDrawingUrl);
 }

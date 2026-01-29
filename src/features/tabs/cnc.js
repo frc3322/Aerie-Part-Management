@@ -201,28 +201,29 @@ function loadPartModel(part, index) {
     const containerId = `model-view-${index}`;
     const is3JSPreviewDisabled = getState("disable3JSPreview");
 
-    setTimeout(async () => {
-        try {
-            if (fileExt === "pdf") {
-                const fileUrl = await getPartFileBlobUrl(part.id);
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.innerHTML = `
+    setTimeout(() => {
+        (async () => {
+            try {
+                if (fileExt === "pdf") {
+                    const fileUrl = await getPartFileBlobUrl(part.id);
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.innerHTML = `
             <iframe src="${fileUrl}" class="absolute inset-0 w-full h-full border-0 bg-white"></iframe>
             <div class="absolute top-2 right-2 bg-gray-900 bg-opacity-70 text-xs text-white px-2 py-1 rounded">PDF Preview</div>
           `;
+                    }
+                    return;
                 }
-                return;
-            }
 
-            // Check if 3JS previews are disabled
-            if (
-                is3JSPreviewDisabled &&
-                (fileExt === "step" || fileExt === "stp")
-            ) {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.innerHTML = `
+                // Check if 3JS previews are disabled
+                if (
+                    is3JSPreviewDisabled &&
+                    (fileExt === "step" || fileExt === "stp")
+                ) {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.innerHTML = `
           <div class="absolute inset-0 flex items-center justify-center text-center text-gray-400">
             <div>
               <i class="fa-solid fa-cube text-3xl mb-2"></i>
@@ -230,15 +231,30 @@ function loadPartModel(part, index) {
             </div>
           </div>
         `;
+                    }
+                    return;
                 }
-                return;
-            }
 
-            if (fileExt === "step" || fileExt === "stp") {
-                await loadPartStaticViews(containerId, part);
+                if (fileExt === "step" || fileExt === "stp") {
+                    await loadPartStaticViews(containerId, part);
+                }
+            } catch (error) {
+                console.error("Failed to load file:", error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+          <div class="absolute inset-0 flex items-center justify-center text-center text-red-400">
+            <div>
+              <i class="fa-solid fa-exclamation-triangle text-2xl mb-2"></i>
+              <p class="text-xs">Failed to load file</p>
+            </div>
+          </div>
+        `;
+                }
             }
-        } catch (error) {
-            console.error("Failed to load file:", error);
+        })().catch((error) => {
+            // Catch any unhandled rejections from the async function
+            console.error("Unhandled error in loadPartModel:", error);
             const container = document.getElementById(containerId);
             if (container) {
                 container.innerHTML = `
@@ -250,7 +266,7 @@ function loadPartModel(part, index) {
           </div>
         `;
             }
-        }
+        });
     }, 0);
 }
 
@@ -282,6 +298,11 @@ export function renderCNC() {
 
     for (const part of sorted) {
         const index = appState.parts.cnc.indexOf(part);
+        // Skip if part not found in array (shouldn't happen but defensive check)
+        if (index === -1) {
+            console.warn("Part not found in CNC array:", part.id);
+            continue;
+        }
         renderPartCard(part, index, container);
         const fileExt = getFileExtension(part.file);
         const shouldSkip3DPreview =

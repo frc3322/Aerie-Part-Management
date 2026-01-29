@@ -94,7 +94,8 @@ export function extractFormData() {
         type: document.getElementById("input-category").value,
         name: document.getElementById("input-name").value,
         material: getMaterialInputValue(),
-        materialThickness: document.getElementById("input-material-thickness")?.value || "",
+        materialThickness:
+            document.getElementById("input-material-thickness")?.value || "",
         amount: Number.parseInt(
             document.getElementById("input-amount").value,
             10,
@@ -138,7 +139,11 @@ function prepareApiData(formData) {
     // Handle type-specific fields
     apiData.name = formData.name;
 
-    if (formData.type === "cnc" || formData.type === "hand" || formData.type === "misc") {
+    if (
+        formData.type === "cnc" ||
+        formData.type === "hand" ||
+        formData.type === "misc"
+    ) {
         // Handle file if uploaded
         if (formData.fileInput.files.length > 0) {
             apiData.file = formData.fileInput.files[0].name;
@@ -176,7 +181,7 @@ async function handleFileUpload(partId, file) {
         setUploadStatus("uploading");
         await uploadPartFile(partId, file);
         const updatedPart = await getPart(partId);
-        updatePartInState(partId, updatedPart);
+        await updatePartInState(partId, updatedPart);
         setUploadStatus("success");
         return updatedPart;
     } catch (error) {
@@ -197,15 +202,11 @@ async function handleFileUpload(partId, file) {
  */
 async function handleEditPart(formData, apiData) {
     const existingPart = appState.parts[formData.originTab][formData.index];
-    if (
-        formData.type === "hand" &&
-        !apiData.file &&
-        existingPart?.file
-    ) {
+    if (formData.type === "hand" && !apiData.file && existingPart?.file) {
         apiData.file = existingPart.file;
     }
     const result = await apiUpdatePart(existingPart.id, apiData);
-    updatePartInState(existingPart.id, result);
+    await updatePartInState(existingPart.id, result);
 
     if (
         (formData.type === "cnc" || formData.type === "hand") &&
@@ -225,7 +226,9 @@ async function handleCreatePart(formData, apiData) {
     addPartToState(result);
 
     if (
-        (formData.type === "cnc" || formData.type === "hand" || formData.type === "misc") &&
+        (formData.type === "cnc" ||
+            formData.type === "hand" ||
+            formData.type === "misc") &&
         formData.fileInput.files.length > 0
     ) {
         await handleFileUpload(result.id, formData.fileInput.files[0]);

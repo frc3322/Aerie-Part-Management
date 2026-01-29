@@ -273,6 +273,10 @@ export function renderHandFab() {
         }
         for (const part of filtered) {
             const index = appState.parts.hand.indexOf(part);
+            if (index === -1) {
+                console.warn("Part not found in hand array:", part.id);
+                continue;
+            }
             const card = createHandFabCard(part, index);
             mobileList.appendChild(card);
         }
@@ -290,6 +294,10 @@ export function renderHandFab() {
 
     for (const part of filtered) {
         const index = appState.parts.hand.indexOf(part);
+        if (index === -1) {
+            console.warn("Part not found in hand array:", part.id);
+            continue;
+        }
         const row = createHandFabRow(part, index);
         tbody.appendChild(row);
     }

@@ -36,7 +36,9 @@ class Part(db.Model):
     type = db.Column(db.String(50), nullable=True)  # 'cnc' or 'hand'
     material = db.Column(db.String(200), nullable=False)
     material_thickness = db.Column(db.String(50), nullable=True)
-    part_id = db.Column(db.String(100), nullable=True)  # Auto-generated, not user-facing
+    part_id = db.Column(
+        db.String(100), nullable=True
+    )  # Auto-generated, not user-facing
     name = db.Column(db.String(200), nullable=True)
     subsystem = db.Column(db.String(100), nullable=True)
     assigned = db.Column(db.String(100), nullable=True)
@@ -81,6 +83,7 @@ class Part(db.Model):
         return {
             "id": self.id,
             "uuid": self.uuid,
+            "partId": self.part_id,
             "type": self.type,
             "material": self.material,
             "materialThickness": self.material_thickness,

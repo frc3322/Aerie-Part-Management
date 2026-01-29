@@ -297,6 +297,10 @@ export function renderMisc() {
 
     for (const part of sorted) {
         const index = appState.parts.misc.indexOf(part);
+        if (index === -1) {
+            console.warn("Part not found in misc array:", part.id);
+            continue;
+        }
         renderPartCard(part, index, container);
         const fileExt = getFileExtension(part.file);
         const shouldSkip3DPreview =

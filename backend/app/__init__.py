@@ -48,6 +48,12 @@ def create_app(config_name: str = "default") -> Flask:
     api_url_prefix = f"{base_path}/api" if base_path else "/api"
     app.register_blueprint(parts_bp, url_prefix=api_url_prefix + "/parts")
 
+    # Ensure database sessions are properly cleaned up after each request
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        """Clean up database session after each request."""
+        db.session.remove()
+
     # Health check endpoint
     @app.route("/health")
     def health_check():

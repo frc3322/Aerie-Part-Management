@@ -21,8 +21,28 @@ STATUS_IN_PROGRESS = "In Progress"
 
 # Rate limiting for auth checks (2 second minimum delay between requests per IP)
 _auth_check_timestamps = {}
+_AUTH_CACHE_MAX_SIZE = 1000  # Maximum number of IPs to track
+_AUTH_CACHE_EXPIRY = 3600  # Remove entries older than 1 hour
 
 parts_bp = Blueprint("parts", __name__, url_prefix="/api/parts")
+
+
+def _cleanup_auth_cache():
+    """Remove expired entries from auth check timestamp cache."""
+    current_time = time.time()
+    expired_ips = [
+        ip for ip, timestamp in _auth_check_timestamps.items()
+        if current_time - timestamp > _AUTH_CACHE_EXPIRY
+    ]
+    for ip in expired_ips:
+        del _auth_check_timestamps[ip]
+
+    # If still too large, remove oldest entries
+    if len(_auth_check_timestamps) > _AUTH_CACHE_MAX_SIZE:
+        sorted_items = sorted(_auth_check_timestamps.items(), key=lambda x: x[1])
+        num_to_remove = len(_auth_check_timestamps) - _AUTH_CACHE_MAX_SIZE
+        for ip, _ in sorted_items[:num_to_remove]:
+            del _auth_check_timestamps[ip]
 
 
 def _sanitize_misc_info(raw_value):
@@ -155,7 +175,7 @@ def get_parts():
         )
 
     except Exception as e:
-        current_app.logger.error(f"Error getting parts: {str(e)}")
+        current_app.logger.exception(f"Error getting parts")
         return jsonify({"error": "Failed to retrieve parts"}), 500
 
 
@@ -235,7 +255,7 @@ def create_part():
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error creating part: {str(e)}")
+        current_app.logger.exception(f"Error creating part")
         return jsonify({"error": "Failed to create part"}), 500
 
 
@@ -255,7 +275,7 @@ def get_part(part_id):
         return jsonify(part.to_dict())
 
     except Exception as e:
-        current_app.logger.error(f"Error getting part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error getting part {part_id}")
         return jsonify({"error": "Part not found"}), 404
 
 
@@ -324,7 +344,7 @@ def update_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error updating part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error updating part {part_id}")
         return jsonify({"error": "Failed to update part"}), 500
 
 
@@ -348,7 +368,7 @@ def delete_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error deleting part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error deleting part {part_id}")
         return jsonify({"error": "Failed to delete part"}), 500
 
 
@@ -401,7 +421,7 @@ def approve_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error approving part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error approving part {part_id}")
         return jsonify({"error": "Failed to approve part"}), 500
 
 
@@ -438,7 +458,7 @@ def assign_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error assigning part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error assigning part {part_id}")
         return jsonify({"error": "Failed to assign part"}), 500
 
 
@@ -468,7 +488,7 @@ def unclaim_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error unclaiming part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error unclaiming part {part_id}")
         return jsonify({"error": "Failed to unclaim part"}), 500
 
 
@@ -506,7 +526,7 @@ def complete_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error completing part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error completing part {part_id}")
         return jsonify({"error": "Failed to complete part"}), 500
 
 
@@ -544,7 +564,7 @@ def revert_part(part_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error reverting part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error reverting part {part_id}")
         return jsonify({"error": "Failed to revert part"}), 500
 
 
@@ -635,7 +655,7 @@ def get_stats():
         )
 
     except Exception as e:
-        current_app.logger.error(f"Error getting stats: {str(e)}")
+        current_app.logger.exception(f"Error getting stats")
         return jsonify({"error": "Failed to retrieve statistics"}), 500
 
 
@@ -691,7 +711,7 @@ def get_leaderboard():
         return jsonify({"leaderboard": leaderboard})
 
     except Exception as e:
-        current_app.logger.error(f"Error getting leaderboard: {str(e)}")
+        current_app.logger.exception(f"Error getting leaderboard")
         return jsonify({"error": "Failed to retrieve leaderboard"}), 500
 
 
@@ -733,7 +753,7 @@ def wipe_all_parts():
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error wiping all parts: {str(e)}")
+        current_app.logger.exception(f"Error wiping all parts")
         return jsonify({"error": "Failed to wipe parts"}), 500
 
 
@@ -750,6 +770,11 @@ def check_auth():
     """
     client_ip = request.remote_addr
     current_time = time.time()
+
+    # Periodically clean up cache (10% chance on each request)
+    import random
+    if random.random() < 0.1:
+        _cleanup_auth_cache()
 
     # Check if client has made a recent request
     if client_ip in _auth_check_timestamps:
@@ -1160,7 +1185,7 @@ def upload_part_views(part_id: int):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error uploading views for part {part_id}: {str(e)}")
+        current_app.logger.exception(f"Error uploading views for part {part_id}")
         return jsonify({"error": "Failed to upload views"}), 500
 
 

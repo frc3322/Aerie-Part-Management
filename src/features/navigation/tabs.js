@@ -24,6 +24,7 @@ import {
     subscribe,
     setState,
 } from "../../core/state/reactiveState.js";
+import { cleanupAllViewers } from "../../components/threeDViewer.js";
 
 // Debounce timer for search
 let searchDebounceTimer = null;
@@ -32,6 +33,7 @@ const MOBILE_TABS = ["hand", "completed"];
 let mobileGesturesAttached = false;
 let swipeStartX = 0;
 let swipeStartY = 0;
+let swipeTargets = []; // Store targets for cleanup
 
 function getAllowedTabs() {
     return appState.isMobile ? MOBILE_TABS : DESKTOP_TABS;
@@ -110,11 +112,21 @@ function attachSwipeHandlers() {
     const targets = ["content-hand", "content-completed"]
         .map((id) => document.getElementById(id))
         .filter(Boolean);
+    swipeTargets = targets; // Store for cleanup
     targets.forEach((target) => {
         target.addEventListener("touchstart", onTouchStart, { passive: true });
         target.addEventListener("touchend", onTouchEnd, { passive: true });
     });
     mobileGesturesAttached = true;
+}
+
+function detachSwipeHandlers() {
+    swipeTargets.forEach((target) => {
+        target.removeEventListener("touchstart", onTouchStart);
+        target.removeEventListener("touchend", onTouchEnd);
+    });
+    swipeTargets = [];
+    mobileGesturesAttached = false;
 }
 
 export function configureMobileUI() {
@@ -133,6 +145,9 @@ export function configureMobileUI() {
  * @param {string} tab - The tab to switch to
  */
 export async function switchTab(tab) {
+    // Clean up 3D viewer event listeners before switching tabs
+    cleanupAllViewers();
+
     let targetTab = tab;
     const allowedTabs = getAllowedTabs();
     if (!allowedTabs.includes(targetTab)) {
@@ -421,3 +436,13 @@ subscribe("parts.completed", () => {
 subscribe("leaderboard", () => {
     renderLeaderboard();
 });
+
+// Cleanup on page unload
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => {
+        detachSwipeHandlers();
+        if (searchDebounceTimer) {
+            clearTimeout(searchDebounceTimer);
+        }
+    });
+}

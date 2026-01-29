@@ -282,6 +282,10 @@ export function renderReview() {
         } else {
             for (const part of filtered) {
                 const index = appState.parts.review.indexOf(part);
+                if (index === -1) {
+                    console.warn("Part not found in review array:", part.id);
+                    continue;
+                }
                 const card = createReviewCard(part, index);
                 mobileList.appendChild(card);
             }
@@ -294,6 +298,10 @@ export function renderReview() {
         emptyMsg.classList.add("hidden");
         renderList(tbody, filtered, (part) => {
             const index = appState.parts.review.indexOf(part);
+            if (index === -1) {
+                console.warn("Part not found in review array:", part.id);
+                return null;
+            }
             return createReviewRow(part, index);
         });
     }

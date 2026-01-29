@@ -103,12 +103,12 @@ function openStorageModal(context) {
     const cancelButton = document.getElementById("storage-cancel");
     const titleElement = document.getElementById("storage-modal-title");
     const descriptionElement = document.getElementById(
-        "storage-modal-description"
+        "storage-modal-description",
     );
     if (!input || !submitButton || !cancelButton) {
         showErrorNotification(
             "Storage Error",
-            "Storage modal is unavailable. Please try again."
+            "Storage modal is unavailable. Please try again.",
         );
         return;
     }
@@ -165,9 +165,13 @@ async function handleStorageSubmit(event) {
     const modal = document.getElementById("storage-modal");
     if (modal && modal.dataset.loading === "true") return;
 
+    // Immediately set loading state to prevent race conditions
+    if (modal) modal.dataset.loading = "true";
+
     const input = document.getElementById("storage-location-input");
     if (!input) {
         closeStorageModal();
+        if (modal) delete modal.dataset.loading;
         return;
     }
     const rawLocation = input.value?.trim();
@@ -181,8 +185,9 @@ async function handleStorageSubmit(event) {
     if (mode === "unclaim" && !storageLocation) {
         showWarningNotification(
             "Storage Required",
-            "Please provide the storage location before unclaiming."
+            "Please provide the storage location before unclaiming.",
         );
+        if (modal) delete modal.dataset.loading;
         return;
     }
     const shouldShowLoading = mode !== "claimInfo";
@@ -192,7 +197,7 @@ async function handleStorageSubmit(event) {
         async () => {
             if (mode === "complete") {
                 const completedPart = await apiCompletePart(part.id, payload);
-                updatePartInState(part.id, completedPart);
+                await updatePartInState(part.id, completedPart);
                 if (fromTab === "cnc") (await loadRenderCNC())();
                 else if (fromTab === "misc") renderMisc();
                 else renderHandFab();
@@ -203,7 +208,7 @@ async function handleStorageSubmit(event) {
             } else if (mode === "unclaim") {
                 await apiUpdatePart(part.id, payload);
                 const unclaimedPart = await apiUnclaimPart(part.id);
-                updatePartInState(part.id, unclaimedPart);
+                await updatePartInState(part.id, unclaimedPart);
                 renderHandFab();
             } else if (mode === "claimInfo") {
                 if (typeof onContinue === "function") {
@@ -215,7 +220,7 @@ async function handleStorageSubmit(event) {
             onError: () =>
                 showErrorNotification(
                     "Storage Error",
-                    "Failed to save storage location. Please try again."
+                    "Failed to save storage location. Please try again.",
                 ),
             onFinally: () => {
                 if (shouldShowLoading) setStorageModalLoading(false);
@@ -223,7 +228,7 @@ async function handleStorageSubmit(event) {
                     triggerButton.disabled = false;
                 closeStorageModal();
             },
-        }
+        },
     );
 }
 
@@ -257,7 +262,7 @@ export async function markMiscCompleted(fromTab, index, event) {
         async () => {
             const updateData = { status: "Completed" };
             const updatedPart = await apiUpdatePart(part.id, updateData);
-            updatePartInState(part.id, updatedPart);
+            await updatePartInState(part.id, updatedPart);
             renderMisc();
             celebrateCompletion();
         },
@@ -266,9 +271,9 @@ export async function markMiscCompleted(fromTab, index, event) {
             onError: () =>
                 showErrorNotification(
                     "Update Failed",
-                    "Failed to mark part as completed. Please try again."
+                    "Failed to mark part as completed. Please try again.",
                 ),
-        }
+        },
     );
 }
 
@@ -284,7 +289,7 @@ export async function markUncompleted(index, event) {
     await withErrorHandling(
         async () => {
             const updatedPart = await apiRevertPart(part.id);
-            updatePartInState(part.id, updatedPart);
+            await updatePartInState(part.id, updatedPart);
             renderCompleted();
             (await loadRenderCNC())();
             renderHandFab();
@@ -295,9 +300,9 @@ export async function markUncompleted(index, event) {
             onError: () =>
                 showErrorNotification(
                     "Revert Failed",
-                    "Failed to revert part. Please try again."
+                    "Failed to revert part. Please try again.",
                 ),
-        }
+        },
     );
 }
 
@@ -324,7 +329,7 @@ export async function markCompletedIncorrectly(index, event) {
     await withErrorHandling(
         async () => {
             const updatedPart = await apiUpdatePart(part.id, payload);
-            updatePartInState(part.id, updatedPart);
+            await updatePartInState(part.id, updatedPart);
             renderCompleted();
         },
         {
@@ -332,9 +337,9 @@ export async function markCompletedIncorrectly(index, event) {
             onError: () =>
                 showErrorNotification(
                     "Update Failed",
-                    "Failed to update part. Please try again."
+                    "Failed to update part. Please try again.",
                 ),
-        }
+        },
     );
 }
 
@@ -348,35 +353,35 @@ export async function approvePart(index, event) {
     console.log(
         "[approvePart] Starting approval for part:",
         part.id,
-        part.name
+        part.name,
     );
     console.log(
         "[approvePart] Current review parts count:",
-        appState.parts.review.length
+        appState.parts.review.length,
     );
     openReviewDetails(part, async (payload) => {
         console.log(
             "[approvePart] onSubmit callback called with payload:",
-            payload
+            payload,
         );
         const updatedPart = await apiApprovePart(part.id, payload || {});
         console.log("[approvePart] API returned updated part:", updatedPart);
         console.log(
             "[approvePart] Updated part category:",
-            updatedPart.category
+            updatedPart.category,
         );
         console.log(
             "[approvePart] Before updatePartInState - review count:",
-            appState.parts.review.length
+            appState.parts.review.length,
         );
-        updatePartInState(part.id, updatedPart);
+        await updatePartInState(part.id, updatedPart);
         console.log(
             "[approvePart] After updatePartInState - review count:",
-            appState.parts.review.length
+            appState.parts.review.length,
         );
         console.log(
             "[approvePart] Review parts:",
-            appState.parts.review.map((p) => ({ id: p.id, name: p.name }))
+            appState.parts.review.map((p) => ({ id: p.id, name: p.name })),
         );
     });
 }
@@ -417,7 +422,9 @@ export function editPart(tab, index) {
     document.getElementById("input-onshape").value = part.onshapeUrl || "";
 
     if (type === "cnc" || type === "hand") {
-        const materialThicknessInput = document.getElementById("input-material-thickness");
+        const materialThicknessInput = document.getElementById(
+            "input-material-thickness",
+        );
         if (materialThicknessInput) {
             materialThicknessInput.value = part.materialThickness || "";
         }
@@ -426,7 +433,7 @@ export function editPart(tab, index) {
         document.getElementById("input-assigned").value = part.assigned || "";
     }
     if (type === "misc") {
-        document.getElementById("input-service-method").value = 
+        document.getElementById("input-service-method").value =
             part.miscInfo?.serviceMethod || part.misc_info?.serviceMethod || "";
     }
     document.getElementById("file-name-display").innerText =
@@ -459,9 +466,9 @@ export async function deletePart(tab, index, event) {
                 onError: () =>
                     showErrorNotification(
                         "Delete Failed",
-                        "Failed to delete part. Please try again."
+                        "Failed to delete part. Please try again.",
                     ),
-            }
+            },
         );
     }
 }
@@ -494,7 +501,7 @@ export async function markInProgress(tab, index, event) {
         async () => {
             const updateData = { status: "In Progress" };
             const updatedPart = await apiUpdatePart(part.id, updateData);
-            updatePartInState(part.id, updatedPart);
+            await updatePartInState(part.id, updatedPart);
             if (tab === "cnc") (await loadRenderCNC())();
             else renderHandFab();
         },
@@ -503,9 +510,9 @@ export async function markInProgress(tab, index, event) {
             onError: () =>
                 showErrorNotification(
                     "Status Update Failed",
-                    "Failed to update part status. Please try again."
+                    "Failed to update part status. Please try again.",
                 ),
-        }
+        },
     );
 }
 
@@ -583,7 +590,7 @@ export async function confirmAssignment(event) {
         await withErrorHandling(
             async () => {
                 const updatedPart = await apiAssignPart(part.id, name.trim());
-                updatePartInState(part.id, updatedPart);
+                await updatePartInState(part.id, updatedPart);
                 renderHandFab();
                 const shouldShowStorage =
                     pendingAssignShowStorageLocation &&
@@ -603,9 +610,9 @@ export async function confirmAssignment(event) {
                 onError: () =>
                     showErrorNotification(
                         "Assignment Failed",
-                        "Failed to assign part. Please try again."
+                        "Failed to assign part. Please try again.",
                     ),
-            }
+            },
         );
     }
 }

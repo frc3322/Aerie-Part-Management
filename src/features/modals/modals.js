@@ -12,10 +12,18 @@ import {
 } from "../../core/dom/modalManager.js";
 
 const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
-const SUBSYSTEM_OPTIONS = ["turret", "shooter", "spindexer", "intake", "climber", "hopper"];
+const SUBSYSTEM_OPTIONS = [
+    "turret",
+    "shooter",
+    "spindexer",
+    "intake",
+    "climber",
+    "hopper",
+];
 
 // Track if drag and drop has been initialized to prevent duplicate listeners
 let dragDropInitialized = false;
+let dragDropCleanup = null;
 
 /**
  * Open the settings modal
@@ -82,9 +90,16 @@ export function toggleTabVisibility(eventOrTab) {
         // If we just hid the active tab, switch to another
         const currentTab = getCurrentTab();
         if (currentTab === tab) {
-            const tabs = ["review", "cnc", "hand", "misc", "completed", "leaderboard"];
+            const tabs = [
+                "review",
+                "cnc",
+                "hand",
+                "misc",
+                "completed",
+                "leaderboard",
+            ];
             const nextVisible = tabs.find(
-                (t) => document.getElementById(`check-${t}`).checked
+                (t) => document.getElementById(`check-${t}`).checked,
             );
             if (nextVisible) switchTab(nextVisible);
         }
@@ -155,6 +170,11 @@ export function openAddModal(isNew = false) {
  * Close the add/edit part modal
  */
 export function closeModal() {
+    if (dragDropCleanup) {
+        dragDropCleanup();
+        dragDropCleanup = null;
+    }
+    dragDropInitialized = false;
     closeManagedModal("modal", {
         onClose: showActionIconKey,
     });
@@ -177,7 +197,9 @@ export function handleCategoryChange(eventOrType) {
     const assignField = document.getElementById("field-assigned");
     const fileField = document.getElementById("field-file");
     const serviceMethodField = document.getElementById("field-service-method");
-    const materialThicknessField = document.getElementById("field-material-thickness");
+    const materialThicknessField = document.getElementById(
+        "field-material-thickness",
+    );
     const fileLabel = document.getElementById("label-file");
     const isEdit = document.getElementById("edit-mode").value === "true";
     const originTab = document.getElementById("edit-origin-tab").value;
@@ -277,7 +299,7 @@ export function setMaterialField(materialValue = "") {
     if (!materialSelect || !customInput) return;
 
     const matchingOption = MATERIAL_OPTIONS.find(
-        (option) => option.toLowerCase() === normalizedMaterial.toLowerCase()
+        (option) => option.toLowerCase() === normalizedMaterial.toLowerCase(),
     );
 
     if (matchingOption) {
@@ -332,7 +354,7 @@ export function setSubsystemField(subsystemValue = "") {
     if (!subsystemSelect || !customInput) return;
 
     const matchingOption = SUBSYSTEM_OPTIONS.find(
-        (option) => option.toLowerCase() === normalizedSubsystem
+        (option) => option.toLowerCase() === normalizedSubsystem,
     );
 
     if (matchingOption) {
@@ -384,6 +406,25 @@ export function initializeDragAndDrop() {
     // Handle dropped files
     dropZone.addEventListener("drop", handleDrop, false);
 
+    // Store cleanup function
+    dragDropCleanup = () => {
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+            dropZone.removeEventListener(eventName, preventDefaults, false);
+            document.body.removeEventListener(
+                eventName,
+                preventDefaults,
+                false,
+            );
+        });
+        ["dragenter", "dragover"].forEach((eventName) => {
+            dropZone.removeEventListener(eventName, handleDragEnter, false);
+        });
+        ["dragleave", "drop"].forEach((eventName) => {
+            dropZone.removeEventListener(eventName, handleDragLeave, false);
+        });
+        dropZone.removeEventListener("drop", handleDrop, false);
+    };
+
     dragDropInitialized = true;
 }
 
@@ -415,4 +456,13 @@ function handleDrop(e) {
         fileInput.files = files;
         updateFileName();
     }
+}
+
+// Cleanup drag-drop listeners on page unload
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => {
+        if (dragDropCleanup) {
+            dragDropCleanup();
+        }
+    });
 }

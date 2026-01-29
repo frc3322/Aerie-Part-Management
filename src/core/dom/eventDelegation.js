@@ -6,7 +6,10 @@ function coerceValue(value) {
     if (value === "true") return true;
     if (value === "false") return false;
     const numericValue = Number(value);
-    if (!Number.isNaN(numericValue) && value.trim() !== "") return numericValue;
+    // Only check trim() if value is a string
+    if (!Number.isNaN(numericValue) && (typeof value !== 'string' || value.trim() !== "")) {
+        return numericValue;
+    }
     return value;
 }
 

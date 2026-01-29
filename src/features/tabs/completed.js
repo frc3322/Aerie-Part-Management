@@ -220,6 +220,10 @@ export function renderCompleted() {
         }
         for (const part of filtered) {
             const index = appState.parts.completed.indexOf(part);
+            if (index === -1) {
+                console.warn("Part not found in completed array:", part.id);
+                continue;
+            }
             const card = createCompletedCard(part, index);
             mobileList.appendChild(card);
         }
@@ -239,6 +243,10 @@ export function renderCompleted() {
     }
     for (const part of filtered) {
         const index = appState.parts.completed.indexOf(part);
+        if (index === -1) {
+            console.warn("Part not found in completed array:", part.id);
+            continue;
+        }
         const row = createCompletedRow(part, index);
         tbody.appendChild(row);
     }
