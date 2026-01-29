@@ -5,19 +5,25 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
-import requests  # type: ignore
+import requests
 
 try:  # Prefer absolute import for script execution
-    from config import load_config_from_json  # type: ignore
+    from config import load_config_from_json
 except ImportError:  # Fallback when imported as package
     from ..config import load_config_from_json
 
 try:
-    from flask import current_app  # type: ignore
+    from flask import current_app
 except Exception:  # pragma: no cover - fallback when Flask not available
     current_app = None  # type: ignore
+
+
+JSON_CONTENT_HEADERS: Dict[str, str] = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+}
 
 
 class OnshapeDrawingClient:
@@ -25,16 +31,41 @@ class OnshapeDrawingClient:
 
     def __init__(
         self,
-        access_key: str,
-        secret_key: str,
+        access_key: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        oauth_token: Optional[str] = None,
         base_url: str = "https://cad.onshape.com",
     ) -> None:
+        """
+        Initialize Onshape drawing client.
+
+        Args:
+            access_key: Onshape API access key (for API key auth)
+            secret_key: Onshape API secret key (for API key auth)
+            oauth_token: OAuth access token (for OAuth auth)
+            base_url: Onshape API base URL
+
+        Raises:
+            ValueError: If neither OAuth token nor API keys are provided
+        """
         self.base_url = base_url.rstrip("/")
-        self.headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": self._build_auth_header(access_key, secret_key),
-        }
+
+        if oauth_token:
+            # Use OAuth Bearer token
+            self.headers = {
+                **JSON_CONTENT_HEADERS,
+                "Authorization": f"Bearer {oauth_token}",
+            }
+        elif access_key and secret_key:
+            # Use API key authentication
+            self.headers = {
+                **JSON_CONTENT_HEADERS,
+                "Authorization": self._build_auth_header(access_key, secret_key),
+            }
+        else:
+            raise ValueError(
+                "Must provide either oauth_token or both access_key and secret_key"
+            )
 
     def parse_drawing_url(self, drawing_url: str) -> Tuple[str, str, str]:
         """Extract identifiers from a drawing URL.
@@ -78,6 +109,16 @@ class OnshapeDrawingClient:
             f"{self.base_url}/api/v6/drawings/d/{document_id}/w/{workspace_id}"
             f"/e/{element_id}/translations"
         )
+        if current_app:
+            current_app.logger.info(
+                "Starting Onshape drawing translation",
+                extra={
+                    "document_id": document_id,
+                    "workspace_id": workspace_id,
+                    "element_id": element_id,
+                    "destination": str(output_path),
+                },
+            )
         payload = {
             "formatName": "PDF",
             "destinationName": output_path.name,
@@ -88,6 +129,14 @@ class OnshapeDrawingClient:
             translation_url, headers=self.headers, json=payload, timeout=30
         )
         response.raise_for_status()
+        if current_app:
+            current_app.logger.debug(
+                "Translation creation response",
+                extra={
+                    "status_code": response.status_code,
+                    "translation_info": response.json(),
+                },
+            )
         translation_info: Dict = response.json()
         status_url = self._extract_status_url(translation_info)
         final_status = self._poll_translation(status_url=status_url)
@@ -124,11 +173,20 @@ class OnshapeDrawingClient:
         self, status_url: str, max_attempts: int = 30, delay_seconds: float = 2.0
     ) -> Dict:
         """Poll translation status until completion or failure."""
-        for _ in range(max_attempts):
+        for attempt in range(1, max_attempts + 1):
             status_response = requests.get(status_url, headers=self.headers, timeout=15)
             status_response.raise_for_status()
             status_payload: Dict = status_response.json()
             state = (status_payload.get("requestState") or "").upper()
+            if current_app:
+                current_app.logger.debug(
+                    "Translation polling status",
+                    extra={
+                        "attempt": attempt,
+                        "state": state,
+                        "payload": status_payload,
+                    },
+                )
             if state == "DONE":
                 return status_payload
             if state in {"FAILED", "CANCELED"}:
@@ -169,31 +227,102 @@ class OnshapeDrawingClient:
         return output_path.resolve()
 
 
-def build_onshape_client() -> OnshapeDrawingClient:
-    """Create a configured OnshapeDrawingClient from available configuration sources."""
+def build_onshape_client(app_api_key: Optional[str] = None) -> OnshapeDrawingClient:
+    """
+    Create OnshapeDrawingClient using OAuth authentication.
 
-    def _get_from_flask_config(key: str) -> str:
-        if current_app and current_app.config:
-            return current_app.config.get(key, "") or ""
-        return ""
+    Args:
+        app_api_key: App API key to look up Onshape OAuth session
 
-    file_config = load_config_from_json()
-    access_key = (
-        os.environ.get("ONSHAPE_ACCESS_KEY")
-        or _get_from_flask_config("ONSHAPE_ACCESS_KEY")
-        or file_config.get("ONSHAPE_ACCESS_KEY", "")
-    )
-    secret_key = (
-        os.environ.get("ONSHAPE_SECRET_KEY")
-        or _get_from_flask_config("ONSHAPE_SECRET_KEY")
-        or file_config.get("ONSHAPE_SECRET_KEY", "")
-    )
+    Returns:
+        Configured OnshapeDrawingClient
 
-    if not access_key or not secret_key:
-        raise RuntimeError("ONSHAPE_ACCESS_KEY and ONSHAPE_SECRET_KEY must be set.")
+    Raises:
+        RuntimeError: If no OAuth authentication is available
+    """
+    if not app_api_key:
+        raise RuntimeError(
+            "No Onshape authentication available. Please connect your Onshape account in Settings."
+        )
 
-    return OnshapeDrawingClient(
-        access_key=access_key,
-        secret_key=secret_key,
-        base_url="https://cad.onshape.com",
-    )
+    try:
+        from utils.onshape_oauth_manager import (
+            get_onshape_session,
+            is_token_expired,
+            update_tokens,
+        )
+        from utils.onshape_oauth import OnshapeOAuthClient
+
+        onshape_session = get_onshape_session(app_api_key)
+        if not onshape_session:
+            raise RuntimeError(
+                "No Onshape authentication available. Please connect your Onshape account in Settings."
+            )
+
+        # Refresh token if needed
+        if is_token_expired(app_api_key):
+            # Attempt token refresh
+            try:
+                # Get OAuth client config
+                def _get_from_flask_config(key: str) -> str:
+                    if current_app and current_app.config:
+                        return current_app.config.get(key, "") or ""
+                    return ""
+
+                file_config = load_config_from_json()
+                client_id = (
+                    os.environ.get("ONSHAPE_OAUTH_CLIENT_ID")
+                    or _get_from_flask_config("ONSHAPE_OAUTH_CLIENT_ID")
+                    or file_config.get("ONSHAPE_OAUTH_CLIENT_ID", "")
+                )
+                client_secret = (
+                    os.environ.get("ONSHAPE_OAUTH_CLIENT_SECRET")
+                    or _get_from_flask_config("ONSHAPE_OAUTH_CLIENT_SECRET")
+                    or file_config.get("ONSHAPE_OAUTH_CLIENT_SECRET", "")
+                )
+                redirect_uri = (
+                    os.environ.get("ONSHAPE_OAUTH_REDIRECT_URI")
+                    or _get_from_flask_config("ONSHAPE_OAUTH_REDIRECT_URI")
+                    or file_config.get("ONSHAPE_OAUTH_REDIRECT_URI", "")
+                )
+
+                if client_id and client_secret and redirect_uri:
+                    oauth_client = OnshapeOAuthClient(
+                        client_id=client_id,
+                        client_secret=client_secret,
+                        redirect_uri=redirect_uri,
+                    )
+                    new_tokens = oauth_client.refresh_access_token(
+                        onshape_session["refresh_token"]
+                    )
+                    update_tokens(
+                        app_api_key,
+                        new_tokens["access_token"],
+                        new_tokens["refresh_token"],
+                        new_tokens["expires_in"],
+                    )
+                    # Get updated session
+                    onshape_session = get_onshape_session(app_api_key)
+                    if not onshape_session:
+                        raise RuntimeError(
+                            "No Onshape authentication available. Please connect your Onshape account in Settings."
+                        )
+            except Exception as e:
+                if current_app:
+                    current_app.logger.warning(
+                        f"Failed to refresh Onshape OAuth token: {e}"
+                    )
+                raise RuntimeError(
+                    "Onshape OAuth token expired. Please reconnect your Onshape account in Settings."
+                )
+
+        # Use OAuth token
+        return OnshapeDrawingClient(
+            oauth_token=onshape_session["access_token"],
+            base_url="https://cad.onshape.com",
+        )
+
+    except ImportError:
+        raise RuntimeError(
+            "Onshape OAuth not configured. Please contact administrator."
+        )

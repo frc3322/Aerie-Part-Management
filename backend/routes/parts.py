@@ -1030,9 +1030,28 @@ def download_part_drawing(part_id):
             drawing_path = get_drawing_path(
                 part_id, part.part_id or part.name or str(part.id)
             )
-            client = build_onshape_client()
-            drawing_path.parent.mkdir(parents=True, exist_ok=True)
-            client.download_pdf(part.onshape_url, drawing_path)
+
+            # Extract app API key for Onshape OAuth lookup
+            from utils.auth import extract_api_key_from_request
+
+            app_api_key = extract_api_key_from_request()
+
+            # Try OAuth first, fallback to static API keys
+            try:
+                client = build_onshape_client(app_api_key)
+                drawing_path.parent.mkdir(parents=True, exist_ok=True)
+                client.download_pdf(part.onshape_url, drawing_path)
+            except RuntimeError as e:
+                # No Onshape auth available
+                return (
+                    jsonify(
+                        {
+                            "error": "Onshape authentication required",
+                            "message": str(e),
+                        }
+                    ),
+                    401,
+                )
 
             # Update part file reference if it's new or refreshed
             part.file = drawing_path.name

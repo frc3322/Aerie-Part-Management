@@ -178,6 +178,42 @@ python create_config.py
 - `CORS_ORIGINS`: Allowed CORS origins (comma-separated)
 - `BASE_PATH`: Base path for subpath deployments (e.g., `/part-management-system`)
 
+### Onshape OAuth App Setup
+
+This backend supports Onshape OAuth for drawing/file integrations. To create an OAuth app in Onshape and configure it for this project:
+
+1. **Open the Onshape Developer Portal**
+   - Go to https://dev-portal.onshape.com and sign in.
+2. **Create a new OAuth application**
+   - Click **Create Application** → **OAuth Application**.
+3. **Fill out the application details**
+   - **Name**: user-facing name (include team/product), e.g., `Aerie Part Management`.
+   - **Primary format**: reverse domain identifier, e.g., `org.aerierobotics.partmanagement`.
+   - **Summary**: 10–200 character description shown in auth screens.
+   - **Type**: typically **Integrated Cloud App** for web-based Onshape integrations.
+   - **Admin Team**: optional; pick a team if you want shared management.
+4. **Set Redirect URL(s)**
+   - Use the backend OAuth callback route (match your deployment base URL):
+     - Local dev: `http://localhost:5000/api/parts/auth/onshape/callback`
+     - Production example: `https://your-domain.com/api/parts/auth/onshape/callback`
+   - You can add multiple redirect URLs and select one via the `redirect_uri` parameter during OAuth.
+5. **Set the OAuth URL (optional)**
+   - If you want the app to be launchable from the Onshape Applications page, set the **OAuth URL** to your HTTPS start URL (e.g., `https://your-domain.com/onshape/start`).
+   - This URL must start with `https://` and cannot be an IPv4 URL.
+6. **Choose permissions (scopes)**
+   - Enable only the scopes you need (typically read access to documents/drawings).
+7. **Save and copy credentials**
+   - Copy the **Client ID** and **Client Secret** from the app details page.
+8. **Add credentials to backend configuration**
+   - Store these values in `config.json` or environment variables used by the backend:
+     - `ONSHAPE_CLIENT_ID`
+     - `ONSHAPE_CLIENT_SECRET`
+     - `ONSHAPE_REDIRECT_URI` (must match one of the app’s redirect URLs)
+
+**Notes:**
+- If you change `BASE_PATH` or deploy behind a reverse proxy, update the redirect URI in Onshape to match the externally visible callback URL.
+- Keep the client secret private. Do not commit it to version control.
+
 ### Configuration Classes
 
 - `DevelopmentConfig`: Debug mode, SQLite database

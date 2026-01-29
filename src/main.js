@@ -103,6 +103,11 @@ import {
     checkAuthentication,
     hideAuthModal,
 } from "./features/auth/auth.js";
+import {
+    handleOnshapeCallback,
+    handleOnshapeConnect,
+    handleOnshapeDisconnect,
+} from "./features/onshape/onshapeAuth.js";
 import { downloadStepFile } from "./features/tabs/cnc.js";
 import {
     viewHandDrawing,
@@ -279,6 +284,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         configureMobileUI();
         switchTab(appState.currentTab);
         scheduleRefreshNotice();
+
+        // Check if this is an Onshape OAuth callback
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("onshape_connected") || params.has("onshape_error")) {
+            await handleOnshapeCallback();
+        }
     }
 
     // Add scroll and resize listeners for scrollbar effects
@@ -372,6 +383,8 @@ const actionExports = {
     hideAuthModal,
     handleAuthSubmit,
     downloadStepFile,
+    handleOnshapeConnect,
+    handleOnshapeDisconnect,
 };
 
 /**

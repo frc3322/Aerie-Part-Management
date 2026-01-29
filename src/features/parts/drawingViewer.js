@@ -139,8 +139,21 @@ async function loadDrawing(partId, useRefresh) {
         hideElement(spinner);
         hideElement(frame);
         status.textContent = "Failed to load drawing.";
-        error.textContent =
-            "Unable to load drawing. Verify the Onshape link and try again.";
+
+        // Check if this is an Onshape authentication error
+        const errorMessage = err?.message || String(err);
+        if (errorMessage.includes("Onshape authentication required")) {
+            error.textContent =
+                "Connect your Onshape account in Settings to download drawings.";
+            showInfoNotification(
+                "Onshape Authentication Required",
+                "Connect your Onshape account in Settings to download drawings using your personal access."
+            );
+        } else {
+            error.textContent =
+                "Unable to load drawing. Verify the Onshape link and try again.";
+        }
+
         error.classList.add("flex", "items-center", "justify-center");
         showElement(error);
     } finally {

@@ -16,7 +16,7 @@ const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
 /**
  * Open the settings modal
  */
-export function openSettingsModal() {
+export async function openSettingsModal() {
     // Initialize checkbox states
     const disable3JSCheckbox = document.getElementById("check-disable-3js");
     if (disable3JSCheckbox) {
@@ -32,6 +32,14 @@ export function openSettingsModal() {
             checkbox.checked = Boolean(tabVisibility[tab]);
         }
     });
+
+    // Check Onshape connection status
+    try {
+        const { checkOnshapeStatus } = await import("../onshape/onshapeAuth.js");
+        await checkOnshapeStatus();
+    } catch (error) {
+        console.error("Error checking Onshape status:", error);
+    }
 
     openManagedModal("settings-modal", {
         onOpen: hideActionIconKey,

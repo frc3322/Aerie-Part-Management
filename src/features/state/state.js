@@ -46,9 +46,12 @@ export const appState = {
         cnc: { key: null, direction: 1 },
         misc: { key: null, direction: 1 },
     },
-    // Authentication state
+    // Authentication state (app login)
     apiKey: null,
     isAuthenticated: false,
+    // Onshape OAuth state (optional - separate from app auth)
+    onshapeConnected: false,
+    onshapeUser: null, // { id, email, name }
     // Loading states
     isLoading: false,
     loadingTab: null,

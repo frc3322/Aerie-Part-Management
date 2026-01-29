@@ -1,15 +1,17 @@
 """Flask application factory and initialization."""
 
 import os
-from flask import Flask, send_from_directory  # type: ignore
-from flask_cors import CORS  # type: ignore
-from sqlalchemy import inspect, text  # type: ignore
-from sqlalchemy.exc import OperationalError  # type: ignore
-from flask_sqlalchemy import SQLAlchemy  # type: ignore
-from config import config  # type: ignore
-from models import db  # type: ignore
-from routes import parts_bp  # type: ignore
-from utils.logging import setup_flask_logging  # type: ignore
+from flask import Flask, send_from_directory
+from flask_cors import CORS
+from sqlalchemy import inspect, text
+from sqlalchemy.exc import OperationalError
+from flask_sqlalchemy import SQLAlchemy
+from config import config
+from models import db
+from models.onshape_session import OnshapeSession
+from routes import parts_bp
+from routes.auth import auth_bp
+from utils.logging import setup_flask_logging
 
 
 def create_app(config_name: str = "default") -> Flask:
@@ -47,6 +49,7 @@ def create_app(config_name: str = "default") -> Flask:
     # Register blueprints with base path prefix if configured
     api_url_prefix = f"{base_path}/api" if base_path else "/api"
     app.register_blueprint(parts_bp, url_prefix=api_url_prefix + "/parts")
+    app.register_blueprint(auth_bp, url_prefix=api_url_prefix + "/auth")
 
     # Health check endpoint
     @app.route("/health")
@@ -112,7 +115,7 @@ def create_app(config_name: str = "default") -> Flask:
 
 def _init_sample_data() -> None:
     """Initialize database with sample data for development."""
-    from models.part import Part  # type: ignore
+    from models.part import Part
     from datetime import datetime, timedelta, timezone
 
     # Check if data already exists
@@ -194,6 +197,7 @@ def _ensure_schema(db_instance: SQLAlchemy) -> None:
     inspector = inspect(engine)
 
     table_exists = inspector.has_table("parts")
+    sessions_table_exists = inspector.has_table("onshape_sessions")
     if not table_exists:
         try:
             db_instance.create_all()
@@ -203,6 +207,14 @@ def _ensure_schema(db_instance: SQLAlchemy) -> None:
                 raise
         inspector = inspect(engine)
         table_exists = inspector.has_table("parts")
+
+    if not sessions_table_exists:
+        try:
+            OnshapeSession.__table__.create(bind=engine, checkfirst=True)
+        except OperationalError as error:
+            error_text = str(error).lower()
+            if "already exists" not in error_text:
+                raise
 
     if not table_exists:
         return

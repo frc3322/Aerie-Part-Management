@@ -3,7 +3,7 @@
     id="settings-modal"
     class="fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md"
 >
-    <div class="neumorphic-card p-8 w-full max-w-sm relative animate-scale-in">
+    <div class="neumorphic-card settings-modal-card p-8 w-full max-w-sm relative animate-scale-in">
         <button
             data-action="closeSettingsModal"
             class="absolute top-4 right-4 neumorphic-btn w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400"
@@ -20,7 +20,7 @@
             <h2 class="text-2xl font-bold text-blue-400">Settings</h2>
         </div>
 
-        <div class="space-y-6">
+        <div class="settings-modal-body space-y-6">
             <!-- Visible Tabs Section -->
             <div>
                 <div class="flex items-center gap-2 mb-4">
@@ -141,6 +141,72 @@
                             />
                         </div>
                     </label>
+                </div>
+            </div>
+
+            <!-- Onshape Integration Section -->
+            <div class="pt-4 border-t border-blue-900/30">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-cube text-blue-400"></i>
+                    <h3 class="text-lg font-bold text-gray-300">
+                        Onshape Integration
+                    </h3>
+                </div>
+
+                <div id="onshape-status" class="mb-3">
+                    <!-- Populated dynamically by checkOnshapeStatus() -->
+                </div>
+
+                <div id="onshape-not-connected" class="hidden">
+                    <p class="text-gray-400 text-sm mb-3">
+                        Connect your Onshape account to download drawings using
+                        your personal access.
+                    </p>
+                    <button
+                        id="connect-onshape-btn"
+                        class="w-full neumorphic-btn px-6 py-3 rounded-lg text-blue-400 font-medium flex items-center justify-center gap-2 hover:bg-blue-500/10 transition"
+                        data-action="handleOnshapeConnect"
+                    >
+                        <i class="fa-solid fa-link"></i>
+                        <span>Connect to Onshape</span>
+                    </button>
+                </div>
+
+                <div id="onshape-connected" class="hidden">
+                    <div class="neumorphic-card p-4 mb-3 bg-gray-800/30">
+                        <div
+                            class="flex items-center justify-between gap-4"
+                        >
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs text-gray-500 mb-1">
+                                    Connected as:
+                                </p>
+                                <p
+                                    class="font-medium text-blue-400 truncate"
+                                    id="onshape-user-name"
+                                >
+                                    -
+                                </p>
+                                <p
+                                    class="text-xs text-gray-500 truncate"
+                                    id="onshape-user-email"
+                                >
+                                    -
+                                </p>
+                            </div>
+                            <i
+                                class="fa-solid fa-check-circle text-green-400 text-2xl flex-shrink-0"
+                            ></i>
+                        </div>
+                    </div>
+                    <button
+                        id="disconnect-onshape-btn"
+                        class="w-full neumorphic-btn px-6 py-3 rounded-lg text-red-400 font-medium flex items-center justify-center gap-2 hover:bg-red-500/10 transition"
+                        data-action="handleOnshapeDisconnect"
+                    >
+                        <i class="fa-solid fa-unlink"></i>
+                        <span>Disconnect</span>
+                    </button>
                 </div>
             </div>
 

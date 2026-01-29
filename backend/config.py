@@ -156,9 +156,12 @@ class Config:
     # Logging settings
     LOG_LEVEL = get_config_value("LOG_LEVEL", "WARNING")
 
-    # Onshape settings
-    ONSHAPE_ACCESS_KEY = get_config_value("ONSHAPE_ACCESS_KEY", "")
-    ONSHAPE_SECRET_KEY = get_config_value("ONSHAPE_SECRET_KEY", "")
+    # Onshape OAuth settings (required for drawing downloads)
+    ONSHAPE_OAUTH_CLIENT_ID = get_config_value("ONSHAPE_OAUTH_CLIENT_ID", "")
+    ONSHAPE_OAUTH_CLIENT_SECRET = get_config_value("ONSHAPE_OAUTH_CLIENT_SECRET", "")
+    ONSHAPE_OAUTH_REDIRECT_URI = get_config_value("ONSHAPE_OAUTH_REDIRECT_URI", "")
+    ONSHAPE_OAUTH_BASE_URL = get_config_value("ONSHAPE_OAUTH_BASE_URL", "https://oauth.onshape.com")
+    ONSHAPE_API_BASE_URL = get_config_value("ONSHAPE_API_BASE_URL", "https://cad.onshape.com")
 
 
 class ProductionConfig(Config):

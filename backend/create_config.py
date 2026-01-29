@@ -29,9 +29,12 @@ def create_default_config() -> Dict[str, Any]:
         "BASE_PATH": "",
         # Logging settings
         "LOG_LEVEL": "WARNING",  # Default to only log startup and errors
-        # Onshape settings
-        "ONSHAPE_ACCESS_KEY": "",
-        "ONSHAPE_SECRET_KEY": "",
+        # Onshape OAuth settings
+        "ONSHAPE_OAUTH_CLIENT_ID": "",
+        "ONSHAPE_OAUTH_CLIENT_SECRET": "",
+        "ONSHAPE_OAUTH_REDIRECT_URI": "http://localhost:8000/api/auth/onshape/callback",
+        "ONSHAPE_OAUTH_BASE_URL": "https://oauth.onshape.com",
+        "ONSHAPE_API_BASE_URL": "https://cad.onshape.com",
     }
 
 
@@ -222,16 +225,22 @@ def main():
         "Secret key for Flask sessions and security (should be random and kept secret)",
     )
 
-    config["ONSHAPE_ACCESS_KEY"] = prompt_for_value(
-        "ONSHAPE_ACCESS_KEY",
-        config.get("ONSHAPE_ACCESS_KEY", ""),
-        "Onshape access key for drawing downloads",
+    config["ONSHAPE_OAUTH_CLIENT_ID"] = prompt_for_value(
+        "ONSHAPE_OAUTH_CLIENT_ID",
+        config.get("ONSHAPE_OAUTH_CLIENT_ID", ""),
+        "Onshape OAuth Client ID (from https://dev-portal.onshape.com/)",
     )
 
-    config["ONSHAPE_SECRET_KEY"] = prompt_for_value(
-        "ONSHAPE_SECRET_KEY",
-        config.get("ONSHAPE_SECRET_KEY", ""),
-        "Onshape secret key for drawing downloads",
+    config["ONSHAPE_OAUTH_CLIENT_SECRET"] = prompt_for_value(
+        "ONSHAPE_OAUTH_CLIENT_SECRET",
+        config.get("ONSHAPE_OAUTH_CLIENT_SECRET", ""),
+        "Onshape OAuth Client Secret (from https://dev-portal.onshape.com/)",
+    )
+
+    config["ONSHAPE_OAUTH_REDIRECT_URI"] = prompt_for_value(
+        "ONSHAPE_OAUTH_REDIRECT_URI",
+        config.get("ONSHAPE_OAUTH_REDIRECT_URI", "http://localhost:8000/api/auth/onshape/callback"),
+        "Onshape OAuth Redirect URI (must match your OAuth app configuration)",
     )
 
     # Ask if user wants to use defaults for remaining settings

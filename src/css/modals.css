@@ -125,7 +125,13 @@
 /* Modal Scrollbar Fixes */
 .neumorphic-card {
     scrollbar-gutter: auto;
-    overflow-y: auto;
+}
+
+.settings-modal-card {
+    max-height: min(95vh, calc(100vh - 2rem));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .neumorphic-card::-webkit-scrollbar {
@@ -139,4 +145,12 @@
 .neumorphic-card::-webkit-scrollbar-thumb {
     background: #4a5568;
     border-radius: 10px;
+}
+
+.settings-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: calc(95vh - 12rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
 }

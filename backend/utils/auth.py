@@ -1,6 +1,6 @@
 """Authentication utilities for the Part Management System."""
 
-from flask import request, jsonify, current_app  # type: ignore
+from flask import request, jsonify, current_app
 from functools import wraps
 
 
@@ -22,13 +22,6 @@ def require_secret_key(f):
     def decorated_function(*args, **kwargs):
         secret_key = current_app.config["SECRET_KEY"]
         provided_key = _get_api_key_from_request()
-
-        # Print and log the provided key and correct password for debugging
-        print(f"[AUTH_CHECK] Provided API Key: {provided_key}")
-        print(f"[AUTH_CHECK] Correct Password: {secret_key}")
-        current_app.logger.info(
-            f"Auth check - Provided Key: {provided_key}, Correct Key: {secret_key}"
-        )
 
         if not provided_key:
             return jsonify(
@@ -77,3 +70,15 @@ def _get_api_key_from_request():
             pass
 
     return None
+
+
+def extract_api_key_from_request():
+    """
+    Public helper to extract app API key from current request.
+
+    Used by routes that need to look up Onshape OAuth sessions.
+
+    Returns:
+        str or None: The API key if found, None otherwise
+    """
+    return _get_api_key_from_request()

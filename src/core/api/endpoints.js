@@ -5,6 +5,15 @@
 
 // Base endpoints
 export const ENDPOINTS = {
+    // Authentication endpoints
+    AUTH: {
+        CHECK: "/parts/auth/check", // App auth check (existing)
+        ONSHAPE_CONNECT: "/auth/onshape/connect",
+        ONSHAPE_CALLBACK: "/auth/onshape/callback",
+        ONSHAPE_STATUS: "/auth/onshape/status",
+        ONSHAPE_DISCONNECT: "/auth/onshape/disconnect",
+    },
+
     // Parts endpoints
     PARTS: {
         LIST: "/parts/",
