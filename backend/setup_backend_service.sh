@@ -6,6 +6,10 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+printf "Updating package lists and upgrading installed packages...\n"
+apt-get update
+apt-get upgrade -y
+
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 backend_dir="$project_root/backend"
 venv_path="${VENV_PATH:-$project_root/.venv}"
@@ -18,8 +22,12 @@ install_uv() {
     return
   fi
   # Install uv into a global location so the systemd user can read it.
-  UV_INSTALL_DIR=/usr/local/bin curl -LsSf https://astral.sh/uv/install.sh | sh
-  uv_bin="${UV_BIN:-$(command -v uv || true)}"
+  curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+  if [[ -x /usr/local/bin/uv ]]; then
+    uv_bin="/usr/local/bin/uv"
+  else
+    uv_bin="${UV_BIN:-$(command -v uv || true)}"
+  fi
   if [[ -z "$uv_bin" ]]; then
     printf "uv installation failed. Install uv and rerun.\n" >&2
     exit 1
