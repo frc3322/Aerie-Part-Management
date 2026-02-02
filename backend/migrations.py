@@ -127,6 +127,7 @@ class DatabaseMigrator:
         migrations = [
             ("001_add_material_thickness", self._migration_001_add_material_thickness),
             ("002_add_uuid_field", self._migration_002_add_uuid_field),
+            ("003_add_misc_info", self._migration_003_add_misc_info),
         ]
 
         for name, func in migrations:
@@ -197,6 +198,29 @@ class DatabaseMigrator:
             )
         else:
             print("[MIGRATION] ✓ uuid column already exists, skipping")
+
+    def _migration_003_add_misc_info(self, conn: sqlite3.Connection) -> None:
+        """Add misc_info column to parts table.
+
+        Args:
+            conn: Database connection
+        """
+        cursor = conn.cursor()
+
+        # Check if column already exists
+        cursor.execute("PRAGMA table_info(parts)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "misc_info" not in columns:
+            print("[MIGRATION] Adding misc_info column to parts table")
+            # In SQLite, JSON columns are stored as TEXT
+            cursor.execute("""
+                ALTER TABLE parts
+                ADD COLUMN misc_info JSON
+            """)
+            print("[MIGRATION] ✓ misc_info column added successfully")
+        else:
+            print("[MIGRATION] ✓ misc_info column already exists, skipping")
 
     def run_migrations(self, backup: bool = True) -> bool:
         """Run all pending migrations.

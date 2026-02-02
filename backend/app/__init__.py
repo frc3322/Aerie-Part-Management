@@ -3,13 +3,13 @@
 import os
 from flask import Flask, send_from_directory  # type: ignore
 from flask_cors import CORS  # type: ignore
-from sqlalchemy import inspect, text  # type: ignore
+from sqlalchemy import inspect  # type: ignore
 from sqlalchemy.exc import OperationalError  # type: ignore
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
-from config import config  # type: ignore
-from models import db  # type: ignore
-from routes import parts_bp  # type: ignore
-from utils.logging import setup_flask_logging  # type: ignore
+from config import config
+from models import db
+from routes import parts_bp
+from utils.logging import setup_flask_logging
 
 
 def create_app(config_name: str = "default") -> Flask:
@@ -118,7 +118,7 @@ def create_app(config_name: str = "default") -> Flask:
 
 def _init_sample_data() -> None:
     """Initialize database with sample data for development."""
-    from models.part import Part  # type: ignore
+    from models.part import Part
     from datetime import datetime, timedelta, timezone
 
     # Check if data already exists
@@ -213,8 +213,5 @@ def _ensure_schema(db_instance: SQLAlchemy) -> None:
     if not table_exists:
         return
 
-    columns = {column["name"] for column in inspector.get_columns("parts")}
-    if "misc_info" not in columns:
-        with engine.connect() as connection:
-            connection.execute(text("ALTER TABLE parts ADD COLUMN misc_info JSON"))
-            connection.commit()
+    # Lightweight migrations have been moved to backend/migrations.py
+    # to ensure they are properly backed up before execution.
