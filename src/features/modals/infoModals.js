@@ -293,6 +293,9 @@ export function showPartInfo(part) {
         part.category
             ? `<div><span class="text-gray-400 text-sm">Category:</span> <span class="text-blue-300 font-semibold">${part.category}</span></div>`
             : "",
+        (part.materialThickness || part.material_thickness)
+            ? `<div><span class="text-gray-400 text-sm">Thickness:</span> <span class="text-blue-300 font-semibold">${part.materialThickness || part.material_thickness}</span></div>`
+            : "",
         part.notes
             ? `<div><span class="text-gray-400 text-sm">Notes:</span> <span class="text-blue-300 font-semibold">${part.notes}</span></div>`
             : "",

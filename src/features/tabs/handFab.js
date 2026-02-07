@@ -82,6 +82,9 @@ export function createHandFabRow(part, index) {
         <td class="p-3 text-sm text-blue-300 font-semibold">${
             part.material || "-"
         }</td>
+        <td class="p-3 text-sm text-blue-300 font-semibold">${
+            part.materialThickness || "-"
+        }</td>
         <td class="p-3 text-sm text-blue-200 font-semibold">${part.amount}</td>
         <td class="p-3">
             <div class="flex items-center">
@@ -253,7 +256,7 @@ export function renderHandFab() {
             mobileList.innerHTML = `<div class="mobile-card text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-purple-300 mr-2"></i> Loading hand fabrication parts...</div>`;
         } else {
             const row = document.createElement("tr");
-            row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
+            row.innerHTML = `<td colspan="10" class="text-center py-8 text-gray-500"><div class="flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-purple-400 mr-2"></i> Loading hand fabrication parts...</div></td>`;
             tbody.appendChild(row);
         }
         return;
@@ -285,7 +288,7 @@ export function renderHandFab() {
 
     if (filtered.length === 0) {
         const row = document.createElement("tr");
-        row.innerHTML = `<td colspan="9" class="text-center py-8 text-gray-500">${
+        row.innerHTML = `<td colspan="10" class="text-center py-8 text-gray-500">${
             appState.searchQuery ? "No results found." : "No Hand Fab parts."
         }</td>`;
         tbody.appendChild(row);
