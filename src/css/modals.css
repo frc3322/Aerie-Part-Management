@@ -140,3 +140,36 @@
     background: #4a5568;
     border-radius: 10px;
 }
+
+/* Review Modal Split Panel */
+#review-misc-modal .neumorphic-card {
+    max-width: 56rem;
+}
+
+/* Neumorphic info blocks for review modal */
+.neumorphic-info-block {
+    background: var(--surface-primary);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 3px 3px 6px #1a1d24, inset -3px -3px 6px #2c313c;
+    transition: box-shadow 200ms ease;
+}
+
+.neumorphic-info-block:hover {
+    box-shadow: inset 4px 4px 8px #1a1d24, inset -4px -4px 8px #2c313c;
+}
+
+@media (max-width: 768px) {
+    #review-misc-modal .neumorphic-card > div > .flex {
+        flex-direction: column;
+    }
+    
+    #review-misc-modal .neumorphic-card > div > .flex > .w-80 {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(55, 65, 81, 0.5);
+        padding-left: 0;
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+}

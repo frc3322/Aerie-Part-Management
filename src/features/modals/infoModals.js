@@ -11,12 +11,9 @@ const loadRenderCNC = async () => {
     return renderCNC;
 };
 import {
-    openModal as openManagedModal,
-    closeModal as closeManagedModal,
     setModalLoading,
 } from "../../core/dom/modalManager.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
-import { appState } from "../state/state.js";
 import { showErrorNotification } from "../../core/dom/notificationManager.js";
 
 const MODAL_IDS = {
@@ -34,29 +31,40 @@ function ensureReviewModal() {
     wrapper.className =
         "fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md";
     wrapper.innerHTML = `
-    <div class="neumorphic-card p-6 w-full max-w-lg relative animate-scale-in max-h-[90vh] overflow-y-auto">
+    <div class="neumorphic-card p-6 w-full max-w-4xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
       <button id="review-misc-close" class="absolute top-4 right-4 text-gray-400 hover:text-red-400">
         <i class="fa-solid fa-times text-xl"></i>
       </button>
-      <h2 class="text-2xl font-bold text-blue-400 mb-2">Review Details</h2>
-      <p class="text-gray-400 mb-4 text-sm">Capture reviewer and any misc fields (text or number). Leave blank to skip.</p>
-      <form id="review-misc-form" class="space-y-4">
-        <div>
-          <label class="block text-sm font-bold mb-2 text-gray-400">Reviewer</label>
-          <input type="text" id="reviewer-input" class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="e.g., Alex" />
+      <div class="flex gap-6">
+        <!-- Left Panel: Part Information -->
+        <div class="flex-1 min-w-0">
+          <h2 class="text-2xl font-bold text-blue-400 mb-4">Part Information</h2>
+          <div id="review-part-info" class="space-y-3 text-gray-300"></div>
         </div>
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-sm font-bold text-gray-400">Misc fields</label>
-            <button type="button" id="add-misc-field" class="text-blue-400 hover:text-blue-300 text-sm"><i class="fa-solid fa-plus mr-1"></i>Add field</button>
-          </div>
-          <div id="misc-fields-container" class="space-y-3"></div>
+        
+        <!-- Right Panel: Review Form -->
+        <div class="w-80 shrink-0 border-l border-gray-700 pl-6">
+          <h2 class="text-2xl font-bold text-green-400 mb-2">Review Details</h2>
+          <p class="text-gray-400 mb-4 text-sm">Capture reviewer and any misc fields (text or number). Leave blank to skip.</p>
+          <form id="review-misc-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold mb-2 text-gray-400">Reviewer</label>
+              <input type="text" id="reviewer-input" class="neumorphic-input w-full p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="e.g., Alex" />
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm font-bold text-gray-400">Misc fields</label>
+                <button type="button" id="add-misc-field" class="text-blue-400 hover:text-blue-300 text-sm"><i class="fa-solid fa-plus mr-1"></i>Add field</button>
+              </div>
+              <div id="misc-fields-container" class="space-y-3"></div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+              <button type="button" id="review-misc-cancel" class="text-gray-400 hover:text-white px-4 py-2">Cancel</button>
+              <button type="submit" class="neumorphic-btn px-6 py-2 rounded-lg text-green-400 font-bold">Save & Move</button>
+            </div>
+          </form>
         </div>
-        <div class="flex justify-end gap-3">
-          <button type="button" id="review-misc-cancel" class="text-gray-400 hover:text-white px-4 py-2">Cancel</button>
-          <button type="submit" class="neumorphic-btn px-6 py-2 rounded-lg text-green-400 font-bold">Save & Move</button>
-        </div>
-      </form>
+      </div>
     </div>
   `;
 
@@ -94,12 +102,145 @@ function addMiscFieldRow() {
     container.appendChild(row);
 }
 
+/**
+ * Escapes HTML special characters to prevent XSS attacks.
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string safe for innerHTML insertion
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    const strType = typeof str;
+    if (strType === "number" || strType === "boolean") return String(str);
+    if (strType !== "string") return "";
+    return str
+        .replace(/&/g, "\x26amp;")
+        .replace(/</g, "\x26lt;")
+        .replace(/>/g, "\x26gt;")
+        .replace(/"/g, "\x26quot;")
+        .replace(/'/g, "\x26#039;");
+}
+
+/**
+ * Validates that a URL uses only http or https protocol.
+ * @param {string} url - The URL to validate
+ * @returns {boolean} True if the URL is a valid http/https URL
+ */
+function isValidUrl(url) {
+    if (!url || typeof url !== "string") return false;
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+        return false;
+    }
+}
+
+function renderReviewPartInfo(part) {
+    const infoContainer = document.getElementById("review-part-info");
+    if (!infoContainer || !part) return;
+
+    const isCNC = part.type === "cnc";
+    const isMisc = part.type === "misc";
+    
+    let typeClass = "bg-purple-900/50 text-purple-200 border border-purple-500/20";
+    let typeText = "HAND FAB";
+    if (isCNC) {
+        typeClass = "bg-blue-900/50 text-blue-200 border border-blue-500/20";
+        typeText = "CNC";
+    } else if (isMisc) {
+        typeClass = "bg-teal-900/50 text-teal-200 border border-teal-500/20";
+        typeText = "MISC";
+    }
+
+    // Escape all part properties to prevent XSS
+    const escapedName = escapeHtml(part.name || "Unnamed");
+    const escapedSubsystem = escapeHtml(part.subsystem || "Not set");
+    const escapedMaterial = escapeHtml(part.material || "Not set");
+    const escapedAmount = escapeHtml(part.amount || 1);
+    const escapedStatus = escapeHtml(part.status || "Review");
+    const escapedMaterialThickness = escapeHtml(part.materialThickness);
+    const escapedFile = escapeHtml(part.file);
+    const escapedNotes = escapeHtml(part.notes);
+
+    // Validate URL and use safe placeholder if invalid
+    const safeUrl = isValidUrl(part.onshapeUrl) ? escapeHtml(part.onshapeUrl) : null;
+
+    infoContainer.innerHTML = `
+        <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1.5 rounded-lg text-sm font-bold ${typeClass}">
+                ${typeText}
+            </span>
+            ${safeUrl ? `
+                <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="neumorphic-btn px-3 py-1.5 text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 rounded-lg">
+                    <i class="fa-solid fa-cube"></i> View CAD
+                </a>
+            ` : ''}
+        </div>
+        
+        <div class="space-y-3">
+            <div class="neumorphic-info-block p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Part Name</div>
+                <div class="text-lg font-bold text-blue-100">${escapedName}</div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Subsystem</div>
+                    <div class="text-sm text-blue-300 font-semibold">${escapedSubsystem}</div>
+                </div>
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Material</div>
+                    <div class="text-sm text-blue-300 font-semibold">${escapedMaterial}</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Amount</div>
+                    <div class="text-sm text-blue-300 font-semibold">${escapedAmount}</div>
+                </div>
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</div>
+                    <div class="text-sm text-blue-300 font-semibold">${escapedStatus}</div>
+                </div>
+            </div>
+            
+            ${escapedMaterialThickness ? `
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Material Thickness</div>
+                    <div class="text-sm text-blue-300 font-semibold">${escapedMaterialThickness}</div>
+                </div>
+            ` : ''}
+            
+            ${escapedFile ? `
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">File</div>
+                    <div class="text-sm text-blue-300 font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-cube text-gray-500"></i> ${escapedFile}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${escapedNotes ? `
+                <div class="neumorphic-info-block p-3">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Notes</div>
+                    <div class="text-sm text-gray-300">${escapedNotes}</div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
 function openReviewModal(context) {
     ensureReviewModal();
     reviewContext = context;
     const modal = document.getElementById(MODAL_IDS.review);
     const reviewerInput = document.getElementById("reviewer-input");
     const container = document.getElementById("misc-fields-container");
+    
+    // Render part information in the left panel
+    renderReviewPartInfo(context?.part);
+    
     if (modal && reviewerInput && container) {
         modal.classList.remove("hidden");
         modal.classList.add("flex");
