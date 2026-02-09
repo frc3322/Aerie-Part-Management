@@ -1,0 +1,5 @@
+# Ignore all backup files in this directory
+*.bak
+
+# But keep the .gitignore file
+!.gitignore

@@ -9,6 +9,11 @@ import argparse
 import json
 from typing import Optional, Any
 from utils.logging import setup_deployment_logging
+from utils.backup import (
+    initialize_backup_scheduler,
+    get_backup_status,
+    get_backup_directory,
+)
 from migrations import run_migrations_from_config
 
 # Constants for repeated values
@@ -205,7 +210,9 @@ def run_database_migrations(config: dict) -> bool:
     database_url = get_config_value(config, "DATABASE_URL", DEFAULT_DATABASE_URL)
 
     # Resolve relative SQLite paths to absolute
-    if database_url.startswith("sqlite:///") and not database_url.startswith("sqlite:////"):
+    if database_url.startswith("sqlite:///") and not database_url.startswith(
+        "sqlite:////"
+    ):
         db_filename = database_url.replace("sqlite:///", "")
         if not os.path.isabs(db_filename):
             backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -250,6 +257,52 @@ def build_frontend(config: dict) -> bool:
 
     # Build the frontend
     return run_command("npm run build", "Building frontend with Vite", env)
+
+
+def start_backup_scheduler(config: dict) -> None:
+    """Start the database backup scheduler for production modes.
+
+    Args:
+        config: Configuration dictionary
+    """
+    database_url = get_config_value(config, "DATABASE_URL", DEFAULT_DATABASE_URL)
+
+    # Only start backup scheduler for SQLite databases
+    if not database_url.startswith("sqlite:///"):
+        logger.info("Backup scheduler skipped: Not a SQLite database")
+        print("[DEPLOY] Backup scheduler skipped: Not a SQLite database")
+        return
+
+    # Get backup directory
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    backup_dir = get_backup_directory(backend_dir)
+
+    # Get retention days from config or use default
+    retention_days = (
+        parse_int(get_config_value(config, "BACKUP_RETENTION_DAYS", 10)) or 10
+    )
+
+    logger.info(f"Starting backup scheduler (retention: {retention_days} days)")
+    print("[DEPLOY] Starting backup scheduler")
+    print(f"   Backup directory: {backup_dir}")
+    print(f"   Retention: {retention_days} days")
+
+    try:
+        initialize_backup_scheduler(
+            database_url=database_url,
+            backup_dir=backup_dir,
+            retention_days=retention_days,
+        )
+
+        # Show current backup status
+        status = get_backup_status(backup_dir)
+        if status["count"] > 0:
+            print(
+                f"   Existing backups: {status['count']} ({status['total_size'] / 1024 / 1024:.1f} MB)"
+            )
+    except Exception as e:
+        logger.error(f"Failed to start backup scheduler: {e}")
+        print(f"[DEPLOY] Warning: Failed to start backup scheduler: {e}")
 
 
 def run_development() -> bool:
@@ -496,6 +549,10 @@ def main():
         logger.error("Failed to build frontend")
         print("ERROR: Failed to build frontend")
         sys.exit(1)
+
+    # Start backup scheduler for production modes
+    if args.mode.startswith("prod"):
+        start_backup_scheduler(config)
 
     # Execute the requested mode
     success = False
