@@ -1,0 +1,93 @@
+<!-- Info Modal -->
+<div
+    id="info-modal"
+    class="fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="info-modal-title"
+>
+    <div class="neumorphic-card p-8 w-full max-w-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
+        <button
+            data-action="closeInfoModal"
+            class="absolute top-4 right-4 neumorphic-btn w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400"
+            aria-label="Close"
+        >
+            <i class="fa-solid fa-times" aria-hidden="true"></i>
+        </button>
+
+        <div class="text-center mb-6">
+            <div
+                class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center"
+            >
+                <i class="fa-solid fa-chart-pie text-xl text-blue-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-blue-400">System Statistics</h2>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="neumorphic-input rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-400" id="stat-completed-count">0</div>
+                    <div class="text-sm text-gray-400 mt-1">Completed Parts</div>
+                </div>
+                <div class="neumorphic-input rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-yellow-400" id="stat-in-progress-count">0</div>
+                    <div class="text-sm text-gray-400 mt-1">In Progress</div>
+                </div>
+                <div class="neumorphic-input rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-400" id="stat-total-count">0</div>
+                    <div class="text-sm text-gray-400 mt-1">Total Parts</div>
+                </div>
+                <div class="neumorphic-input rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-green-400" id="stat-avg-time">-</div>
+                    <div class="text-sm text-gray-400 mt-1">Avg. Completion Time</div>
+                </div>
+            </div>
+
+            <!-- Parts by Category -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-300 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-blue-400"></i>
+                    Parts by Category
+                </h3>
+                <div class="space-y-3" id="category-breakdown">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Completion Time Distribution Chart -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-300 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-blue-400"></i>
+                    Completion Time Distribution
+                </h3>
+                <div class="neumorphic-input rounded-xl p-4">
+                    <canvas id="completion-time-chart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Parts by Type -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-300 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-gears text-blue-400"></i>
+                    Parts by Type
+                </h3>
+                <div class="grid grid-cols-3 gap-3" id="type-breakdown">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Top Contributors -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-300 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-yellow-400"></i>
+                    Top Contributors
+                </h3>
+                <div class="space-y-2" id="top-contributors">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -71,8 +71,13 @@ import {
     closeModal,
     handleCategoryChange,
     handleMaterialChange,
+    handleSubsystemChange,
     updateFileName,
 } from "./features/modals/modals.js";
+import {
+    openInfoModal,
+    closeInfoModal,
+} from "./features/modals/infoModal.js";
 import {
     markCompleted,
     markMiscCompleted,
@@ -334,12 +339,15 @@ const actionExports = {
     closeSettingsModal,
     toggleTabVisibility,
     toggleDisable3JS,
+    openInfoModal,
+    closeInfoModal,
     handleSearch,
     switchTab,
     openAddModal,
     closeModal,
     handleCategoryChange,
     handleMaterialChange,
+    handleSubsystemChange,
     updateFileName,
     handleFormSubmit,
     markCompleted,

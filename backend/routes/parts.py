@@ -519,6 +519,8 @@ def complete_part(part_id):
         part.status = "Completed"
         part.category = "completed"
         part.misc_info = _merge_misc_info(part.misc_info, incoming_misc)
+        part.misc_info = part.misc_info or {}
+        part.misc_info["completed_at"] = datetime.now(timezone.utc).isoformat()
 
         db.session.commit()
 
@@ -657,6 +659,126 @@ def get_stats():
     except Exception as e:
         current_app.logger.exception(f"Error getting stats")
         return jsonify({"error": "Failed to retrieve statistics"}), 500
+
+
+@parts_bp.route("/stats/detailed", methods=["GET"])
+@require_secret_key
+def get_detailed_stats():
+    """Get detailed statistics about parts in the system.
+
+    Returns:
+        JSON: Detailed statistics including completion times, type breakdown, and contributors
+    """
+    try:
+        # Get all completed parts
+        completed_parts = Part.query.filter_by(category="completed").all()
+
+        # Calculate total parts with amounts
+        all_parts = Part.query.all()
+        total_parts_count = sum(part.amount for part in all_parts)
+        completed_parts_count = sum(part.amount for part in completed_parts)
+
+        # Get in-progress parts count
+        in_progress_parts = Part.query.filter_by(status=STATUS_IN_PROGRESS).all()
+        in_progress_count = sum(part.amount for part in in_progress_parts)
+
+        # Calculate completion times (prefer misc_info.completed_at over updated_at)
+        completion_times = []
+        for part in completed_parts:
+            completed_at = None
+            misc = part.misc_info or {}
+            raw = misc.get("completed_at")
+            if raw:
+                try:
+                    iso = raw.replace("Z", "+00:00") if isinstance(raw, str) else raw
+                    completed_at = datetime.fromisoformat(iso)
+                except (ValueError, TypeError):
+                    pass
+            if completed_at is None:
+                completed_at = part.updated_at
+            if part.claimed_date and completed_at:
+                time_diff = completed_at - part.claimed_date
+                hours = time_diff.total_seconds() / 3600
+                # Add multiple entries for parts with amount > 1
+                for _ in range(part.amount):
+                    completion_times.append(hours)
+
+        # Calculate average completion time
+        avg_completion_time = None
+        if completion_times:
+            avg_completion_time = sum(completion_times) / len(completion_times)
+
+        # Group completion times into buckets for pie chart
+        time_buckets = {
+            "< 1 hour": 0,
+            "1-4 hours": 0,
+            "4-8 hours": 0,
+            "8-24 hours": 0,
+            "> 24 hours": 0,
+        }
+
+        for hours in completion_times:
+            if hours < 1:
+                time_buckets["< 1 hour"] += 1
+            elif hours < 4:
+                time_buckets["1-4 hours"] += 1
+            elif hours < 8:
+                time_buckets["4-8 hours"] += 1
+            elif hours < 24:
+                time_buckets["8-24 hours"] += 1
+            else:
+                time_buckets["> 24 hours"] += 1
+
+        # Get counts by type
+        type_counts = {
+            "cnc": 0,
+            "hand": 0,
+            "misc": 0,
+        }
+
+        for part in all_parts:
+            if part.type in type_counts:
+                type_counts[part.type] += part.amount
+
+        # Get counts by category with amounts
+        category_counts = {
+            "review": sum(p.amount for p in Part.query.filter_by(category="review").all()),
+            "cnc": sum(p.amount for p in Part.query.filter_by(category="cnc").all()),
+            "hand": sum(p.amount for p in Part.query.filter_by(category="hand").all()),
+            "misc": sum(p.amount for p in Part.query.filter_by(category="misc").all()),
+            "completed": completed_parts_count,
+        }
+
+        # Get top contributors based on completed parts
+        contributor_counts = {}
+        for part in completed_parts:
+            if part.assigned:
+                contributor_counts[part.assigned] = contributor_counts.get(part.assigned, 0) + part.amount
+
+        top_contributors = sorted(
+            contributor_counts.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:5]  # Top 5 contributors
+
+        return jsonify(
+            {
+                "total_parts": total_parts_count,
+                "completed_parts": completed_parts_count,
+                "in_progress_parts": in_progress_count,
+                "average_completion_time": avg_completion_time,
+                "completion_time_distribution": time_buckets,
+                "by_type": type_counts,
+                "by_category": category_counts,
+                "top_contributors": [
+                    {"name": name, "count": count} for name, count in top_contributors
+                ],
+            }
+        )
+
+    except Exception as e:
+        current_app.logger.exception(f"Error getting detailed stats")
+        return jsonify({"error": "Failed to retrieve detailed statistics"}), 500
 
 
 @parts_bp.route("/leaderboard", methods=["GET"])

@@ -35,6 +35,7 @@ export const ENDPOINTS = {
         // Categories and stats
         BY_CATEGORY: (category) => `/parts/categories/${category}`,
         STATS: "/parts/stats",
+        STATS_DETAILED: "/parts/stats/detailed",
         LEADERBOARD: "/parts/leaderboard",
 
         // System
