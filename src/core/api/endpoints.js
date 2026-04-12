@@ -5,6 +5,12 @@
 
 // Base endpoints
 export const ENDPOINTS = {
+    // Options endpoints
+    OPTIONS: {
+        GET: "/options/",
+        UPDATE: "/options/",
+    },
+
     // Parts endpoints
     PARTS: {
         LIST: "/parts/",

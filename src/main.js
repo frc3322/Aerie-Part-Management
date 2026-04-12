@@ -116,6 +116,14 @@ import {
     refreshDrawing,
 } from "./features/parts/drawingViewer.js";
 import { showPartInfo } from "./features/modals/infoModals.js";
+import {
+    openOptionsModal,
+    closeOptionsModal,
+    saveOptions,
+    addMaterial,
+    addSubsystem,
+    loadOptionsFromServer,
+} from "./features/modals/optionsModal.js";
 import { updateScrollbarEdgeEffect } from "./core/utils/helpers.js";
 import {
     initEventDelegation,
@@ -280,6 +288,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isAuthenticated = await checkAuthentication();
     if (isAuthenticated) {
         initializeState();
+        loadOptionsFromServer();
         applyTabVisibilitySettings();
         configureMobileUI();
         switchTab(appState.currentTab);
@@ -299,6 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 globalThis.addEventListener("authenticated", () => {
     detectMobileDevice();
     initializeState();
+    loadOptionsFromServer();
     applyTabVisibilitySettings();
     configureMobileUI();
     switchTab(appState.currentTab);
@@ -380,6 +390,11 @@ const actionExports = {
     hideAuthModal,
     handleAuthSubmit,
     downloadStepFile,
+    openOptionsModal,
+    closeOptionsModal,
+    saveOptions,
+    addMaterial,
+    addSubsystem,
 };
 
 /**

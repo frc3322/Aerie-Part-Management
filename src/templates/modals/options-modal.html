@@ -1,0 +1,107 @@
+<!-- Options Editor Modal -->
+<div
+    id="options-modal"
+    class="fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md"
+>
+    <div
+        class="neumorphic-card p-8 w-full max-w-md relative animate-scale-in max-h-[90vh] overflow-y-auto"
+    >
+        <button
+            data-action="closeOptionsModal"
+            class="absolute top-4 right-4 neumorphic-btn w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-red-400"
+        >
+            <i class="fa-solid fa-times"></i>
+        </button>
+
+        <div class="text-center mb-6">
+            <div
+                class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-800 flex items-center justify-center"
+            >
+                <i class="fa-solid fa-list text-xl text-blue-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-blue-400">Pre-filled Options</h2>
+            <p class="text-gray-500 text-sm mt-1">
+                Changes are shared with all users.
+            </p>
+        </div>
+
+        <div class="space-y-8">
+            <!-- Materials Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-layer-group text-blue-400"></i>
+                    <h3 class="text-lg font-bold text-gray-300">Materials</h3>
+                </div>
+
+                <div
+                    id="options-materials-list"
+                    class="space-y-2 mb-3 min-h-[2.5rem]"
+                ></div>
+
+                <div class="flex gap-2">
+                    <input
+                        type="text"
+                        id="options-new-material"
+                        placeholder="Add material…"
+                        class="neumorphic-input flex-1 p-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <button
+                        type="button"
+                        data-action="addMaterial"
+                        class="neumorphic-btn px-4 py-2 rounded-lg text-blue-400 text-sm font-bold"
+                    >
+                        Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subsystems Section -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-sitemap text-blue-400"></i>
+                    <h3 class="text-lg font-bold text-gray-300">Subsystems</h3>
+                </div>
+
+                <div
+                    id="options-subsystems-list"
+                    class="space-y-2 mb-3 min-h-[2.5rem]"
+                ></div>
+
+                <div class="flex gap-2">
+                    <input
+                        type="text"
+                        id="options-new-subsystem"
+                        placeholder="Add subsystem…"
+                        class="neumorphic-input flex-1 p-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <button
+                        type="button"
+                        data-action="addSubsystem"
+                        class="neumorphic-btn px-4 py-2 rounded-lg text-blue-400 text-sm font-bold"
+                    >
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-gray-700/50">
+            <button
+                type="button"
+                data-action="closeOptionsModal"
+                class="text-gray-400 hover:text-white px-4 py-2 transition"
+            >
+                Cancel
+            </button>
+            <button
+                id="options-save-btn"
+                type="button"
+                data-action="saveOptions"
+                class="neumorphic-btn px-8 py-2 rounded-lg text-blue-400 font-bold"
+            >
+                Save
+            </button>
+        </div>
+    </div>
+</div>

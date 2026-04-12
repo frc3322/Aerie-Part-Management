@@ -11,8 +11,8 @@ import {
     closeModal as closeManagedModal,
 } from "../../core/dom/modalManager.js";
 
-const MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
-const SUBSYSTEM_OPTIONS = [
+let MATERIAL_OPTIONS = ["Polycarb", "Aluminum", "Acrylic"];
+let SUBSYSTEM_OPTIONS = [
     "turret",
     "shooter",
     "spindexer",
@@ -20,6 +20,56 @@ const SUBSYSTEM_OPTIONS = [
     "climber",
     "hopper",
 ];
+
+/**
+ * Update the in-memory option lists and repopulate the select dropdowns.
+ * Called by optionsModal.js after loading from or saving to the server.
+ * @param {string[]} materials
+ * @param {string[]} subsystems
+ */
+export function setDropdownOptions(materials, subsystems) {
+    MATERIAL_OPTIONS = [...materials];
+    SUBSYSTEM_OPTIONS = [...subsystems];
+    _repopulateMaterialSelect();
+    _repopulateSubsystemSelect();
+}
+
+function _repopulateMaterialSelect() {
+    const select = document.getElementById("input-material-select");
+    if (!select) return;
+    const current = select.value;
+    // Remove all options except the last "custom" option
+    while (select.options.length > 1) {
+        select.remove(0);
+    }
+    // Insert new options before "custom"
+    MATERIAL_OPTIONS.forEach((opt) => {
+        const el = document.createElement("option");
+        el.value = opt;
+        el.textContent = opt;
+        select.insertBefore(el, select.options[select.options.length - 1]);
+    });
+    // Restore selection if still valid
+    const stillValid = [...select.options].some((o) => o.value === current);
+    select.value = stillValid ? current : (MATERIAL_OPTIONS[0] || "custom");
+}
+
+function _repopulateSubsystemSelect() {
+    const select = document.getElementById("input-subsystem-select");
+    if (!select) return;
+    const current = select.value;
+    while (select.options.length > 1) {
+        select.remove(0);
+    }
+    SUBSYSTEM_OPTIONS.forEach((opt) => {
+        const el = document.createElement("option");
+        el.value = opt;
+        el.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+        select.insertBefore(el, select.options[select.options.length - 1]);
+    });
+    const stillValid = [...select.options].some((o) => o.value === current);
+    select.value = stillValid ? current : (SUBSYSTEM_OPTIONS[0] || "custom");
+}
 
 // Track if drag and drop has been initialized to prevent duplicate listeners
 let dragDropInitialized = false;
