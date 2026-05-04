@@ -73,6 +73,31 @@ def _build_worker_entry(worker_name: str) -> Dict[str, str]:
     return {"name": worker_name, "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
+def _as_utc_aware(value: Any):
+    """Normalize a datetime-like value to a timezone-aware UTC datetime.
+
+    SQLite/SQLAlchemy can return naive datetimes even when timezone-aware values
+    were saved. Treat naive values as UTC so stats calculations can safely
+    subtract them from ISO timestamps that include offsets.
+    """
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    if not isinstance(value, datetime):
+        return None
+
+    if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+        return value.replace(tzinfo=timezone.utc)
+
+    return value.astimezone(timezone.utc)
+
+
 def _append_hand_worker(existing_misc: Any, worker_name: str) -> Dict[str, Any]:
     """Append a worker entry to the hand fab worker log in misc_info.
 
@@ -689,15 +714,12 @@ def get_detailed_stats():
             misc = part.misc_info or {}
             raw = misc.get("completed_at")
             if raw:
-                try:
-                    iso = raw.replace("Z", "+00:00") if isinstance(raw, str) else raw
-                    completed_at = datetime.fromisoformat(iso)
-                except (ValueError, TypeError):
-                    pass
+                completed_at = _as_utc_aware(raw)
             if completed_at is None:
-                completed_at = part.updated_at
-            if part.claimed_date and completed_at:
-                time_diff = completed_at - part.claimed_date
+                completed_at = _as_utc_aware(part.updated_at)
+            claimed_date = _as_utc_aware(part.claimed_date)
+            if claimed_date and completed_at:
+                time_diff = completed_at - claimed_date
                 hours = time_diff.total_seconds() / 3600
                 # Add multiple entries for parts with amount > 1
                 for _ in range(part.amount):
