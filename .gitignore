@@ -43,3 +43,6 @@ uv.lock
 package-lock.json
 
 /logs
+
+# Self-update restart request (see backend/utils/updater.py)
+backend/.restart-requested

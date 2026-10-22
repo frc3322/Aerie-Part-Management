@@ -67,6 +67,10 @@ uv run backend/deploy.py prod-multi --port 5000
 
 Then open your browser to `http://localhost:5000`.
 
+#### Updating from the app
+
+If the install is a git clone whose branch tracks a remote, **Settings → Updates → Check for Updates** lists any new commits and, once you confirm, pulls them. When the server was started with a `deploy.py` production mode, it then reinstalls dependencies, runs migrations, rebuilds the frontend and relaunches on its own. Other setups (for example `run.py`) only pull the commits, and you restart the server yourself.
+
 ### Development Mode
 
 For active development with hot reloading:

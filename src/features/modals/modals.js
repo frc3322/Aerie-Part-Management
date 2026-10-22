@@ -6,6 +6,7 @@ import { saveTabVisibility } from "../state/persistence.js";
 import { hideActionIconKey, showActionIconKey } from "../auth/auth.js";
 import { getCurrentTab, switchTab } from "../navigation/tabs.js";
 import { getState } from "../../core/state/reactiveState.js";
+import { loadUpdateSection } from "./updateModal.js";
 import {
     openModal as openManagedModal,
     closeModal as closeManagedModal,
@@ -98,6 +99,7 @@ export function openSettingsModal() {
     openManagedModal("settings-modal", {
         onOpen: hideActionIconKey,
     });
+    loadUpdateSection();
 }
 
 /**

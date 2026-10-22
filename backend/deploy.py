@@ -3,8 +3,10 @@
 
 import os
 import sys
+import signal
 import socket
 import subprocess
+import time
 import argparse
 import json
 from typing import Optional, Any
@@ -15,10 +17,16 @@ from utils.backup import (
     get_backup_directory,
 )
 from migrations import run_migrations_from_config
+from utils.updater import (
+    RESTART_FLAG_FILE,
+    SERVER_INSTANCE_ENV_VAR,
+    SUPERVISED_ENV_VAR,
+)
 
 # Constants for repeated values
 DEFAULT_DATABASE_URL = "sqlite:///parts_prod.db"
 DEFAULT_CORS_ORIGINS = ["http://localhost:5000"]
+SERVER_STOP_TIMEOUT_SECONDS = 60
 SECRET_KEY_WARNING = "   WARNING: Using auto-generated SECRET_KEY. Set SECRET_KEY environment variable in production!"
 
 # Initialize logger
@@ -181,6 +189,100 @@ def run_command(command: str, description: str, env: Optional[dict] = None) -> b
         logger.error(f"{description} - FAILED with exit code {e.returncode}")
         print(f"   FAILED with exit code {e.returncode}")
         return False
+
+
+def _stop_server(process: subprocess.Popen) -> None:
+    """Stop the server process and all of its children."""
+    if sys.platform.startswith("win"):
+        subprocess.run(
+            ["taskkill", "/T", "/F", "/PID", str(process.pid)],
+            capture_output=True,
+            check=False,
+        )
+    else:
+        os.killpg(process.pid, signal.SIGTERM)
+
+    try:
+        process.wait(timeout=SERVER_STOP_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        if not sys.platform.startswith("win"):
+            os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+
+
+def _relaunch_deploy_script() -> None:
+    """Replace this process with a fresh run of deploy.py using the same arguments.
+
+    The new run reinstalls dependencies, migrates, rebuilds the frontend and
+    starts the server, picking up any code pulled by the in-app updater.
+    """
+    print("[DEPLOY] Relaunching to apply update")
+    sys.stdout.flush()
+    os.execv(sys.executable, [sys.executable, *sys.argv])
+
+
+def _wait_for_server_or_restart(process: subprocess.Popen) -> Optional[int]:
+    """Wait for the server to exit or for a restart request.
+
+    Returns:
+        The server exit code, or None if a restart was requested.
+    """
+    while not os.path.exists(RESTART_FLAG_FILE):
+        try:
+            return process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            pass
+    return None
+
+
+def run_server(command: str, description: str, env: dict) -> bool:
+    """Run the production server, relaunching it when an update requests a restart.
+
+    Args:
+        command: Server command to execute
+        description: Description of the command for logging
+        env: Environment variables for the server
+
+    Returns:
+        bool: True if the server exited successfully, False otherwise
+    """
+    if os.path.exists(RESTART_FLAG_FILE):
+        os.remove(RESTART_FLAG_FILE)
+
+    env = {**env, SUPERVISED_ENV_VAR: "1", SERVER_INSTANCE_ENV_VAR: str(time.time())}
+    logger.info(f"{description}")
+    logger.debug(f"Command: {command}")
+    print(f"[DEPLOY] {description}")
+    print(f"   Command: {command}")
+
+    # The server gets its own process group so it can be stopped as a whole on
+    # restart. That also means it no longer receives our Ctrl+C or SIGTERM, so
+    # those are forwarded explicitly below.
+    process = subprocess.Popen(command, shell=True, env=env, start_new_session=True)
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(128 + signal.SIGTERM))
+    try:
+        returncode = _wait_for_server_or_restart(process)
+    except (KeyboardInterrupt, SystemExit):
+        _stop_server(process)
+        raise
+
+    if returncode is None:
+        logger.info("Update restart requested, stopping server")
+        print("[DEPLOY] Update restart requested, stopping server")
+        # Give the update request time to send its response.
+        time.sleep(2)
+        _stop_server(process)
+        os.remove(RESTART_FLAG_FILE)
+        _relaunch_deploy_script()
+
+    if returncode == 0:
+        logger.info(f"{description} - SUCCESS")
+        print("   SUCCESS")
+        return True
+
+    logger.error(f"{description} - FAILED with exit code {returncode}")
+    print(f"   FAILED with exit code {returncode}")
+    return False
 
 
 def check_uv() -> bool:
@@ -348,7 +450,7 @@ def run_production_multiworker(
         print(f"   BASE_PATH: {base_path}")
 
     command = f"uv run gunicorn -w {workers} -b 0.0.0.0:{port} run_prod:app"
-    return run_command(
+    return run_server(
         command, f"Starting production server (multi-worker, {workers} workers)", env
     )
 
@@ -382,7 +484,7 @@ def run_production_eventlet(config: dict, port: int = 8000) -> bool:
         print(f"   BASE_PATH: {base_path}")
 
     command = f"uv run gunicorn -k eventlet -w 1 -b 0.0.0.0:{port} run_prod:app"
-    return run_command(
+    return run_server(
         command, "Starting production server (eventlet - Unix only)", env
     )
 
@@ -416,7 +518,7 @@ def run_production_gevent(config: dict, workers: int = 4, port: int = 8000) -> b
         print(f"   BASE_PATH: {base_path}")
 
     command = f"uv run gunicorn -k gevent -w {workers} -b 0.0.0.0:{port} run_prod:app"
-    return run_command(
+    return run_server(
         command,
         f"Starting production server (gevent, {workers} workers - Unix only)",
         env,
@@ -454,7 +556,7 @@ def run_production_waitress(config: dict, port: int = 8000) -> bool:
         print(f"   BASE_PATH: {base_path}")
 
     command = f"uv run waitress-serve --host=0.0.0.0 --port={port} run_prod:app"
-    return run_command(
+    return run_server(
         command, "Starting production server (Waitress - cross-platform)", env
     )
 

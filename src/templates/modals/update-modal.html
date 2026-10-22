@@ -1,0 +1,42 @@
+<!-- Update Confirmation Modal -->
+<div
+    id="update-modal"
+    class="fixed inset-0 bg-white/5 hidden items-center justify-center z-50 backdrop-blur-md"
+>
+    <div
+        class="neumorphic-card p-8 w-full max-w-md relative animate-scale-in text-center"
+    >
+        <div
+            class="w-16 h-16 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-400 shadow-3d-inset"
+        >
+            <i id="update-modal-icon" class="fa-solid fa-cloud-arrow-down text-2xl"></i>
+        </div>
+
+        <h2 id="update-modal-title" class="text-2xl font-bold text-blue-400 mb-2">
+            Update Available
+        </h2>
+
+        <p id="update-modal-description" class="text-gray-400 mb-4"></p>
+
+        <ul
+            id="update-modal-commits"
+            class="neumorphic-input rounded-lg p-3 mb-6 max-h-60 overflow-y-auto text-left text-sm space-y-2"
+        ></ul>
+
+        <div id="update-modal-actions" class="flex justify-center gap-4">
+            <button
+                data-action="closeUpdateModal"
+                class="text-gray-400 hover:text-white px-4 py-2"
+            >
+                Cancel
+            </button>
+            <button
+                id="update-modal-confirm"
+                data-action="applyUpdate"
+                class="neumorphic-btn px-8 py-2 rounded-lg text-blue-400 font-bold"
+            >
+                Update &amp; Restart
+            </button>
+        </div>
+    </div>
+</div>

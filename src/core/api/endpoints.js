@@ -11,6 +11,13 @@ export const ENDPOINTS = {
         UPDATE: "/options/",
     },
 
+    // System endpoints
+    SYSTEM: {
+        UPDATE_STATUS: "/system/update",
+        UPDATE_CHECK: "/system/update/check",
+        UPDATE_APPLY: "/system/update/apply",
+    },
+
     // Parts endpoints
     PARTS: {
         LIST: "/parts/",

@@ -124,6 +124,11 @@ import {
     addSubsystem,
     loadOptionsFromServer,
 } from "./features/modals/optionsModal.js";
+import {
+    checkForUpdates,
+    closeUpdateModal,
+    applyUpdate,
+} from "./features/modals/updateModal.js";
 import { updateScrollbarEdgeEffect } from "./core/utils/helpers.js";
 import {
     initEventDelegation,
@@ -395,6 +400,9 @@ const actionExports = {
     saveOptions,
     addMaterial,
     addSubsystem,
+    checkForUpdates,
+    closeUpdateModal,
+    applyUpdate,
 };
 
 /**

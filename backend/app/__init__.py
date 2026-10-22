@@ -8,7 +8,7 @@ from sqlalchemy.exc import OperationalError  # type: ignore
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from config import config
 from models import db
-from routes import parts_bp, options_bp
+from routes import parts_bp, options_bp, system_bp
 from utils.logging import setup_flask_logging
 
 
@@ -48,6 +48,7 @@ def create_app(config_name: str = "default") -> Flask:
     api_url_prefix = f"{base_path}/api" if base_path else "/api"
     app.register_blueprint(parts_bp, url_prefix=api_url_prefix + "/parts")
     app.register_blueprint(options_bp, url_prefix=api_url_prefix + "/options")
+    app.register_blueprint(system_bp, url_prefix=api_url_prefix + "/system")
 
     # Ensure database sessions are properly cleaned up after each request
     @app.teardown_appcontext
