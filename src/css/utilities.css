@@ -2,12 +2,10 @@
     position: relative;
 }
 
-.tooltip-target::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 110%;
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
+.floating-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
     background: rgba(23, 25, 35, 0.95);
     color: #e2e8f0;
     padding: 6px 10px;
@@ -19,12 +17,17 @@
     transition: opacity 120ms ease, transform 120ms ease;
     font-size: 12px;
     border: 1px solid rgba(255,255,255,0.05);
-    z-index: 60;
+    z-index: 1100;
+    transform: translateY(4px);
 }
 
-.tooltip-target:hover::after {
+.floating-tooltip[data-placement="below"] {
+    transform: translateY(-4px);
+}
+
+.floating-tooltip.visible {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 #viewer-container canvas {

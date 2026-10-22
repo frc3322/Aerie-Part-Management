@@ -134,6 +134,7 @@ import {
     initEventDelegation,
     registerActions,
 } from "./core/dom/eventDelegation.js";
+import { initTooltips } from "./core/dom/tooltips.js";
 
 const REFRESH_NOTICE_DELAY_MS = 5 * 60 * 1000;
 let refreshNoticeTimerId = null;
@@ -287,6 +288,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     hideAuthModal();
 
     initializeTooltips();
+    initTooltips();
     tooltipObserver.observe(document.body, { childList: true, subtree: true });
     renderCat();
 
