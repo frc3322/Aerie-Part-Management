@@ -162,6 +162,9 @@ function triggerNeumorphicAnimations() {
     document
         .querySelectorAll(".neumorphic-input")
         .forEach((input) => input.classList.add("animate-pop-up-input"));
+
+    // Surfaces stay flat until now (see .neo-pending); the animations start flat too.
+    document.body.classList.remove("neo-pending");
 }
 
 /**
