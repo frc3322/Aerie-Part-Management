@@ -55,7 +55,8 @@ function setCheckButtonBusy(isBusy) {
     const button = document.getElementById("check-updates-btn");
     if (!button) return;
     button.disabled = isBusy;
-    const icon = button.querySelector("i");
+    // Font Awesome's JS build swaps <i> icons for <svg> elements.
+    const icon = button.querySelector("svg, i");
     if (icon) icon.classList.toggle("fa-spin", isBusy);
 }
 
@@ -113,9 +114,15 @@ function openUpdateModal(result) {
         .join("");
 
     document.getElementById("update-modal-actions").classList.remove("hidden");
-    document.getElementById("update-modal-icon").className =
-        "fa-solid fa-cloud-arrow-down text-2xl";
+    setModalIcon("fa-cloud-arrow-down");
     openManagedModal("update-modal", { focusSelector: "#update-modal-confirm" });
+}
+
+// Font Awesome replaces <i> icons with read-only <svg> elements, so swap in a
+// fresh <i> rather than editing the rendered icon's classes.
+function setModalIcon(iconClasses) {
+    document.getElementById("update-modal-icon").innerHTML =
+        `<i class="fa-solid ${iconClasses} text-2xl"></i>`;
 }
 
 /** Close the update modal without updating. */
@@ -131,8 +138,7 @@ function showRestartingState() {
         "Rebuilding and restarting the server. This page will reload when it is back.";
     document.getElementById("update-modal-commits").classList.add("hidden");
     document.getElementById("update-modal-actions").classList.add("hidden");
-    document.getElementById("update-modal-icon").className =
-        "fa-solid fa-gear fa-spin text-2xl";
+    setModalIcon("fa-gear fa-spin");
 }
 
 /**
