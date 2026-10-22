@@ -36,10 +36,10 @@ function createContainer() {
 
 function getIcon(type) {
     const icons = {
-        error: "❌",
-        success: "✅",
-        warning: "⚠️",
-        info: "ℹ️",
+        error: '<i class="fa-solid fa-circle-xmark"></i>',
+        success: '<i class="fa-solid fa-circle-check"></i>',
+        warning: '<i class="fa-solid fa-triangle-exclamation"></i>',
+        info: '<i class="fa-solid fa-circle-info"></i>',
     };
     return icons[type] || icons.info;
 }
